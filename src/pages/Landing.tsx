@@ -163,6 +163,12 @@ const Landing = () => {
                     { name: "Malala Yousafzai", slug: "malala", miles: 26.2 },
                     { name: "Wilma Rudolph", slug: "wilma", miles: 42 },
                     { name: "Eleanor Roosevelt", slug: "eleanor", miles: 50 },
+                    { name: "Sojourner Truth", slug: "sojourner", miles: 35 },
+                    { name: "Ida B. Wells", slug: "ida", miles: 40 },
+                    { name: "Maya Angelou", slug: "maya", miles: 45 },
+                    { name: "Fannie Lou Hamer", slug: "fannie", miles: 32 },
+                    { name: "Katherine Johnson", slug: "katherine", miles: 38 },
+                    { name: "Toni Morrison", slug: "toni", miles: 44 },
                   ].map((challenge, i) => (
                     <Link
                       key={i}
