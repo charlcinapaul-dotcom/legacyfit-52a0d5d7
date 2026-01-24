@@ -218,12 +218,21 @@ const Landing = () => {
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
-              <a href="#" className="hover:text-foreground transition-colors">Terms</a>
+              <Link to="/legal" className="hover:text-foreground transition-colors">Legal</Link>
               <a href="#" className="hover:text-foreground transition-colors">Contact</a>
             </div>
             <div className="text-sm text-muted-foreground">
               © 2025 LegacyFit. All rights reserved.
             </div>
+          </div>
+          
+          {/* Footer Disclaimer */}
+          <div className="mt-8 pt-6 border-t border-border">
+            <p className="text-xs text-muted-foreground text-center max-w-2xl mx-auto">
+              LegacyFit is an educational platform. All historical figures, events, and references are included 
+              solely for educational and informational purposes. We are not affiliated with, endorsed by, or 
+              associated with any individual, organization, or estate referenced.
+            </p>
           </div>
         </div>
       </footer>
