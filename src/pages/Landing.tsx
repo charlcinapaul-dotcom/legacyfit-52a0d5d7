@@ -193,6 +193,72 @@ const Landing = () => {
         </div>
       </section>
 
+      {/* Pride History Edition */}
+      <section className="py-20 px-4">
+        <div className="container mx-auto">
+          <div className="max-w-5xl mx-auto">
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary via-card to-secondary border border-border p-8 md:p-12">
+              {/* Rainbow decorative gradient */}
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500" />
+              <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl" />
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-cyan/10 rounded-full blur-3xl" />
+
+              <div className="relative z-10">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-red-500/10 via-yellow-500/10 to-purple-500/10 border border-purple-500/20 mb-6">
+                  <span className="text-xs font-medium bg-gradient-to-r from-red-400 via-yellow-400 via-green-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">PRIDE HISTORY EDITION</span>
+                </div>
+                
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                  March Through Pride History
+                </h2>
+
+                <p className="text-lg text-muted-foreground mb-8 max-w-2xl">
+                  Walk through the landmarks of LGBTQ+ civil rights history. From the Stonewall Inn 
+                  in New York to the steps of the Supreme Court, unlock the stories of courage and triumph.
+                </p>
+
+                <div className="flex flex-wrap gap-3 mb-8">
+                  {[
+                    { name: "Stonewall Inn", miles: 0, year: "1969" },
+                    { name: "First Pride March", miles: 10, year: "1970" },
+                    { name: "Rainbow Flag", miles: 20, year: "1978" },
+                    { name: "AIDS Memorial Quilt", miles: 30, year: "1987" },
+                    { name: "DADT Repeal", miles: 40, year: "2010" },
+                    { name: "Marriage Equality", miles: 50, year: "2015" },
+                  ].map((milestone, i) => (
+                    <div
+                      key={i}
+                      className="px-4 py-2 rounded-full bg-secondary border border-border text-sm text-foreground"
+                    >
+                      <span>{milestone.name}</span>
+                      <span className="ml-2 text-xs text-muted-foreground">{milestone.year}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <MapPin className="w-4 h-4" />
+                    <span className="text-sm">50 miles total</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Award className="w-4 h-4" />
+                    <span className="text-sm">6 historic milestones</span>
+                  </div>
+                </div>
+
+                <Link to="/challenge/pride">
+                  <Button className="bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 text-white hover:opacity-90">
+                    Start This Challenge
+                    <ChevronRight className="ml-2 w-4 h-4" />
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Community */}
       <section className="py-20 px-4 bg-secondary/30">
         <div className="container mx-auto text-center">

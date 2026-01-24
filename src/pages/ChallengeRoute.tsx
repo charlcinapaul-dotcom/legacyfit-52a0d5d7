@@ -7,6 +7,45 @@ import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar 
 import { cn } from "@/lib/utils";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
 
+// Color styling helper for challenge themes
+const getColorStyles = (color: string) => {
+  switch (color) {
+    case "cyan":
+      return {
+        badge: "bg-cyan/10 border-cyan/20 text-cyan",
+        text: "text-cyan",
+        bgLight: "bg-cyan/5 border-cyan/20",
+        bgSolid: "bg-cyan border-cyan text-background",
+        bgHighlight: "bg-cyan/10 text-cyan",
+        routeLine: "bg-cyan",
+        button: "bg-cyan text-background hover:bg-cyan/90 glow-cyan",
+        iconColor: "text-cyan",
+      };
+    case "pride":
+      return {
+        badge: "bg-gradient-to-r from-red-500/10 via-purple-500/10 to-blue-500/10 border-purple-500/20 text-purple-400",
+        text: "bg-gradient-to-r from-red-400 via-yellow-400 via-green-400 via-blue-400 to-purple-400 bg-clip-text text-transparent",
+        bgLight: "bg-purple-500/5 border-purple-500/20",
+        bgSolid: "bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 border-purple-500 text-white",
+        bgHighlight: "bg-purple-500/10 text-purple-400",
+        routeLine: "bg-gradient-to-b from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500",
+        button: "bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 text-white hover:opacity-90",
+        iconColor: "text-purple-400",
+      };
+    default: // gold
+      return {
+        badge: "bg-primary/10 border-primary/20 text-primary",
+        text: "text-primary",
+        bgLight: "bg-primary/5 border-primary/20",
+        bgSolid: "bg-primary border-primary text-primary-foreground",
+        bgHighlight: "bg-primary/10 text-primary",
+        routeLine: "bg-primary",
+        button: "bg-primary text-primary-foreground hover:bg-primary/90 glow-gold",
+        iconColor: "text-primary",
+      };
+  }
+};
+
 // Challenge data for each historical figure
 const challengeData: Record<string, {
   name: string;
@@ -177,6 +216,24 @@ const challengeData: Record<string, {
       { id: 6, name: "Nobel Prize", miles: 44, location: "Stockholm", description: "Awarded Nobel Prize in Literature 1993" },
     ],
   },
+  // Pride History Edition
+  pride: {
+    name: "March Through Pride History",
+    title: "Pride History Edition",
+    totalMiles: 50,
+    daysToComplete: 55,
+    description: "Walk through the landmarks of LGBTQ+ civil rights history. From Stonewall to marriage equality, each mile honors the activists who fought for freedom.",
+    image: "https://images.unsplash.com/photo-1620121692029-d088224ddc74?w=400&h=300&fit=crop",
+    color: "pride",
+    milestones: [
+      { id: 1, name: "Stonewall Inn", miles: 0, location: "New York City, NY", description: "June 28, 1969 - The Stonewall Uprising begins, sparking the modern LGBTQ+ rights movement" },
+      { id: 2, name: "First Pride March", miles: 10, location: "New York City, NY", description: "June 28, 1970 - The first Pride marches are held in NYC, LA, San Francisco, and Chicago" },
+      { id: 3, name: "Rainbow Flag Creation", miles: 20, location: "San Francisco, CA", description: "1978 - Gilbert Baker designs the original eight-color rainbow flag" },
+      { id: 4, name: "AIDS Memorial Quilt", miles: 30, location: "Washington D.C.", description: "1987 - The NAMES Project AIDS Memorial Quilt is first displayed on the National Mall" },
+      { id: 5, name: "Don't Ask Don't Tell Repeal", miles: 40, location: "Washington D.C.", description: "December 22, 2010 - President Obama signs the repeal of DADT into law" },
+      { id: 6, name: "Marriage Equality", miles: 50, location: "Washington D.C.", description: "June 26, 2015 - Supreme Court rules in Obergefell v. Hodges, legalizing same-sex marriage nationwide" },
+    ],
+  },
 };
 
 const ChallengeRoute = () => {
@@ -211,7 +268,7 @@ const ChallengeRoute = () => {
 
   const progressPercent = (userProgress.milesLogged / challenge.totalMiles) * 100;
   const unlockedMilestones = challenge.milestones.filter(m => userProgress.milesLogged >= m.miles);
-
+  const colors = getColorStyles(challenge.color);
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -238,11 +295,15 @@ const ChallengeRoute = () => {
             />
             
             <div className="relative z-20 p-6 md:p-10">
+              {/* Rainbow accent bar for pride */}
+              {challenge.color === "pride" && (
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500" />
+              )}
               <div className={cn(
                 "inline-flex items-center gap-2 px-3 py-1 rounded-full border mb-4",
-                challenge.color === "cyan" ? "bg-cyan/10 border-cyan/20 text-cyan" : "bg-primary/10 border-primary/20 text-primary"
+                colors.badge
               )}>
-                <span className="text-xs font-medium uppercase tracking-wide">{challenge.title}</span>
+                <span className={cn("text-xs font-medium uppercase tracking-wide", challenge.color === "pride" && colors.text)}>{challenge.title}</span>
               </div>
 
               <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
@@ -283,10 +344,7 @@ const ChallengeRoute = () => {
                     <Trophy className="w-4 h-4" />
                     <span className="text-xs uppercase tracking-wide">Unlocked</span>
                   </div>
-                  <div className={cn(
-                    "text-2xl font-bold",
-                    challenge.color === "cyan" ? "text-cyan" : "text-primary"
-                  )}>{unlockedMilestones.length}</div>
+                  <div className={cn("text-2xl font-bold", colors.text)}>{unlockedMilestones.length}</div>
                 </div>
               </div>
             </div>
@@ -295,10 +353,7 @@ const ChallengeRoute = () => {
           {/* Days Adjustment Section */}
           <div className="bg-card rounded-xl border border-border p-6 mb-8">
             <div className="flex items-center gap-3 mb-4">
-              <Calendar className={cn(
-                "w-5 h-5",
-                challenge.color === "cyan" ? "text-cyan" : "text-primary"
-              )} />
+              <Calendar className={cn("w-5 h-5", colors.iconColor)} />
               <h3 className="text-lg font-semibold text-foreground">Customize Your Challenge</h3>
             </div>
             
@@ -309,10 +364,7 @@ const ChallengeRoute = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-foreground">Challenge Duration</span>
-                <span className={cn(
-                  "text-lg font-bold",
-                  challenge.color === "cyan" ? "text-cyan" : "text-primary"
-                )}>
+                <span className={cn("text-lg font-bold", colors.text)}>
                   {customDays} days
                 </span>
               </div>
@@ -332,10 +384,7 @@ const ChallengeRoute = () => {
                 <span>Relaxed ({maxDays} days)</span>
               </div>
 
-              <div className={cn(
-                "mt-4 p-3 rounded-lg border",
-                challenge.color === "cyan" ? "bg-cyan/5 border-cyan/20" : "bg-primary/5 border-primary/20"
-              )}>
+              <div className={cn("mt-4 p-3 rounded-lg border", colors.bgLight)}>
                 <div className="text-sm text-muted-foreground">
                   <span className="font-medium text-foreground">Daily goal: </span>
                   {(challenge.totalMiles / customDays).toFixed(2)} miles/day
@@ -348,10 +397,7 @@ const ChallengeRoute = () => {
           <div className="bg-card rounded-xl border border-border p-6 mb-8">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-foreground">Your Progress</h3>
-              <span className={cn(
-                "text-sm font-medium",
-                challenge.color === "cyan" ? "text-cyan" : "text-primary"
-              )}>
+              <span className={cn("text-sm font-medium", colors.text)}>
                 {userProgress.milesLogged} / {challenge.totalMiles} miles
               </span>
             </div>
@@ -377,10 +423,7 @@ const ChallengeRoute = () => {
               
               {/* Progress Fill */}
               <div 
-                className={cn(
-                  "absolute left-6 top-0 w-0.5 transition-all duration-1000",
-                  challenge.color === "cyan" ? "bg-cyan" : "bg-primary"
-                )}
+                className={cn("absolute left-6 top-0 w-0.5 transition-all duration-1000", colors.routeLine)}
                 style={{ height: `${progressPercent}%` }}
               />
 
@@ -396,9 +439,7 @@ const ChallengeRoute = () => {
                       <div className={cn(
                         "relative z-10 w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all",
                         isUnlocked 
-                          ? challenge.color === "cyan"
-                            ? "bg-cyan border-cyan text-background"
-                            : "bg-primary border-primary text-primary-foreground"
+                          ? colors.bgSolid
                           : isNext
                             ? "bg-secondary border-border text-muted-foreground animate-pulse"
                             : "bg-secondary border-border text-muted-foreground"
@@ -419,11 +460,7 @@ const ChallengeRoute = () => {
                           <h4 className="font-semibold text-foreground">{milestone.name}</h4>
                           <span className={cn(
                             "text-xs px-2 py-0.5 rounded-full",
-                            isUnlocked
-                              ? challenge.color === "cyan"
-                                ? "bg-cyan/10 text-cyan"
-                                : "bg-primary/10 text-primary"
-                              : "bg-secondary text-muted-foreground"
+                            isUnlocked ? colors.bgHighlight : "bg-secondary text-muted-foreground"
                           )}>
                             {milestone.miles} mi
                           </span>
@@ -456,12 +493,7 @@ const ChallengeRoute = () => {
             <Link to="/auth?mode=signup">
               <Button 
                 size="lg" 
-                className={cn(
-                  "text-lg px-8 py-6",
-                  challenge.color === "cyan"
-                    ? "bg-cyan text-background hover:bg-cyan/90 glow-cyan"
-                    : "bg-primary text-primary-foreground hover:bg-primary/90 glow-gold"
-                )}
+                className={cn("text-lg px-8 py-6", colors.button)}
               >
                 Start This Challenge
               </Button>
