@@ -159,13 +159,19 @@ const Landing = () => {
                 </p>
 
                 <div className="flex flex-wrap gap-3 mb-8">
-                  {["Malala Yousafzai", "Wilma Rudolph", "Eleanor Roosevelt", "+ More"].map((name, i) => (
-                    <span
+                  {[
+                    { name: "Malala Yousafzai", slug: "malala", miles: 26.2 },
+                    { name: "Wilma Rudolph", slug: "wilma", miles: 42 },
+                    { name: "Eleanor Roosevelt", slug: "eleanor", miles: 50 },
+                  ].map((challenge, i) => (
+                    <Link
                       key={i}
-                      className="px-4 py-2 rounded-full bg-secondary border border-border text-sm text-foreground"
+                      to={`/challenge/${challenge.slug}`}
+                      className="px-4 py-2 rounded-full bg-secondary border border-border text-sm text-foreground hover:border-primary/50 hover:bg-secondary/80 transition-all group"
                     >
-                      {name}
-                    </span>
+                      <span className="group-hover:text-primary transition-colors">{challenge.name}</span>
+                      <span className="ml-2 text-xs text-muted-foreground">{challenge.miles} mi</span>
+                    </Link>
                   ))}
                 </div>
 
