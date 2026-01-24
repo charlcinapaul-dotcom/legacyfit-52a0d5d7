@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DisclaimerBanner } from "@/components/DisclaimerBanner";
 
 // Challenge data for each historical figure
 const challengeData: Record<string, {
@@ -338,6 +339,14 @@ const ChallengeRoute = () => {
                 })}
               </div>
             </div>
+          </div>
+
+          {/* Educational Disclaimer */}
+          <div className="mt-8">
+            <DisclaimerBanner 
+              variant="compact" 
+              showLivingPersonNote={slug === "malala"}
+            />
           </div>
 
           {/* Action Button */}
