@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2 } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Challenge data for each historical figure
@@ -77,11 +79,17 @@ const challengeData: Record<string, {
 const ChallengeRoute = () => {
   const { slug } = useParams<{ slug: string }>();
   const challenge = slug ? challengeData[slug] : null;
+  
+  // Custom days state - initialize with default challenge days
+  const defaultDays = challenge?.daysToComplete ?? 30;
+  const minDays = Math.ceil(defaultDays * 0.5); // 50% of default
+  const maxDays = Math.ceil(defaultDays * 2); // 200% of default
+  const [customDays, setCustomDays] = useState<number>(defaultDays);
 
   // Mock user progress - in real app this would come from database
   const userProgress = {
     milesLogged: 12.5,
-    daysRemaining: 18,
+    daysRemaining: Math.max(0, customDays - 12), // Adjust based on custom days
     startedAt: "2025-01-10",
   };
 
@@ -156,7 +164,7 @@ const ChallengeRoute = () => {
                     <Clock className="w-4 h-4" />
                     <span className="text-xs uppercase tracking-wide">Days</span>
                   </div>
-                  <div className="text-2xl font-bold text-foreground">{challenge.daysToComplete}</div>
+                  <div className="text-2xl font-bold text-foreground">{customDays}</div>
                 </div>
 
                 <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 border border-border">
@@ -176,6 +184,58 @@ const ChallengeRoute = () => {
                     "text-2xl font-bold",
                     challenge.color === "cyan" ? "text-cyan" : "text-primary"
                   )}>{unlockedMilestones.length}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Days Adjustment Section */}
+          <div className="bg-card rounded-xl border border-border p-6 mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <Calendar className={cn(
+                "w-5 h-5",
+                challenge.color === "cyan" ? "text-cyan" : "text-primary"
+              )} />
+              <h3 className="text-lg font-semibold text-foreground">Customize Your Challenge</h3>
+            </div>
+            
+            <p className="text-sm text-muted-foreground mb-6">
+              Adjust the number of days to complete this challenge based on your fitness level and schedule.
+            </p>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-foreground">Challenge Duration</span>
+                <span className={cn(
+                  "text-lg font-bold",
+                  challenge.color === "cyan" ? "text-cyan" : "text-primary"
+                )}>
+                  {customDays} days
+                </span>
+              </div>
+              
+              <Slider
+                value={[customDays]}
+                onValueChange={(value) => setCustomDays(value[0])}
+                min={minDays}
+                max={maxDays}
+                step={1}
+                className="py-2"
+              />
+              
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Intense ({minDays} days)</span>
+                <span>Default ({defaultDays} days)</span>
+                <span>Relaxed ({maxDays} days)</span>
+              </div>
+
+              <div className={cn(
+                "mt-4 p-3 rounded-lg border",
+                challenge.color === "cyan" ? "bg-cyan/5 border-cyan/20" : "bg-primary/5 border-primary/20"
+              )}>
+                <div className="text-sm text-muted-foreground">
+                  <span className="font-medium text-foreground">Daily goal: </span>
+                  {(challenge.totalMiles / customDays).toFixed(2)} miles/day
                 </div>
               </div>
             </div>
