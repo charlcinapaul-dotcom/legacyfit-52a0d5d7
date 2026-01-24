@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ChevronRight, MapPin, Award, Users, Footprints } from "lucide-react";
+import { ChevronRight, MapPin, Award, Users, BookOpen, Footprints } from "lucide-react";
+import legacyfitLogo from "@/assets/legacyfit-logo.png";
 
 const Landing = () => {
   return (
@@ -10,9 +11,9 @@ const Landing = () => {
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-gradient-gold flex items-center justify-center">
-              <Footprints className="w-5 h-5 text-primary-foreground" />
+              <BookOpen className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-gradient-gold">LegacyFit</span>
+            <span className="text-xl font-bold text-gradient-gold">LegacyFit Virtual Challenge</span>
           </div>
           <div className="flex items-center gap-4">
             <Link to="/auth">
@@ -146,6 +147,8 @@ const Landing = () => {
                   <span className="text-xs font-medium text-primary">FEATURED CHALLENGE</span>
                 </div>
 
+                <img src={legacyfitLogo} alt="LegacyFit Virtual Challenge" className="w-full max-w-xl mb-6" />
+                
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                   Women's History Edition
                 </h2>
@@ -203,9 +206,9 @@ const Landing = () => {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-full bg-gradient-gold flex items-center justify-center">
-                <Footprints className="w-5 h-5 text-primary-foreground" />
+                <BookOpen className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold text-gradient-gold">LegacyFit</span>
+              <span className="text-xl font-bold text-gradient-gold">LegacyFit Virtual Challenge</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
