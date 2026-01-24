@@ -13,7 +13,7 @@ const Landing = () => {
             <div className="w-8 h-8 rounded-full bg-gradient-gold flex items-center justify-center">
               <BookOpen className="w-5 h-5 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-gradient-gold">LegacyFit Virtual Challenge</span>
+            <span className="text-xl font-bold text-cyan">LegacyFit Virtual Challenge</span>
           </div>
           <div className="flex items-center gap-4">
             <Link to="/auth">
@@ -208,7 +208,7 @@ const Landing = () => {
               <div className="w-8 h-8 rounded-full bg-gradient-gold flex items-center justify-center">
                 <BookOpen className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold text-gradient-gold">LegacyFit Virtual Challenge</span>
+              <span className="text-xl font-bold text-cyan">LegacyFit Virtual Challenge</span>
             </div>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <a href="#" className="hover:text-foreground transition-colors">Privacy</a>
