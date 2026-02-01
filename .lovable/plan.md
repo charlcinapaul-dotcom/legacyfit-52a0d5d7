@@ -1,120 +1,135 @@
 
-# Connect Database Challenges to Frontend Routes
+# Seed Remaining 7 Challenges into Database
 
 ## Overview
-The frontend routing system (`/challenge/:slug`) currently uses hardcoded data in `ChallengeRoute.tsx`, while the database contains real challenge and milestone data with AI-generated stamps. This plan connects these systems so all challenge data flows from the database.
+Add the remaining 7 challenges from the Women's History Edition (plus Pride) to the database, following the established data patterns from Malala, Maya, and Toni Morrison journeys.
 
-## Current State Analysis
+## Challenges to Seed
 
-### Frontend (Hardcoded)
-- `ChallengeRoute.tsx`: Contains 10 challenges in a `challengeData` object, accessed by slug (e.g., "malala", "toni")
-- `Landing.tsx`: Lists 9 Women's History challenges + 1 Pride challenge with hardcoded slugs and miles
+| Challenge | Total Miles | Edition |
+|-----------|-------------|---------|
+| Wilma Rudolph | 42 mi | 2026 |
+| Eleanor Roosevelt | 50 mi | 2026 |
+| Sojourner Truth | 35 mi | 2026 |
+| Ida B. Wells | 40 mi | 2026 |
+| Fannie Lou Hamer | 32 mi | 2026 |
+| Katherine Johnson | 38 mi | 2026 |
+| Pride History | 50 mi | 2026 |
 
-### Database (Dynamic)
-- `challenges` table: Has 3 records (Toni Morrison, Malala, Maya) with UUIDs - **no slug column**
-- `milestones` table: Has 18 milestone records with stamp images
-- `usePassportStamps.ts`: Already fetches milestones and challenges from database
+## Data Structure (Following Existing Pattern)
 
-### The Gap
-Routes use slugs like `/challenge/malala`, but the database has no way to resolve these slugs to challenge records.
+### Challenge Fields
+- `title`: Full journey name
+- `slug`: URL-friendly identifier (e.g., "wilma", "eleanor")
+- `edition`: "2026"
+- `total_miles`: Journey total distance
+- `description`: Journey overview text
+- `is_active`: true
 
----
+### Milestone Fields (6 per challenge)
+- `title`: Short milestone name
+- `stamp_title`: Display title for stamp
+- `location_name`: Physical historical location
+- `miles_required`: Cumulative miles to reach
+- `order_index`: Sequence (1-6)
+- `stamp_copy`: Descriptive text for stamp
 
-## Implementation Plan
+## Implementation Steps
 
-### Step 1: Add Slug Column to Database
-Add a `slug` column to the `challenges` table and update existing records.
+### Step 1: Insert Challenges
+Insert 7 new challenge records with appropriate slugs, descriptions, and total miles.
 
-**SQL Migration:**
-```sql
-ALTER TABLE public.challenges
-ADD COLUMN slug text UNIQUE;
+### Step 2: Insert Milestones
+Create 6 milestones per challenge (42 total new milestones) with historically accurate locations:
 
--- Update existing challenges with slugs
-UPDATE public.challenges SET slug = 'toni' WHERE title ILIKE '%toni%';
-UPDATE public.challenges SET slug = 'malala' WHERE title ILIKE '%malala%';
-UPDATE public.challenges SET slug = 'maya' WHERE title ILIKE '%maya%';
-```
+**Wilma Rudolph (42 mi)** - Olympic track & field champion
+1. Clarksville, Tennessee (1 mi) - Birthplace
+2. Tennessee State University (8 mi) - Athletic training
+3. Melbourne, Australia (18 mi) - 1956 Olympics
+4. Rome, Italy (28 mi) - 1960 Olympics bronze relay
+5. Rome Olympic Stadium (36 mi) - First American woman with 3 gold medals
+6. Clarksville, Tennessee (42 mi) - Return as champion
 
-### Step 2: Create Database Hook for Challenge Routes
-Create a new hook `useChallengeBySlug` in `src/hooks/useChallengeBySlug.ts`.
+**Eleanor Roosevelt (50 mi)** - First Lady & human rights advocate
+1. New York City (1 mi) - Birthplace
+2. London, England (10 mi) - Allenswood Academy education
+3. Washington, D.C. (20 mi) - First Lady activism
+4. Val-Kill, NY (30 mi) - Personal retreat & independence
+5. Paris, France (40 mi) - UN Human Rights Commission
+6. United Nations, NYC (50 mi) - Universal Declaration of Human Rights
 
-**Features:**
-- Fetch challenge by slug from database
-- Fetch associated milestones
-- Return combined data in the format expected by `ChallengeRoute`
-- Handle loading and error states
+**Sojourner Truth (35 mi)** - Abolitionist & women's rights activist
+1. Swartekill, New York (1 mi) - Born into slavery
+2. New Paltz, New York (7 mi) - Escaped to freedom
+3. New York City (14 mi) - Successful lawsuit for son's freedom
+4. Northampton, Massachusetts (21 mi) - Utopian community & activism
+5. Akron, Ohio (28 mi) - "Ain't I a Woman?" speech
+6. Battle Creek, Michigan (35 mi) - Final home & legacy
 
-### Step 3: Refactor ChallengeRoute.tsx
-Replace hardcoded `challengeData` object with database queries.
+**Ida B. Wells (40 mi)** - Journalist & anti-lynching crusader
+1. Holly Springs, Mississippi (1 mi) - Birthplace
+2. Memphis, Tennessee (8 mi) - Teaching career begins
+3. Memphis Free Speech (16 mi) - Investigative journalism
+4. New York City (24 mi) - National anti-lynching campaign
+5. Chicago, Illinois (32 mi) - Co-founder NAACP
+6. Chicago, Illinois (40 mi) - Lasting civil rights legacy
 
-**Changes:**
-- Use `useChallengeBySlug(slug)` hook
-- Keep color/theme logic as configuration (can be stored in DB later or derived from edition)
-- Keep user progress logic (mock data for now, but structure supports real data)
-- Add loading skeleton while fetching
-- Maintain fallback for challenges not yet in database
+**Fannie Lou Hamer (32 mi)** - Voting rights activist
+1. Montgomery County, Mississippi (1 mi) - Born into sharecropping
+2. Ruleville, Mississippi (6 mi) - First voter registration attempt
+3. Winona, Mississippi (12 mi) - Surviving brutal arrest
+4. Atlantic City, NJ (18 mi) - Democratic National Convention testimony
+5. Sunflower County, MS (25 mi) - Freedom Farm Cooperative
+6. Ruleville, Mississippi (32 mi) - "Sick and tired of being sick and tired"
 
-### Step 4: Update Challenge Data Structure
-Ensure database milestones match the expected structure:
+**Katherine Johnson (38 mi)** - NASA mathematician
+1. White Sulphur Springs, WV (1 mi) - Birthplace
+2. West Virginia State College (7 mi) - Mathematics prodigy
+3. Hampton, Virginia (15 mi) - NACA "Computer" pool
+4. Langley Research Center (23 mi) - Mercury orbital calculations
+5. Houston, Texas (30 mi) - Apollo 11 trajectory
+6. Washington, D.C. (38 mi) - Presidential Medal of Freedom
 
-| Frontend Field | Database Column |
-|----------------|-----------------|
-| `name` | `stamp_title` or `title` |
-| `miles` | `miles_required` |
-| `location` | `location_name` |
-| `description` | `stamp_copy` or `description` |
+**Pride History (50 mi)** - LGBTQ+ rights movement
+1. San Francisco, CA (1 mi) - Early LGBTQ+ community
+2. New York City (10 mi) - Stonewall Inn uprising
+3. San Francisco, CA (20 mi) - Harvey Milk elected
+4. Washington, D.C. (30 mi) - First National March
+5. Obergefell v. Hodges (40 mi) - Marriage equality
+6. Nationwide (50 mi) - Continuing progress
 
-### Step 5: Seed Remaining Challenges (Future)
-The database currently has 3 of 10 challenges. The remaining 7 can be seeded later:
-- Wilma Rudolph (42 mi)
-- Eleanor Roosevelt (50 mi)
-- Sojourner Truth (35 mi)
-- Ida B. Wells (40 mi)
-- Fannie Lou Hamer (32 mi)
-- Katherine Johnson (38 mi)
-- Pride History (50 mi)
-
----
-
-## File Changes Summary
-
-| File | Action |
-|------|--------|
-| `supabase/migrations/` | New migration for slug column |
-| `src/hooks/useChallengeBySlug.ts` | New hook file |
-| `src/pages/ChallengeRoute.tsx` | Refactor to use database |
-| `src/integrations/supabase/types.ts` | Auto-updated after migration |
+### Step 3: Verify Integration
+After seeding, the challenges will automatically appear at:
+- `/challenge/wilma`
+- `/challenge/eleanor`
+- `/challenge/sojourner`
+- `/challenge/ida`
+- `/challenge/fannie`
+- `/challenge/katherine`
+- `/challenge/pride`
 
 ---
 
 ## Technical Details
 
-### New Hook: useChallengeBySlug.ts
-```typescript
-export function useChallengeBySlug(slug: string | undefined) {
-  // Query challenge by slug
-  // Query milestones by challenge_id
-  // Return combined data with loading/error states
-}
-```
+### SQL Execution
+Use SQL INSERT statements to add data. The migration tool will handle:
+- Challenge records (7 inserts)
+- Milestone records (42 inserts)
 
-### ChallengeRoute Changes
-- Keep `getColorStyles()` helper (theme configuration)
-- Remove hardcoded `challengeData` object
-- Add conditional rendering for loading state
-- Fallback to "Challenge Not Found" if slug doesn't exist in DB
+### Stamp Images
+Milestones will be created without `stamp_image_url` initially. AI-generated images can be added later using the existing `generate-stamp-image` edge function.
 
-### Backward Compatibility
-- Challenges not in database will show "Challenge Not Found"
-- Landing page links remain functional for seeded challenges
-- Passport page continues working (already uses database)
+### Data Validation
+- All slugs are unique and URL-safe
+- Miles distribute evenly across 6 milestones per journey
+- Location names reference real historical places
+- Order indices sequential (1-6) per challenge
 
 ---
 
-## Benefits
-1. Single source of truth for all challenge data
-2. AI-generated stamp images display on challenge route pages
-3. Real milestone data shown to users
-4. Easy to add new challenges via database without code changes
-5. User progress can be connected to real `user_challenges` and `mile_entries` tables
+## Expected Outcome
+- 10 total challenges in database (3 existing + 7 new)
+- 60 total milestones (18 existing + 42 new)
+- All routes functional via dynamic `useChallengeBySlug` hook
+- Landing page links to all 10 challenges will work
