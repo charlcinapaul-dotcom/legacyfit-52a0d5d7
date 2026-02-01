@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -6,6 +6,8 @@ import { Slider } from "@/components/ui/slider";
 import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
+import { useChallengeBySlug } from "@/hooks/useChallengeBySlug";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Color styling helper for challenge themes
 const getColorStyles = (color: string) => {
@@ -46,218 +48,113 @@ const getColorStyles = (color: string) => {
   }
 };
 
-// Challenge data for each historical figure
-const challengeData: Record<string, {
-  name: string;
-  title: string;
-  totalMiles: number;
-  daysToComplete: number;
-  description: string;
-  image: string;
-  color: string;
-  milestones: Array<{
-    id: number;
-    name: string;
-    miles: number;
-    location: string;
-    description: string;
-  }>;
-}> = {
-  malala: {
-    name: "Malala Yousafzai",
-    title: "Voice of Education",
-    totalMiles: 26.2,
-    daysToComplete: 30,
-    description: "Walk in the footsteps of the youngest Nobel Prize laureate. Each mile represents her journey from the Swat Valley to global advocacy.",
-    image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400&h=300&fit=crop",
-    color: "cyan",
-    milestones: [
-      { id: 1, name: "Mingora", miles: 0, location: "Starting Point", description: "Where Malala's journey began" },
-      { id: 2, name: "First School", miles: 5, location: "Swat Valley", description: "Her first steps into education" },
-      { id: 3, name: "Blog Begins", miles: 10, location: "Mingora, Swat Valley, Pakistan", description: "When she started writing for BBC Urdu" },
-      { id: 4, name: "Recovery", miles: 15, location: "Birmingham, UK", description: "Her recovery and renewed strength" },
-      { id: 5, name: "United Nations", miles: 20, location: "New York", description: "Addressed the UN on her 16th birthday" },
-      { id: 6, name: "Nobel Peace Prize", miles: 26.2, location: "Oslo, Norway", description: "Youngest Nobel laureate in history" },
-    ],
-  },
-  wilma: {
-    name: "Wilma Rudolph",
-    title: "The Tornado",
-    totalMiles: 42,
-    daysToComplete: 45,
-    description: "Follow the trail of the fastest woman in the world. From overcoming childhood illness to Olympic gold.",
-    image: "https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=400&h=300&fit=crop",
-    color: "gold",
-    milestones: [
-      { id: 1, name: "Clarksville", miles: 0, location: "Tennessee", description: "Born June 23, 1940" },
-      { id: 2, name: "First Steps", miles: 8, location: "Clarksville, Tennessee", description: "Walked without braces at age 12" },
-      { id: 3, name: "Basketball Star", miles: 16, location: "Burt High School, Clarksville, TN", description: "Discovered her athletic talent" },
-      { id: 4, name: "Melbourne Olympics", miles: 24, location: "Australia", description: "Bronze medal at age 16" },
-      { id: 5, name: "Tennessee State", miles: 32, location: "Nashville", description: "Training with the Tigerbelles" },
-      { id: 6, name: "Rome Olympics", miles: 42, location: "Italy", description: "Three gold medals, worldwide fame" },
-    ],
-  },
-  eleanor: {
-    name: "Eleanor Roosevelt",
-    title: "First Lady of the World",
-    totalMiles: 50,
-    daysToComplete: 60,
-    description: "Trace the path of America's most influential First Lady. From New York to the United Nations.",
-    image: "https://images.unsplash.com/photo-1569163139599-0f4517e36f51?w=400&h=300&fit=crop",
-    color: "cyan",
-    milestones: [
-      { id: 1, name: "New York City", miles: 0, location: "Manhattan", description: "Born October 11, 1884" },
-      { id: 2, name: "Allenswood Academy", miles: 10, location: "London", description: "Education that shaped her worldview" },
-      { id: 3, name: "Settlement House", miles: 20, location: "Lower East Side", description: "First steps in social work" },
-      { id: 4, name: "The White House", miles: 30, location: "Washington D.C.", description: "Redefining the role of First Lady" },
-      { id: 5, name: "Val-Kill", miles: 40, location: "Hyde Park", description: "Her own home and retreat" },
-      { id: 6, name: "United Nations", miles: 50, location: "New York", description: "Drafting the Universal Declaration of Human Rights" },
-    ],
-  },
-  sojourner: {
-    name: "Sojourner Truth",
-    title: "Ain't I a Woman",
-    totalMiles: 35,
-    daysToComplete: 40,
-    description: "Follow the path of the abolitionist and women's rights activist who walked from slavery to freedom.",
-    image: "https://images.unsplash.com/photo-1508515053963-70c7cc24c94e?w=400&h=300&fit=crop",
-    color: "gold",
-    milestones: [
-      { id: 1, name: "Swartekill", miles: 0, location: "Ulster County, NY", description: "Born into slavery around 1797" },
-      { id: 2, name: "Freedom Walk", miles: 7, location: "New Paltz, NY", description: "Escaped to freedom in 1826" },
-      { id: 3, name: "New Name", miles: 14, location: "New York City", description: "Became Sojourner Truth in 1843" },
-      { id: 4, name: "Northampton", miles: 21, location: "Massachusetts", description: "Joined the abolitionist movement" },
-      { id: 5, name: "Ain't I a Woman", miles: 28, location: "Akron, Ohio", description: "Delivered her famous speech in 1851" },
-      { id: 6, name: "Battle Creek", miles: 35, location: "Michigan", description: "Continued activism until her death" },
-    ],
-  },
-  ida: {
-    name: "Ida B. Wells",
-    title: "Crusader for Justice",
-    totalMiles: 40,
-    daysToComplete: 45,
-    description: "Walk the path of the investigative journalist who fearlessly exposed injustice across America.",
-    image: "https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=400&h=300&fit=crop",
-    color: "cyan",
-    milestones: [
-      { id: 1, name: "Holly Springs", miles: 0, location: "Mississippi", description: "Born July 16, 1862" },
-      { id: 2, name: "Rust College", miles: 8, location: "Mississippi", description: "Education and early teaching" },
-      { id: 3, name: "Memphis", miles: 16, location: "Tennessee", description: "Began journalism career" },
-      { id: 4, name: "Free Speech", miles: 24, location: "Memphis", description: "Co-owned and wrote for the newspaper" },
-      { id: 5, name: "Crusade Begins", miles: 32, location: "New York City, NY", description: "Anti-lynching campaign launched" },
-      { id: 6, name: "NAACP Founding", miles: 40, location: "New York", description: "Co-founded the NAACP in 1909" },
-    ],
-  },
-  maya: {
-    name: "Maya Angelou",
-    title: "Phenomenal Woman",
-    totalMiles: 45,
-    daysToComplete: 50,
-    description: "Journey through the extraordinary life of the poet, author, and civil rights activist.",
-    image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400&h=300&fit=crop",
-    color: "gold",
-    milestones: [
-      { id: 1, name: "St. Louis", miles: 0, location: "Missouri", description: "Born April 4, 1928" },
-      { id: 2, name: "Stamps", miles: 9, location: "Arkansas", description: "Childhood with grandmother" },
-      { id: 3, name: "San Francisco", miles: 18, location: "California", description: "First Black streetcar conductor" },
-      { id: 4, name: "Harlem", miles: 27, location: "New York", description: "Joined the Harlem Writers Guild" },
-      { id: 5, name: "I Know Why", miles: 36, location: "New York City, NY", description: "Published her landmark autobiography" },
-      { id: 6, name: "Inauguration", miles: 45, location: "Washington D.C.", description: "Read 'On the Pulse of Morning' in 1993" },
-    ],
-  },
-  fannie: {
-    name: "Fannie Lou Hamer",
-    title: "Sick and Tired",
-    totalMiles: 32,
-    daysToComplete: 35,
-    description: "Follow the footsteps of the voting rights activist who refused to be silenced.",
-    image: "https://images.unsplash.com/photo-1494172961521-33799ddd43a5?w=400&h=300&fit=crop",
-    color: "cyan",
-    milestones: [
-      { id: 1, name: "Montgomery County", miles: 0, location: "Mississippi", description: "Born October 6, 1917" },
-      { id: 2, name: "Ruleville", miles: 6, location: "Mississippi", description: "Sharecropping life" },
-      { id: 3, name: "The Attempt", miles: 12, location: "Indianola", description: "First attempt to register to vote" },
-      { id: 4, name: "SNCC", miles: 18, location: "Mississippi", description: "Joined Student Nonviolent Coordinating Committee" },
-      { id: 5, name: "Freedom Summer", miles: 26, location: "Mississippi", description: "Led voter registration drives" },
-      { id: 6, name: "DNC Speech", miles: 32, location: "Atlantic City", description: "Testified at 1964 Democratic Convention" },
-    ],
-  },
-  katherine: {
-    name: "Katherine Johnson",
-    title: "Hidden Figure",
-    totalMiles: 38,
-    daysToComplete: 42,
-    description: "Trace the trajectory of the mathematician whose calculations sent astronauts to space.",
-    image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=300&fit=crop",
-    color: "gold",
-    milestones: [
-      { id: 1, name: "White Sulphur Springs", miles: 0, location: "West Virginia", description: "Born August 26, 1918" },
-      { id: 2, name: "West Virginia State", miles: 8, location: "Institute, WV", description: "Graduated summa cum laude at 18" },
-      { id: 3, name: "NACA/NASA", miles: 15, location: "Hampton, Virginia", description: "Joined as a 'computer'" },
-      { id: 4, name: "Mercury Calculations", miles: 22, location: "Langley Research Center, Hampton, VA", description: "Verified John Glenn's orbital equations" },
-      { id: 5, name: "Apollo 11", miles: 30, location: "NASA Mission Control, Houston, TX", description: "Calculated trajectory to the Moon" },
-      { id: 6, name: "Presidential Medal", miles: 38, location: "White House", description: "Awarded Medal of Freedom in 2015" },
-    ],
-  },
-  toni: {
-    name: "Toni Morrison",
-    title: "Song of America",
-    totalMiles: 44,
-    daysToComplete: 48,
-    description: "Walk through the literary landscape of the Nobel Prize-winning author who transformed American literature.",
-    image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=400&h=300&fit=crop",
-    color: "cyan",
-    milestones: [
-      { id: 1, name: "Lorain", miles: 0, location: "Ohio", description: "Born February 18, 1931" },
-      { id: 2, name: "Howard University", miles: 9, location: "Washington D.C.", description: "Studied English and Classics" },
-      { id: 3, name: "Random House", miles: 18, location: "New York", description: "Became first Black female editor" },
-      { id: 4, name: "The Bluest Eye", miles: 27, location: "New York City, NY", description: "First novel released in 1970" },
-      { id: 5, name: "Beloved", miles: 36, location: "Columbia University, New York City", description: "Won Pulitzer Prize in 1988" },
-      { id: 6, name: "Nobel Prize", miles: 44, location: "Stockholm", description: "Awarded Nobel Prize in Literature 1993" },
-    ],
-  },
-  // Pride History Edition
-  pride: {
-    name: "March Through Pride History",
-    title: "Pride History Edition",
-    totalMiles: 50,
-    daysToComplete: 55,
-    description: "Walk through the landmarks of LGBTQ+ civil rights history. From Stonewall to marriage equality, each mile honors the activists who fought for freedom.",
-    image: "https://images.unsplash.com/photo-1620121692029-d088224ddc74?w=400&h=300&fit=crop",
-    color: "pride",
-    milestones: [
-      { id: 1, name: "Stonewall Inn", miles: 0, location: "New York City, NY", description: "June 28, 1969 - The Stonewall Uprising begins, sparking the modern LGBTQ+ rights movement" },
-      { id: 2, name: "First Pride March", miles: 10, location: "New York City, NY", description: "June 28, 1970 - The first Pride marches are held in NYC, LA, San Francisco, and Chicago" },
-      { id: 3, name: "Rainbow Flag Creation", miles: 20, location: "San Francisco, CA", description: "1978 - Gilbert Baker designs the original eight-color rainbow flag" },
-      { id: 4, name: "AIDS Memorial Quilt", miles: 30, location: "Washington D.C.", description: "1987 - The NAMES Project AIDS Memorial Quilt is first displayed on the National Mall" },
-      { id: 5, name: "Don't Ask Don't Tell Repeal", miles: 40, location: "Washington D.C.", description: "December 22, 2010 - President Obama signs the repeal of DADT into law" },
-      { id: 6, name: "Marriage Equality", miles: 50, location: "Washington D.C.", description: "June 26, 2015 - Supreme Court rules in Obergefell v. Hodges, legalizing same-sex marriage nationwide" },
-    ],
-  },
+// Map edition to color theme
+const getEditionColor = (edition: string): string => {
+  if (edition.toLowerCase().includes("pride")) return "pride";
+  // Alternate between gold and cyan for women's history
+  return "gold";
+};
+
+// Default days based on total miles
+const getDefaultDays = (totalMiles: number): number => {
+  return Math.ceil(totalMiles * 1.1); // Roughly 1 mile per day + 10%
 };
 
 const ChallengeRoute = () => {
   const { slug } = useParams<{ slug: string }>();
-  const challenge = slug ? challengeData[slug] : null;
-  
-  // Custom days state - initialize with default challenge days
+  const { data, isLoading, error } = useChallengeBySlug(slug);
+
+  // Transform database data to component format
+  const challenge = useMemo(() => {
+    if (!data) return null;
+    
+    const { challenge: dbChallenge, milestones: dbMilestones } = data;
+    
+    return {
+      id: dbChallenge.id,
+      name: dbChallenge.title,
+      title: dbChallenge.edition,
+      totalMiles: Number(dbChallenge.total_miles),
+      daysToComplete: getDefaultDays(Number(dbChallenge.total_miles)),
+      description: dbChallenge.description || "",
+      image: dbChallenge.image_url || "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400&h=300&fit=crop",
+      color: getEditionColor(dbChallenge.edition),
+      milestones: dbMilestones.map((m, index) => ({
+        id: index + 1,
+        name: m.stamp_title || m.title,
+        miles: Number(m.miles_required),
+        location: m.location_name || "",
+        description: m.stamp_copy || m.description || "",
+        stampImageUrl: m.stamp_image_url,
+      })),
+    };
+  }, [data]);
+
+  // Custom days state
   const defaultDays = challenge?.daysToComplete ?? 30;
-  const minDays = Math.ceil(defaultDays * 0.5); // 50% of default
-  const maxDays = Math.ceil(defaultDays * 2); // 200% of default
+  const minDays = Math.ceil(defaultDays * 0.5);
+  const maxDays = Math.ceil(defaultDays * 2);
   const [customDays, setCustomDays] = useState<number>(defaultDays);
+
+  // Update customDays when challenge loads
+  useMemo(() => {
+    if (challenge) {
+      setCustomDays(challenge.daysToComplete);
+    }
+  }, [challenge?.daysToComplete]);
 
   // Mock user progress - in real app this would come from database
   const userProgress = {
     milesLogged: 12.5,
-    daysRemaining: Math.max(0, customDays - 12), // Adjust based on custom days
+    daysRemaining: Math.max(0, customDays - 12),
     startedAt: "2025-01-10",
   };
 
-  if (!challenge) {
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+          <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+            <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+              <span>Back</span>
+            </Link>
+            <Skeleton className="h-6 w-32" />
+            <div className="w-20" />
+          </div>
+        </header>
+        <main className="pt-24 pb-12 px-4">
+          <div className="container mx-auto max-w-4xl">
+            <Skeleton className="h-64 rounded-2xl mb-8" />
+            <Skeleton className="h-48 rounded-xl mb-8" />
+            <Skeleton className="h-32 rounded-xl mb-8" />
+            <div className="space-y-8">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex gap-6">
+                  <Skeleton className="w-12 h-12 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-4 w-48" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Error or not found state
+  if (error || !challenge) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-foreground mb-4">Challenge Not Found</h1>
+          <p className="text-muted-foreground mb-6">
+            {error ? "There was an error loading this challenge." : "This challenge doesn't exist yet."}
+          </p>
           <Link to="/">
             <Button>Return Home</Button>
           </Link>
@@ -269,6 +166,7 @@ const ChallengeRoute = () => {
   const progressPercent = (userProgress.milesLogged / challenge.totalMiles) * 100;
   const unlockedMilestones = challenge.milestones.filter(m => userProgress.milesLogged >= m.miles);
   const colors = getColorStyles(challenge.color);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -279,7 +177,7 @@ const ChallengeRoute = () => {
             <span>Back</span>
           </Link>
           <h1 className="text-lg font-semibold text-foreground">{challenge.name}</h1>
-          <div className="w-20" /> {/* Spacer for centering */}
+          <div className="w-20" />
         </div>
       </header>
 
@@ -295,7 +193,6 @@ const ChallengeRoute = () => {
             />
             
             <div className="relative z-20 p-6 md:p-10">
-              {/* Rainbow accent bar for pride */}
               {challenge.color === "pride" && (
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500" />
               )}
@@ -418,16 +315,13 @@ const ChallengeRoute = () => {
             <h3 className="text-lg font-semibold text-foreground mb-6">Virtual Route</h3>
             
             <div className="relative">
-              {/* Route Line */}
               <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border" />
               
-              {/* Progress Fill */}
               <div 
                 className={cn("absolute left-6 top-0 w-0.5 transition-all duration-1000", colors.routeLine)}
                 style={{ height: `${progressPercent}%` }}
               />
 
-              {/* Milestones */}
               <div className="space-y-8">
                 {challenge.milestones.map((milestone, index) => {
                   const isUnlocked = userProgress.milesLogged >= milestone.miles;
@@ -435,7 +329,6 @@ const ChallengeRoute = () => {
                   
                   return (
                     <div key={milestone.id} className="relative flex items-start gap-6">
-                      {/* Milestone Marker */}
                       <div className={cn(
                         "relative z-10 w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all",
                         isUnlocked 
@@ -451,7 +344,6 @@ const ChallengeRoute = () => {
                         )}
                       </div>
 
-                      {/* Milestone Content */}
                       <div className={cn(
                         "flex-1 pb-2",
                         !isUnlocked && "opacity-50"
