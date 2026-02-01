@@ -380,14 +380,23 @@ const ChallengeRoute = () => {
             />
           </div>
 
-          {/* Action Button */}
-          <div className="mt-8 text-center">
+          {/* Action Buttons */}
+          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/auth?mode=signup">
               <Button 
                 size="lg" 
                 className={cn("text-lg px-8 py-6", colors.button)}
               >
                 Start This Challenge
+              </Button>
+            </Link>
+            <Link to={`/challenge/${slug}/passport`}>
+              <Button 
+                size="lg" 
+                variant="outline"
+                className="text-lg px-8 py-6"
+              >
+                View Passport
               </Button>
             </Link>
           </div>
