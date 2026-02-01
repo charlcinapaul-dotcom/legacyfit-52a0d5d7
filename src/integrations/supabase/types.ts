@@ -212,7 +212,10 @@ export type Database = {
           longitude: number | null
           miles_required: number
           order_index: number
+          stamp_copy: string | null
           stamp_image_url: string | null
+          stamp_mileage_display: string | null
+          stamp_title: string | null
           title: string
         }
         Insert: {
@@ -226,7 +229,10 @@ export type Database = {
           longitude?: number | null
           miles_required: number
           order_index: number
+          stamp_copy?: string | null
           stamp_image_url?: string | null
+          stamp_mileage_display?: string | null
+          stamp_title?: string | null
           title: string
         }
         Update: {
@@ -240,7 +246,10 @@ export type Database = {
           longitude?: number | null
           miles_required?: number
           order_index?: number
+          stamp_copy?: string | null
           stamp_image_url?: string | null
+          stamp_mileage_display?: string | null
+          stamp_title?: string | null
           title?: string
         }
         Relationships: [
@@ -249,6 +258,35 @@ export type Database = {
             columns: ["challenge_id"]
             isOneToOne: false
             referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      passport_stamp_images: {
+        Row: {
+          generated_at: string | null
+          id: string
+          image_url: string
+          milestone_id: string | null
+        }
+        Insert: {
+          generated_at?: string | null
+          id?: string
+          image_url: string
+          milestone_id?: string | null
+        }
+        Update: {
+          generated_at?: string | null
+          id?: string
+          image_url?: string
+          milestone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passport_stamp_images_milestone_id_fkey"
+            columns: ["milestone_id"]
+            isOneToOne: true
+            referencedRelation: "milestones"
             referencedColumns: ["id"]
           },
         ]
