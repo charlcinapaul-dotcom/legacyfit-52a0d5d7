@@ -1,121 +1,102 @@
 
-# Complete Payment, Referral & Challenge Images System
+
+# Updated Plan: Passport Checkpoint Map + Landing Page Preview
 
 ## Overview
-Implement a complete payment flow with referral discounts and generate unique challenge images for all 10 journeys.
+Implement the interactive map feature for the Challenge Passport AND add a visual preview/illustration to the Landing page "Unlock Milestones" section.
 
-## Part 1: Payment Flow
-
-### When Payment is Triggered
-The payment prompt will appear when a user clicks "Start This Challenge" on any challenge page. The flow will be:
-
-1. User clicks "Start This Challenge"
-2. If not logged in → Redirect to auth, then back to challenge
-3. If logged in → Check if already enrolled
-4. If not enrolled → Show payment modal with Stripe Checkout
-5. After successful payment → Create user_challenges record with payment_status = 'paid'
-
-### Technical Implementation
-- Create `create-checkout-session` edge function for Stripe
-- Create `stripe-webhook` edge function to handle payment confirmation
-- Add payment modal component
-- Update ChallengeRoute to check enrollment status
-- Gate MileLogger behind payment_status = 'paid'
-
-## Part 2: Referral Discount System
-
-### How It Works
-1. When a user completes payment, they get a unique referral code
-2. They can share this code with friends
-3. New users entering the code at checkout get a discount (e.g., 20% off)
-4. Referrer earns credits or discount on future purchases
-
-### Database Changes
-```text
-referral_codes table:
-- id, user_id, code (unique), uses_count, max_uses, discount_percent, created_at
-
-referral_redemptions table:
-- id, code_id, redeemed_by, challenge_id, discount_applied, created_at
-```
-
-### Implementation
-- Generate referral code after first payment
-- Add referral code input to checkout flow
-- Create Stripe coupon/promotion codes via API
-- Track redemptions in database
-
-## Part 3: Challenge Images
-
-### Approach
-Generate AI images for each challenge that visually represent the theme:
-
-| Challenge | Image Theme |
-|-----------|-------------|
-| Eleanor Roosevelt | UN building, human rights symbols, diplomatic setting |
-| Fannie Lou Hamer | Mississippi delta, voting rights march, civil rights era |
-| Ida B. Wells | Journalism, anti-lynching activism, newspaper printing |
-| Katherine Johnson | NASA, space, mathematical equations, rockets |
-| Malala Yousafzai | Education, books, Pakistani landscape, advocacy |
-| Maya Angelou | Poetry, literature, stage performance, artistic expression |
-| Pride History | Rainbow colors, Stonewall, LGBTQ+ activism symbols |
-| Sojourner Truth | Freedom trail, abolitionist era, powerful speech imagery |
-| Toni Morrison | Books, literary awards, Princeton university setting |
-| Wilma Rudolph | Olympic track, gold medals, 1960 Rome Olympics |
-
-### Implementation
-- Create edge function to generate challenge cover images
-- Store in Supabase storage bucket
-- Update challenges.image_url in database
-
-## Part 4: Share/Invite Enhancements
+## Part 1: Landing Page Enhancement
 
 ### Current State
-- Basic Web Share API for stamps exists
-- Teams have invite codes (unused)
+The "Unlock Milestones" card in "How It Works" shows:
+- MapPin icon
+- Static text description
 
-### Enhancements
-- Add "Invite Friends" button on Dashboard with referral code
-- Show referral stats (how many signups, credits earned)
-- Deep link support: `/invite/CODE` that pre-fills checkout discount
+### Enhancement
+Add a mini-map preview or animated illustration showing:
+- A stylized map with sample pins
+- Route line connecting locations
+- Visual demonstration of the unlock experience
+
+### Implementation Options
+
+**Option A: Static Illustration**
+- Add a decorative SVG/image showing a stylized map with pins
+- Simpler, faster to implement
+
+**Option B: Interactive Mini-Map**
+- Small Leaflet map with sample milestone locations
+- Hover animations showing lock/unlock states
+- More engaging but heavier
+
+**Recommended: Option A** - Static illustration for the landing page keeps it lightweight while the full interactive experience lives in the actual Passport Checkpoint tab.
+
+## Part 2: Passport Checkpoint (Full Feature)
+
+### Tabbed Interface in ChallengePassport
+Two tabs:
+1. **Journey Stamps** - Existing stamp grid
+2. **Passport Checkpoint** - Interactive map
+
+### Map Features
+- World map centered on challenge locations
+- Pin markers for each of 6 milestones
+- Unlocked pins: Amber/gold with checkmark
+- Locked pins: Gray with lock icon
+- Route line: Solid for completed, dashed for upcoming
+- Click pin to view milestone details
+
+## Technical Implementation
+
+### Dependencies
+- `leaflet` - Core map library (free, open-source)
+- `react-leaflet` - React wrapper
+
+### Database Update
+Populate latitude/longitude for all 60 milestones using geocoding edge function.
+
+### Files to Create
+
+| File | Purpose |
+|------|---------|
+| `src/components/PassportCheckpointMap.tsx` | Full interactive Leaflet map |
+| `src/components/MilestoneMarker.tsx` | Custom pin markers |
+| `src/components/MapPreview.tsx` | Stylized SVG illustration for landing |
+| `supabase/functions/geocode-milestones/index.ts` | Populate coordinates |
+
+### Files to Modify
+
+| File | Changes |
+|------|---------|
+| `src/pages/Landing.tsx` | Add MapPreview to "Unlock Milestones" card |
+| `src/pages/ChallengePassport.tsx` | Add Tabs with map view |
+| `src/hooks/usePassportStamps.ts` | Include lat/lng in data |
+| `src/index.css` | Add Leaflet CSS |
+| `package.json` | Add leaflet dependencies |
 
 ## Implementation Order
 
-### Phase 1: Enable Stripe (Required First)
-- Enable Stripe integration via Lovable
-- Set challenge prices in database
+1. Install Leaflet dependencies
+2. Create geocode-milestones edge function
+3. Run geocoding to populate coordinates
+4. Create PassportCheckpointMap component
+5. Create MilestoneMarker component
+6. Update ChallengePassport with tabs
+7. Create MapPreview illustration component
+8. Add MapPreview to Landing page
+9. Add Leaflet CSS styles
+10. Test and refine
 
-### Phase 2: Payment Flow
-- Create checkout edge functions
-- Add payment modal to ChallengeRoute
-- Gate challenge access behind payment
+## Credit Considerations
 
-### Phase 3: Referral System
-- Create referral tables
-- Generate codes post-payment
-- Integrate with Stripe coupons
+Credit consumption cannot be accurately estimated as it depends on:
+- Number of iterations needed
+- Debugging complexity
+- Edge function testing cycles
 
-### Phase 4: Challenge Images
-- Generate 10 unique AI images
-- Upload to storage
-- Update database
+Each chat message = 1 credit. The implementation likely requires multiple messages for:
+- Creating components
+- Database updates
+- Testing and debugging
+- Refinements
 
-## Files to Create/Modify
-
-### New Files
-- `supabase/functions/create-checkout-session/index.ts`
-- `supabase/functions/stripe-webhook/index.ts`
-- `src/components/PaymentModal.tsx`
-- `src/components/ReferralShare.tsx`
-- `src/hooks/useUserChallengeAccess.ts`
-- `supabase/functions/generate-challenge-images/index.ts`
-
-### Modified Files
-- `src/pages/ChallengeRoute.tsx` - Add payment check
-- `src/pages/ChallengePassport.tsx` - Gate behind payment
-- `src/pages/Dashboard.tsx` - Add referral section
-
-### Database Migrations
-- Add referral_codes table
-- Add referral_redemptions table
-- Set price_cents for all challenges
