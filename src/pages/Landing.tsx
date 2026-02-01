@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ChevronRight, MapPin, Award, Users, BookOpen, Footprints } from "lucide-react";
 import legacyfitLogo from "@/assets/legacyfit-logo.png";
+import { MapPreview } from "@/components/MapPreview";
 
 const Landing = () => {
   return (
@@ -103,16 +104,19 @@ const Landing = () => {
                 icon: Footprints,
                 title: "Log Your Miles",
                 description: "Track your walking, running, or jogging miles manually or sync with Apple Health and Google Fit.",
+                preview: null,
               },
               {
                 icon: MapPin,
                 title: "Unlock Milestones",
                 description: "As you progress, unlock historical milestones and see them appear on your virtual map.",
+                preview: <MapPreview />,
               },
               {
                 icon: Award,
                 title: "Earn Your Legacy",
                 description: "Collect digital passport stamps and earn exclusive legacy coins - both digital and physical.",
+                preview: null,
               },
             ].map((step, i) => (
               <div
@@ -126,7 +130,12 @@ const Landing = () => {
                   <step.icon className="w-7 h-7 text-primary" />
                 </div>
                 <h3 className="text-xl font-semibold text-foreground mb-3">{step.title}</h3>
-                <p className="text-muted-foreground">{step.description}</p>
+                <p className="text-muted-foreground mb-4">{step.description}</p>
+                {step.preview && (
+                  <div className="mt-4">
+                    {step.preview}
+                  </div>
+                )}
               </div>
             ))}
           </div>

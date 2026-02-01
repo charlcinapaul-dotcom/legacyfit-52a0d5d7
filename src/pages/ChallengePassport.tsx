@@ -1,10 +1,12 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Book } from "lucide-react";
+import { ArrowLeft, Book, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PassportStamp } from "@/components/PassportStamp";
+import { PassportCheckpointMap } from "@/components/PassportCheckpointMap";
 import { MileLogger } from "@/components/MileLogger";
 import { usePassportStamps, type StampWithMilestone } from "@/hooks/usePassportStamps";
 import { useChallengeBySlug } from "@/hooks/useChallengeBySlug";
@@ -109,32 +111,53 @@ export default function ChallengePassport() {
           </div>
         )}
 
-        {/* Stamps grid */}
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <span className="text-amber-500">📜</span>
-            Journey Stamps
-          </h2>
-        </div>
+        {/* Tabbed content */}
+        <Tabs defaultValue="stamps" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="stamps" className="flex items-center gap-2">
+              <span className="text-amber-500">📜</span>
+              Journey Stamps
+            </TabsTrigger>
+            <TabsTrigger value="checkpoint" className="flex items-center gap-2">
+              <Map className="w-4 h-4" />
+              Passport Checkpoint
+            </TabsTrigger>
+          </TabsList>
 
-        {stamps.length === 0 ? (
-          <Card className="text-center py-12">
-            <CardContent>
-              <Book className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No stamps available yet.</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-            {stamps.map((stamp) => (
-              <PassportStamp
-                key={stamp.id}
-                stamp={stamp}
-                onClick={() => setSelectedStamp(stamp)}
+          <TabsContent value="stamps">
+            {stamps.length === 0 ? (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <Book className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">No stamps available yet.</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                {stamps.map((stamp) => (
+                  <PassportStamp
+                    key={stamp.id}
+                    stamp={stamp}
+                    onClick={() => setSelectedStamp(stamp)}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="checkpoint">
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Track your journey across the map. Unlocked milestones appear in gold, 
+                with route lines connecting your progress.
+              </p>
+              <PassportCheckpointMap
+                stamps={stamps}
+                onMilestoneClick={setSelectedStamp}
               />
-            ))}
-          </div>
-        )}
+            </div>
+          </TabsContent>
+        </Tabs>
 
         {/* Back to challenge link */}
         <div className="mt-8 text-center">
