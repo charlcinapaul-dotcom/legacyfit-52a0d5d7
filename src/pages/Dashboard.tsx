@@ -244,7 +244,10 @@ const Dashboard = () => {
 
         {/* Quick Actions */}
         <div className="grid sm:grid-cols-3 gap-4">
-          <Card className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer">
+          <Card 
+            className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer"
+            onClick={() => navigate("/passport")}
+          >
             <CardContent className="p-6 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                 <Award className="w-6 h-6 text-primary" />

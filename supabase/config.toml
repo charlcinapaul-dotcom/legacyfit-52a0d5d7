@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.send-stamp-email]
 verify_jwt = false
+
+[functions.generate-all-stamps]
+verify_jwt = false
