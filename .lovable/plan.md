@@ -1,230 +1,56 @@
-# Digital Passport Stamps - Implementation Complete ✅
 
-## Status: IMPLEMENTED
-
-### Completed Items:
-- ✅ Database: `passport_stamp_images` table + `stamp_title`, `stamp_copy`, `stamp_mileage_display` columns on `milestones`
-- ✅ Edge Functions: `check-milestone-unlocks`, `generate-stamp-image`, `send-stamp-email`
-- ✅ UI Components: `Passport.tsx`, `PassportStamp.tsx`, `StampUnlockModal.tsx`, `MileLogger.tsx`
-- ✅ Hooks: `usePassportStamps.ts`, `useMileLogging.ts`
-- ✅ Route: `/passport`
-
-### Pending:
-- ⏳ RESEND_API_KEY secret (for email delivery - emails will be skipped until configured)
-- ⏳ Seed milestone data with stamp content for Toni Morrison challenge
+# Seed Malala Yousafzai and Maya Angelou Challenge Milestones
 
 ## Overview
-Build a complete Digital Passport system with AI-generated unique passport-style stamps that unlock automatically at mileage milestones. Includes a Passport view page, milestone unlock logic, email delivery, and in-app animations.
+Add two new challenges with their complete milestone data, then generate unique AI stamp images for each milestone using the existing `generate-stamp-image` edge function.
 
-## Database Changes
+## Current State
+- Database has 1 challenge: "Toni Morrison Literary Journey" (44 miles, 6 milestones with generated stamps)
+- Need to add: Malala Yousafzai Journey (26.2 miles) and Maya Angelou Journey (31+ miles)
 
-### 1. Update `milestones` Table
-Add stamp metadata fields to existing milestones table:
-```sql
-ALTER TABLE milestones ADD COLUMN stamp_title VARCHAR(100);
-ALTER TABLE milestones ADD COLUMN stamp_copy TEXT;
-ALTER TABLE milestones ADD COLUMN stamp_mileage_display VARCHAR(20);
-```
+## Implementation Steps
 
-### 2. Create `passport_stamp_images` Table
-Store AI-generated stamp images:
-```sql
-CREATE TABLE passport_stamp_images (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  milestone_id UUID REFERENCES milestones(id) ON DELETE CASCADE,
-  image_url TEXT NOT NULL,
-  generated_at TIMESTAMPTZ DEFAULT now(),
-  UNIQUE(milestone_id)
-);
-```
+### Step 1: Create Challenges
+Insert two new challenge records:
 
-### 3. Enable RLS Policies
-- `passport_stamp_images`: Read-only for authenticated users
-- `user_passport_stamps`: Users can only read their own stamps
+| Challenge | Total Miles | Edition |
+|-----------|-------------|---------|
+| Malala Yousafzai Journey | 26 | 2026 |
+| Maya Angelou Journey | 31 | 2026 |
 
----
+### Step 2: Insert Malala Yousafzai Milestones (6 stamps)
 
-## Components to Create
+| Miles | Stamp Title | Location | Stamp Copy |
+|-------|-------------|----------|------------|
+| 1 | Mingora | Mingora, Pakistan | Starting Point - Where Malala's journey began |
+| 5 | Swat Valley | Swat Valley, Pakistan | First School - Her first steps into education |
+| 10 | Blog Begins | BBC Urdu | BBC Urdu Blog - Speaking truth through words |
+| 15 | Recovery | Birmingham, UK | Renewed Strength - Courage through recovery |
+| 20 | United Nations | New York City | Addressed the UN - Education for every child |
+| 26 | Nobel Peace Prize | Oslo, Norway | Youngest Nobel Laureate - Peace through education |
 
-### 1. Passport Page (`src/pages/Passport.tsx`)
-Main passport view displaying all earned stamps in a passport book aesthetic:
-- Gold/leather-textured background
-- Grid of stamp slots (locked vs unlocked states)
-- Filter by challenge/edition
-- Stamp details modal on click
-- Progress indicator showing stamps earned vs total
+### Step 3: Insert Maya Angelou Milestones (6 stamps)
 
-### 2. Stamp Component (`src/components/PassportStamp.tsx`)
-Individual stamp display component:
-- Locked state: Grayscale silhouette with "?" and required miles
-- Unlocked state: Full-color AI-generated stamp with animation
-- Click to view details modal
+| Miles | Stamp Title | Location | Stamp Copy |
+|-------|-------------|----------|------------|
+| 1 | St. Louis, Missouri | St. Louis, Missouri | Birthplace - The beginning of a powerful voice |
+| 6 | Public Voice | San Francisco, CA | Poet & Performer - Words that demanded to be heard |
+| 12 | Broadway | New York City | Artist & Performer - Owning her presence |
+| 18 | I Know Why the Caged Bird Sings | New York City | Bestselling Author - Truth told without fear |
+| 24 | Civil Rights | Atlanta, Georgia | Movement Leader - Using voice for justice |
+| 31 | Presidential Medal of Freedom | Washington, D.C. | Highest Civilian Honor - A life of impact and grace |
 
-### 3. Stamp Unlock Modal (`src/components/StampUnlockModal.tsx`)
-Celebratory modal when stamp is earned:
-- Animated stamp "thunk" effect
-- Stamp image with glow
-- Milestone name + mileage achieved
-- "You're building your LegacyFit legacy" message
-- Share button option
+### Step 4: Generate AI Stamp Images
+Call the `generate-stamp-image` edge function for all 12 new milestones to create unique vintage passport-style stamp artwork.
 
-### 4. Mile Logging Component (`src/components/MileLogger.tsx`)
-Quick mile entry with presets:
-- Quick buttons: 1, 3, 5, 10 miles
-- Custom entry slider/input
-- Activity type selector (walk, run, jog)
-- Notes field
-- On submit: Triggers stamp unlock check
+## Technical Details
+- Uses existing `generate-stamp-image` edge function with Lovable AI (google/gemini-2.5-flash-image)
+- Each stamp will be stored as base64 PNG in `stamp_image_url` column
+- Stamps feature vintage passport aesthetic with milestone title, location, and mileage
 
----
-
-## Edge Functions
-
-### 1. `generate-stamp-image` Function
-Generate unique passport-style stamps using AI:
-```typescript
-// Uses Lovable AI (google/gemini-2.5-flash-image) 
-// Prompt includes: vintage passport stamp aesthetic, 
-// transparent background, milestone name, mileage, 
-// LegacyFit branding
-```
-
-**Stamp Design Specs:**
-- Style: Vintage passport/travel stamp
-- Elements: Circular or rectangular worn edges, postal marks
-- Content: Milestone title, location, mileage number, LegacyFit branding
-- Format: PNG with transparency
-
-### 2. `check-milestone-unlocks` Function
-Called after mile logging to check for new unlocks:
-```typescript
-// 1. Get user's total miles for challenge
-// 2. Get all milestones for challenge
-// 3. Find milestones where miles_required <= user_total_miles
-// 4. Check which haven't been unlocked yet
-// 5. Insert new records into user_passport_stamps
-// 6. Return list of newly unlocked stamps
-```
-
-### 3. `send-stamp-email` Function
-Send congratulatory email with stamp image:
-```typescript
-// Uses Resend API
-// Subject: "You Earned a LegacyFit Passport Stamp!"
-// Body: Stamp image, milestone name, mileage, encouragement
-```
-
-**Note:** Will need RESEND_API_KEY secret configured.
-
----
-
-## Toni Morrison Stamp Data
-
-| Mile | Stamp Title | Stamp Copy | Location |
-|------|-------------|------------|----------|
-| 0 (unlocks at 1) | Lorain, Ohio | Birthplace - Where a literary giant began | Ohio |
-| 9 | Howard University | English & Classics - Finding her literary voice | Washington D.C. |
-| 18 | Random House | First Black Female Editor - Changing the publishing world | New York |
-| 27 | The Bluest Eye | First Novel Published - A new voice in literature | New York City, NY |
-| 36 | Beloved | Pulitzer Prize Winner - Storytelling that reshaped history | Columbia University, NYC |
-| 44 | Nobel Prize | Nobel Laureate - A legacy written in truth | Stockholm |
-
----
-
-## Implementation Flow
-
-```text
-User logs miles
-       |
-       v
-+------------------+
-| Mile Entry Saved |
-| to mile_entries  |
-+------------------+
-       |
-       v
-+------------------------+
-| check-milestone-unlocks |
-| Edge Function called   |
-+------------------------+
-       |
-       v
-+-------------------+     +--------------------+
-| New stamps found? |---->| Insert into        |
-| Yes               |     | user_passport_stamps|
-+-------------------+     +--------------------+
-       |                          |
-       v                          v
-+------------------+    +-------------------+
-| Return unlocked  |    | send-stamp-email  |
-| stamps to client |    | for each stamp    |
-+------------------+    +-------------------+
-       |
-       v
-+--------------------+
-| Show StampUnlock   |
-| Modal + toast      |
-+--------------------+
-```
-
----
-
-## File Structure
-
-```
-src/
-  pages/
-    Passport.tsx (NEW)
-  components/
-    PassportStamp.tsx (NEW)
-    StampUnlockModal.tsx (NEW)
-    MileLogger.tsx (NEW)
-  hooks/
-    usePassportStamps.ts (NEW)
-    useMileLogging.ts (NEW)
-  lib/
-    stamp-utils.ts (NEW)
-
-supabase/functions/
-  generate-stamp-image/index.ts (NEW)
-  check-milestone-unlocks/index.ts (NEW)
-  send-stamp-email/index.ts (NEW)
-```
-
----
-
-## Route Addition
-
-Add to `src/App.tsx`:
-```tsx
-<Route path="/passport" element={<Passport />} />
-```
-
----
-
-## Technical Notes
-
-### AI Image Generation
-Using Lovable AI's `google/gemini-2.5-flash-image` model:
-- No additional API key required
-- Generates unique vintage passport stamp images
-- Each stamp will be visually distinct based on milestone content
-- Prompt engineering for consistent style across all stamps
-
-### Retroactive Unlock Logic
-When a user logs multiple miles at once (e.g., logs 10 miles when stamps exist at 1, 5, and 10):
-- Query all milestones with `miles_required <= new_total_miles`
-- Filter out already-unlocked stamps
-- Unlock all applicable stamps in single transaction
-- Send email for each newly unlocked stamp
-
-### Email Delivery Requirements
-- Will require RESEND_API_KEY secret to be configured
-- User must have verified email domain on Resend
-- Email includes embedded stamp image, milestone details, and branding
-
----
-
-## Dependencies
-- Existing: Supabase client, sonner (toasts), lucide-react
-- New secret needed: RESEND_API_KEY (for email delivery)
+## Summary
+- 2 new challenges created
+- 12 new milestones inserted with exact copy provided
+- 12 AI-generated stamp images produced
+- Total challenges after completion: 3
+- Total milestones after completion: 18
