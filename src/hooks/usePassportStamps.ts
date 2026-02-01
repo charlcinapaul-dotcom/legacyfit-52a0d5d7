@@ -14,6 +14,8 @@ export interface Milestone {
   historical_event: string | null;
   order_index: number;
   challenge_id: string;
+  latitude: number | null;
+  longitude: number | null;
 }
 
 export interface UserStamp {
