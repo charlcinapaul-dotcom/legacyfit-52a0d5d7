@@ -7,6 +7,7 @@ import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import ChallengeRoute from "./pages/ChallengeRoute";
+import Passport from "./pages/Passport";
 import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/challenge/:slug" element={<ChallengeRoute />} />
+          <Route path="/passport" element={<Passport />} />
           <Route path="/legal" element={<Legal />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

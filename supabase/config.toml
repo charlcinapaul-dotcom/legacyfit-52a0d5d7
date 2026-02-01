@@ -1,1 +1,10 @@
 project_id = "utfexhdncajccdpvquky"
+
+[functions.check-milestone-unlocks]
+verify_jwt = false
+
+[functions.generate-stamp-image]
+verify_jwt = false
+
+[functions.send-stamp-email]
+verify_jwt = false
