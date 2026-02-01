@@ -23,6 +23,7 @@ export type Database = {
           image_url: string | null
           is_active: boolean | null
           price_cents: number | null
+          slug: string | null
           stripe_price_id: string | null
           stripe_product_id: string | null
           title: string
@@ -37,6 +38,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean | null
           price_cents?: number | null
+          slug?: string | null
           stripe_price_id?: string | null
           stripe_product_id?: string | null
           title: string
@@ -51,6 +53,7 @@ export type Database = {
           image_url?: string | null
           is_active?: boolean | null
           price_cents?: number | null
+          slug?: string | null
           stripe_price_id?: string | null
           stripe_product_id?: string | null
           title?: string
