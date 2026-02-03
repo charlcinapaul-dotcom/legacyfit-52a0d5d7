@@ -13,7 +13,8 @@ import {
   Plus, 
   TrendingUp,
   Target,
-  Loader2
+  Loader2,
+  ChevronRight
 } from "lucide-react";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -25,11 +26,24 @@ interface Profile {
   total_miles: number;
 }
 
+interface UserChallenge {
+  id: string;
+  miles_logged: number | null;
+  challenge: {
+    id: string;
+    title: string;
+    slug: string | null;
+    total_miles: number;
+    image_url: string | null;
+  };
+}
+
 const Dashboard = () => {
   const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [userChallenges, setUserChallenges] = useState<UserChallenge[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,6 +60,7 @@ const Dashboard = () => {
       if (session?.user) {
         setTimeout(() => {
           fetchProfile(session.user.id);
+          fetchUserChallenges(session.user.id);
         }, 0);
       }
     });
@@ -59,6 +74,7 @@ const Dashboard = () => {
         navigate("/auth");
       } else {
         fetchProfile(session.user.id);
+        fetchUserChallenges(session.user.id);
       }
     });
 
@@ -82,6 +98,33 @@ const Dashboard = () => {
       console.error("Error:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchUserChallenges = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("user_challenges")
+        .select(`
+          id,
+          miles_logged,
+          challenge:challenges (
+            id,
+            title,
+            slug,
+            total_miles,
+            image_url
+          )
+        `)
+        .eq("user_id", userId);
+
+      if (error) {
+        console.error("Error fetching user challenges:", error);
+      } else if (data) {
+        setUserChallenges(data as unknown as UserChallenge[]);
+      }
+    } catch (err) {
+      console.error("Error:", err);
     }
   };
 
@@ -212,7 +255,13 @@ const Dashboard = () => {
             </div>
             <Button 
               className="bg-primary text-primary-foreground hover:bg-primary/90 glow-gold"
-              onClick={() => navigate("/#challenges")}
+              onClick={() => {
+                if (userChallenges.length > 0 && userChallenges[0].challenge?.slug) {
+                  navigate(`/challenge/${userChallenges[0].challenge.slug}`);
+                } else {
+                  navigate("/#challenges");
+                }
+              }}
             >
               <Plus className="w-4 h-4 mr-2" />
               Log Miles
@@ -229,23 +278,68 @@ const Dashboard = () => {
             </Button>
           </div>
 
-          <Card className="bg-card border-border border-dashed">
-            <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
-                <MapPin className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-medium text-foreground mb-2">No Active Challenges</h3>
-              <p className="text-muted-foreground mb-4">
-                Join a challenge to start your journey through history
-              </p>
-              <Button 
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
-                onClick={() => navigate("/#challenges")}
-              >
-                Explore Challenges
-              </Button>
-            </CardContent>
-          </Card>
+          {userChallenges.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              {userChallenges.map((uc) => (
+                <Card 
+                  key={uc.id} 
+                  className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer"
+                  onClick={() => navigate(`/challenge/${uc.challenge?.slug}`)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      <div className="w-16 h-16 rounded-lg bg-secondary overflow-hidden flex-shrink-0">
+                        {uc.challenge?.image_url ? (
+                          <img 
+                            src={uc.challenge.image_url} 
+                            alt={uc.challenge.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <MapPin className="w-6 h-6 text-muted-foreground" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-foreground truncate">{uc.challenge?.title}</h3>
+                        <p className="text-sm text-muted-foreground">
+                          {uc.miles_logged || 0} / {uc.challenge?.total_miles} miles
+                        </p>
+                        <div className="mt-2 h-2 bg-secondary rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-primary rounded-full transition-all"
+                            style={{ 
+                              width: `${Math.min(100, ((uc.miles_logged || 0) / (uc.challenge?.total_miles || 1)) * 100)}%` 
+                            }}
+                          />
+                        </div>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card className="bg-card border-border border-dashed">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
+                  <MapPin className="w-8 h-8 text-muted-foreground" />
+                </div>
+                <h3 className="text-lg font-medium text-foreground mb-2">No Active Challenges</h3>
+                <p className="text-muted-foreground mb-4">
+                  Join a challenge to start your journey through history
+                </p>
+                <Button 
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  onClick={() => navigate("/#challenges")}
+                >
+                  Explore Challenges
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Quick Actions */}

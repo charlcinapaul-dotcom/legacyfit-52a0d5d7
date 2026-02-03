@@ -98,6 +98,7 @@ const Landing = () => {
             </p>
           </div>
 
+
           <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {[
               {
@@ -105,23 +106,27 @@ const Landing = () => {
                 title: "Log Your Miles",
                 description: "Track your walking, running, or jogging miles manually or sync with Apple Health and Google Fit.",
                 preview: null,
+                link: "/auth?mode=signup",
               },
               {
                 icon: MapPin,
                 title: "Unlock Milestones",
                 description: "As you progress, unlock historical milestones and see them appear on your virtual map.",
                 preview: <MapPreview />,
+                link: "/auth?mode=signup",
               },
               {
                 icon: Award,
                 title: "Earn Your Legacy",
                 description: "Collect digital passport stamps and earn exclusive legacy coins - both digital and physical.",
                 preview: null,
+                link: "/auth?mode=signup",
               },
             ].map((step, i) => (
-              <div
+              <Link
                 key={i}
-                className="relative p-8 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors group"
+                to={step.link}
+                className="relative p-8 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors group cursor-pointer block"
               >
                 <div className="absolute -top-4 -left-4 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
                   {i + 1}
@@ -136,7 +141,7 @@ const Landing = () => {
                     {step.preview}
                   </div>
                 )}
-              </div>
+              </Link>
             ))}
           </div>
         </div>
