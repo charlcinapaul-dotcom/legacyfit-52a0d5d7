@@ -1,7 +1,5 @@
 import { Marker, Popup } from "react-leaflet";
 import L from "leaflet";
-import { MapPin, Lock, Check } from "lucide-react";
-import { renderToStaticMarkup } from "react-dom/server";
 import type { StampWithMilestone } from "@/hooks/usePassportStamps";
 
 interface MilestoneMarkerProps {
@@ -11,15 +9,6 @@ interface MilestoneMarkerProps {
 
 // Create custom icon for unlocked milestone
 const createUnlockedIcon = () => {
-  const iconHtml = renderToStaticMarkup(
-    <div className="relative flex items-center justify-center">
-      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-lg border-2 border-amber-300">
-        <Check className="w-5 h-5 text-amber-950" />
-      </div>
-      <div className="absolute -bottom-1 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-amber-500" />
-    </div>
-  );
-
   return L.divIcon({
     html: `<div style="display: flex; flex-direction: column; align-items: center;">
       <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #fbbf24, #d97706); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4); border: 2px solid #fcd34d;">
