@@ -143,7 +143,7 @@ const Landing = () => {
       </section>
 
       {/* Featured Challenge */}
-      <section className="py-20 px-4">
+      <section id="challenges" className="py-20 px-4 scroll-mt-20">
         <div className="container mx-auto">
           <div className="max-w-5xl mx-auto">
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary via-card to-secondary border border-border p-8 md:p-12">

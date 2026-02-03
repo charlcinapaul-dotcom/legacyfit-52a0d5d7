@@ -210,7 +210,10 @@ const Dashboard = () => {
               <h3 className="text-xl font-semibold text-foreground mb-1">Log Your Miles</h3>
               <p className="text-muted-foreground">Track your progress and unlock new milestones</p>
             </div>
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90 glow-gold">
+            <Button 
+              className="bg-primary text-primary-foreground hover:bg-primary/90 glow-gold"
+              onClick={() => navigate("/#challenges")}
+            >
               <Plus className="w-4 h-4 mr-2" />
               Log Miles
             </Button>
@@ -221,7 +224,7 @@ const Dashboard = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-foreground">Your Challenges</h2>
-            <Button variant="ghost" className="text-primary">
+            <Button variant="ghost" className="text-primary" onClick={() => navigate("/#challenges")}>
               Browse All
             </Button>
           </div>
@@ -235,7 +238,10 @@ const Dashboard = () => {
               <p className="text-muted-foreground mb-4">
                 Join a challenge to start your journey through history
               </p>
-              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Button 
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                onClick={() => navigate("/#challenges")}
+              >
                 Explore Challenges
               </Button>
             </CardContent>
