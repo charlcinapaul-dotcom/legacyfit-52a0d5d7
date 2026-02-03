@@ -1,102 +1,84 @@
 
 
-# Updated Plan: Passport Checkpoint Map + Landing Page Preview
+# Plan: Generate Unique Challenge Cover Images
 
-## Overview
-Implement the interactive map feature for the Challenge Passport AND add a visual preview/illustration to the Landing page "Unlock Milestones" section.
+## Problem
+All 10 challenges display the same fallback image because `image_url` is NULL in the database:
 
-## Part 1: Landing Page Enhancement
+| Challenge | Current image_url |
+|-----------|-------------------|
+| Malala Yousafzai Journey | NULL |
+| Maya Angelou Journey | NULL |
+| Katherine Johnson Space Journey | NULL |
+| Wilma Rudolph Olympic Journey | NULL |
+| Eleanor Roosevelt Human Rights Journey | NULL |
+| (all others) | NULL |
 
-### Current State
-The "Unlock Milestones" card in "How It Works" shows:
-- MapPin icon
-- Static text description
+The fallback in `ChallengeRoute.tsx` line 80:
+```
+https://images.unsplash.com/photo-1488521787991-ed7bbaae773c
+```
+This is a generic photo of children, not thematic to each journey.
 
-### Enhancement
-Add a mini-map preview or animated illustration showing:
-- A stylized map with sample pins
-- Route line connecting locations
-- Visual demonstration of the unlock experience
+## Solution
+Create and run an edge function to generate unique AI cover images for each challenge, then update the database.
 
-### Implementation Options
+## Thematic Image Concepts
 
-**Option A: Static Illustration**
-- Add a decorative SVG/image showing a stylized map with pins
-- Simpler, faster to implement
+| Challenge | Image Theme |
+|-----------|-------------|
+| Malala Yousafzai | Books, education, Pakistani mountains, empowerment |
+| Maya Angelou | Poetry, stage lights, artistic expression, birds |
+| Katherine Johnson | NASA rockets, space, mathematics, stars |
+| Wilma Rudolph | Olympic track, running, gold medals, triumph |
+| Eleanor Roosevelt | UN flags, diplomacy, human rights symbols |
+| Sojourner Truth | Freedom trail, historical landmarks, strength |
+| Ida B. Wells | Journalism, newspapers, justice scales |
+| Fannie Lou Hamer | Voting booths, civil rights marches, Mississippi |
+| Toni Morrison | Books, literary awards, storytelling |
+| Pride History | Rainbow colors, Stonewall, pride flags |
 
-**Option B: Interactive Mini-Map**
-- Small Leaflet map with sample milestone locations
-- Hover animations showing lock/unlock states
-- More engaging but heavier
-
-**Recommended: Option A** - Static illustration for the landing page keeps it lightweight while the full interactive experience lives in the actual Passport Checkpoint tab.
-
-## Part 2: Passport Checkpoint (Full Feature)
-
-### Tabbed Interface in ChallengePassport
-Two tabs:
-1. **Journey Stamps** - Existing stamp grid
-2. **Passport Checkpoint** - Interactive map
-
-### Map Features
-- World map centered on challenge locations
-- Pin markers for each of 6 milestones
-- Unlocked pins: Amber/gold with checkmark
-- Locked pins: Gray with lock icon
-- Route line: Solid for completed, dashed for upcoming
-- Click pin to view milestone details
-
-## Technical Implementation
-
-### Dependencies
-- `leaflet` - Core map library (free, open-source)
-- `react-leaflet` - React wrapper
-
-### Database Update
-Populate latitude/longitude for all 60 milestones using geocoding edge function.
+## Implementation
 
 ### Files to Create
 
 | File | Purpose |
 |------|---------|
-| `src/components/PassportCheckpointMap.tsx` | Full interactive Leaflet map |
-| `src/components/MilestoneMarker.tsx` | Custom pin markers |
-| `src/components/MapPreview.tsx` | Stylized SVG illustration for landing |
-| `supabase/functions/geocode-milestones/index.ts` | Populate coordinates |
+| `supabase/functions/generate-challenge-images/index.ts` | Edge function to generate and store cover images |
 
-### Files to Modify
+### Technical Steps
 
-| File | Changes |
-|------|---------|
-| `src/pages/Landing.tsx` | Add MapPreview to "Unlock Milestones" card |
-| `src/pages/ChallengePassport.tsx` | Add Tabs with map view |
-| `src/hooks/usePassportStamps.ts` | Include lat/lng in data |
-| `src/index.css` | Add Leaflet CSS |
-| `package.json` | Add leaflet dependencies |
+1. **Create Edge Function**
+   - Use Lovable AI (gemini-3-pro-image-preview) to generate thematic images
+   - Upload images to Supabase storage bucket
+   - Update `challenges.image_url` with public URLs
+
+2. **Create Storage Bucket**
+   - Create `challenge-images` bucket for storing generated images
+   - Set public read access
+
+3. **Run Generation**
+   - Deploy and invoke the edge function
+   - Verify all 10 challenges have unique images
+
+4. **Verify Frontend**
+   - Confirm `ChallengeRoute.tsx` displays unique images
+   - No code changes needed (already reads from `image_url`)
+
+## Database Update Preview
+
+After generation, the challenges table will have:
+```text
+Malala → https://[storage]/challenge-images/malala-cover.png
+Maya → https://[storage]/challenge-images/maya-cover.png
+Katherine → https://[storage]/challenge-images/katherine-cover.png
+...
+```
 
 ## Implementation Order
 
-1. Install Leaflet dependencies
-2. Create geocode-milestones edge function
-3. Run geocoding to populate coordinates
-4. Create PassportCheckpointMap component
-5. Create MilestoneMarker component
-6. Update ChallengePassport with tabs
-7. Create MapPreview illustration component
-8. Add MapPreview to Landing page
-9. Add Leaflet CSS styles
-10. Test and refine
-
-## Credit Considerations
-
-Credit consumption cannot be accurately estimated as it depends on:
-- Number of iterations needed
-- Debugging complexity
-- Edge function testing cycles
-
-Each chat message = 1 credit. The implementation likely requires multiple messages for:
-- Creating components
-- Database updates
-- Testing and debugging
-- Refinements
+1. Create storage bucket for challenge images
+2. Create `generate-challenge-images` edge function
+3. Deploy and run the function
+4. Verify images appear on challenge pages
 
