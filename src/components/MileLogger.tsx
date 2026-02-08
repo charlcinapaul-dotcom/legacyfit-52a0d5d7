@@ -1,13 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { Footprints, Loader2 } from "lucide-react";
+import { Footprints, Loader2, LogIn } from "lucide-react";
 import { useMileLogging } from "@/hooks/useMileLogging";
 import { StampUnlockModal } from "./StampUnlockModal";
+import { supabase } from "@/integrations/supabase/client";
+import { Link } from "react-router-dom";
 
 interface MileLoggerProps {
   challengeId: string;
@@ -19,6 +21,7 @@ export function MileLogger({ challengeId }: MileLoggerProps) {
   const [miles, setMiles] = useState<number>(1);
   const [notes, setNotes] = useState("");
   const [showCustom, setShowCustom] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   const {
     totalMiles,
@@ -27,6 +30,20 @@ export function MileLogger({ challengeId }: MileLoggerProps) {
     newlyUnlockedStamps,
     clearUnlockedStamps,
   } = useMileLogging(challengeId);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setIsAuthenticated(!!user);
+    };
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session?.user);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const handleQuickLog = (quickMiles: number) => {
     logMiles({
@@ -47,6 +64,42 @@ export function MileLogger({ challengeId }: MileLoggerProps) {
     setNotes("");
     setShowCustom(false);
   };
+
+  // Show loading state while checking auth
+  if (isAuthenticated === null) {
+    return (
+      <Card className="border-primary/20">
+        <CardContent className="py-8 flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Show login prompt if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <Card className="border-primary/20">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Footprints className="w-5 h-5 text-primary" />
+            Log Miles
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-muted-foreground text-sm">
+            Sign in to start logging your miles and earning stamps.
+          </p>
+          <Link to="/auth">
+            <Button className="w-full">
+              <LogIn className="w-4 h-4 mr-2" />
+              Sign In to Log Miles
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <>
