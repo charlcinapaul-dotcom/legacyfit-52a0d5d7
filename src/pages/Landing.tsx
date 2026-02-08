@@ -147,105 +147,18 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* Women's History Editions */}
+      {/* Women's History Journeys */}
       <section id="challenges" className="py-20 px-4 scroll-mt-20">
         <div className="container mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              Women's History Editions
+              Women's History Journeys
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto">
-              Choose your journey and walk in the footsteps of extraordinary women who changed the world
+              Walk in the footsteps of extraordinary women who changed the world
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-12">
-            {/* Courage & Change */}
-            <Link
-              to="/challenge/womens-history-courage"
-              className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary via-card to-secondary border border-border p-6 hover:border-primary/50 transition-all group"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl" />
-              <div className="relative z-10">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-4">
-                  <span className="text-xs font-medium text-primary">COURAGE & CHANGE</span>
-                </div>
-                <h3 className="text-xl font-bold text-foreground mb-2">Women's History Edition</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Walk alongside trailblazing women who fought for justice, freedom, and human rights.
-                </p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {["Ida B. Wells", "Sojourner Truth", "Eleanor Roosevelt", "Fannie Lou Hamer"].map((name, i) => (
-                    <span key={i} className="px-2 py-1 rounded-full bg-secondary border border-border text-xs text-foreground">
-                      {name}
-                    </span>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">157 miles total</span>
-                  <ChevronRight className="w-4 h-4 text-primary group-hover:translate-x-1 transition-transform" />
-                </div>
-              </div>
-            </Link>
-
-            {/* Voice & Vision */}
-            <Link
-              to="/challenge/womens-history-voice"
-              className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary via-card to-secondary border border-border p-6 hover:border-primary/50 transition-all group"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-accent/5 rounded-full blur-3xl" />
-              <div className="relative z-10">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 mb-4">
-                  <span className="text-xs font-medium text-accent">VOICE & VISION</span>
-                </div>
-                <h3 className="text-xl font-bold text-foreground mb-2">Women's History Edition</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Journey through the lives of visionary women who shaped our world through words and ideas.
-                </p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {["Maya Angelou", "Toni Morrison", "Katherine Johnson"].map((name, i) => (
-                    <span key={i} className="px-2 py-1 rounded-full bg-secondary border border-border text-xs text-foreground">
-                      {name}
-                    </span>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">113 miles total</span>
-                  <ChevronRight className="w-4 h-4 text-accent group-hover:translate-x-1 transition-transform" />
-                </div>
-              </div>
-            </Link>
-
-            {/* Strength & Endurance */}
-            <Link
-              to="/challenge/womens-history-strength"
-              className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary via-card to-secondary border border-border p-6 hover:border-primary/50 transition-all group"
-            >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-cyan/5 rounded-full blur-3xl" />
-              <div className="relative z-10">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan/10 border border-cyan/20 mb-4">
-                  <span className="text-xs font-medium text-cyan">STRENGTH & ENDURANCE</span>
-                </div>
-                <h3 className="text-xl font-bold text-foreground mb-2">Women's History Edition</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Follow the inspiring paths of women who overcame extraordinary obstacles.
-                </p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {["Wilma Rudolph", "Malala Yousafzai"].map((name, i) => (
-                    <span key={i} className="px-2 py-1 rounded-full bg-secondary border border-border text-xs text-foreground">
-                      {name}
-                    </span>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">68 miles total</span>
-                  <ChevronRight className="w-4 h-4 text-cyan group-hover:translate-x-1 transition-transform" />
-                </div>
-              </div>
-            </Link>
-          </div>
-
-          {/* Individual Journeys */}
           <div className="max-w-5xl mx-auto">
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary via-card to-secondary border border-border p-8 md:p-12">
               <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl" />
@@ -255,11 +168,11 @@ const Landing = () => {
                 <img src={legacyfitLogo} alt="LegacyFit Virtual Challenge" className="w-full max-w-xl mb-6" />
                 
                 <h3 className="text-2xl font-bold text-foreground mb-4">
-                  Or Choose Individual Journeys
+                  Choose Your Journey
                 </h3>
 
                 <p className="text-muted-foreground mb-6 max-w-2xl">
-                  Prefer to focus on one inspiring woman at a time? Explore individual journeys and unlock their unique stories.
+                  Each journey follows the life of an inspiring woman. Log your miles to unlock historical milestones and earn exclusive passport stamps.
                 </p>
 
                 <div className="flex flex-wrap gap-3 mb-8">
