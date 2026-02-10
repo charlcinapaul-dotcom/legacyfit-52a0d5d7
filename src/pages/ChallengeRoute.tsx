@@ -6,6 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
+import { LegacyGuide } from "@/components/LegacyGuide";
 import { useChallengeBySlug } from "@/hooks/useChallengeBySlug";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -402,6 +403,18 @@ const ChallengeRoute = () => {
           </div>
         </div>
       </main>
+
+      {/* Legacy Guide AI Companion */}
+      <LegacyGuide
+        challengeContext={{
+          name: challenge.name,
+          title: challenge.title,
+          totalMiles: challenge.totalMiles,
+          milestones: challenge.milestones.map((m) => ({ name: m.name, miles: m.miles })),
+          userMiles: userProgress.milesLogged,
+          days: customDays,
+        }}
+      />
     </div>
   );
 };
