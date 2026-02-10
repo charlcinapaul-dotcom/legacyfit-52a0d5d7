@@ -5,25 +5,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
-import { Footprints, Loader2, LogIn } from "lucide-react";
+import { Footprints, Loader2, LogIn, ShieldAlert } from "lucide-react";
 import { useMileLogging } from "@/hooks/useMileLogging";
+import { useEnrollmentStatus } from "@/hooks/useEnrollmentStatus";
 import { StampUnlockModal } from "./StampUnlockModal";
+import { MileLogConfirmDialog } from "./MileLogConfirmDialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 
 interface MileLoggerProps {
   challengeId: string;
   challengeSlug?: string;
+  challengeName?: string;
   totalMilestones?: number;
 }
 
 const QUICK_MILES = [1, 3, 5, 10];
 
-export function MileLogger({ challengeId, challengeSlug, totalMilestones = 6 }: MileLoggerProps) {
+export function MileLogger({ challengeId, challengeSlug, challengeName, totalMilestones = 6 }: MileLoggerProps) {
   const [miles, setMiles] = useState<number>(1);
   const [notes, setNotes] = useState("");
   const [showCustom, setShowCustom] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [pendingMiles, setPendingMiles] = useState<number | null>(null);
+  const [pendingNotes, setPendingNotes] = useState<string>("");
 
   const {
     totalMiles,
@@ -32,6 +37,8 @@ export function MileLogger({ challengeId, challengeSlug, totalMilestones = 6 }: 
     newlyUnlockedStamps,
     clearUnlockedStamps,
   } = useMileLogging(challengeId);
+
+  const { data: enrollment, isLoading: enrollmentLoading } = useEnrollmentStatus(challengeId);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -48,27 +55,31 @@ export function MileLogger({ challengeId, challengeSlug, totalMilestones = 6 }: 
   }, []);
 
   const handleQuickLog = (quickMiles: number) => {
-    logMiles({
-      miles: quickMiles,
-      challengeId,
-      notes: notes || undefined,
-    });
-    setNotes("");
+    setPendingMiles(quickMiles);
+    setPendingNotes(notes);
   };
 
   const handleCustomLog = () => {
+    setPendingMiles(miles);
+    setPendingNotes(notes);
+  };
+
+  const handleConfirmLog = () => {
+    if (pendingMiles === null) return;
     logMiles({
-      miles,
+      miles: pendingMiles,
       challengeId,
-      notes: notes || undefined,
+      notes: pendingNotes || undefined,
     });
+    setPendingMiles(null);
+    setPendingNotes("");
     setMiles(1);
     setNotes("");
     setShowCustom(false);
   };
 
-  // Show loading state while checking auth
-  if (isAuthenticated === null) {
+  // Loading
+  if (isAuthenticated === null || enrollmentLoading) {
     return (
       <Card className="border-primary/20">
         <CardContent className="py-8 flex items-center justify-center">
@@ -78,7 +89,7 @@ export function MileLogger({ challengeId, challengeSlug, totalMilestones = 6 }: 
     );
   }
 
-  // Show login prompt if not authenticated
+  // Not authenticated
   if (!isAuthenticated) {
     return (
       <Card className="border-primary/20">
@@ -98,6 +109,34 @@ export function MileLogger({ challengeId, challengeSlug, totalMilestones = 6 }: 
               Sign In to Log Miles
             </Button>
           </Link>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Not enrolled (paid)
+  if (!enrollment?.isEnrolled) {
+    return (
+      <Card className="border-border">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <ShieldAlert className="w-5 h-5 text-muted-foreground" />
+            Enrollment Required
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-muted-foreground text-sm">
+            {enrollment?.status === "pending"
+              ? "Your payment is being processed. You'll be able to log miles once payment is confirmed."
+              : "You need to enroll in this challenge before you can log miles."}
+          </p>
+          {enrollment?.status !== "pending" && (
+            <Link to={`/challenge/${challengeSlug || ""}`}>
+              <Button className="w-full">
+                Join This Challenge
+              </Button>
+            </Link>
+          )}
         </CardContent>
       </Card>
     );
@@ -203,6 +242,16 @@ export function MileLogger({ challengeId, challengeSlug, totalMilestones = 6 }: 
           )}
         </CardContent>
       </Card>
+
+      {/* Confirmation dialog */}
+      <MileLogConfirmDialog
+        open={pendingMiles !== null}
+        onOpenChange={(open) => { if (!open) setPendingMiles(null); }}
+        onConfirm={handleConfirmLog}
+        miles={pendingMiles || 0}
+        challengeName={challengeName}
+        isLogging={isLogging}
+      />
 
       {/* Stamp unlock modal */}
       <StampUnlockModal

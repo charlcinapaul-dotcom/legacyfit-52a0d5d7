@@ -38,6 +38,28 @@ serve(async (req: Request): Promise<Response> => {
       throw new Error("Missing required fields: userId, challengeId, totalMiles");
     }
 
+    // SERVER-SIDE ENROLLMENT VALIDATION
+    const { data: enrollment, error: enrollmentError } = await supabase
+      .from("user_challenges")
+      .select("id, payment_status")
+      .eq("user_id", userId)
+      .eq("challenge_id", challengeId)
+      .eq("payment_status", "paid")
+      .maybeSingle();
+
+    if (enrollmentError) {
+      console.error("Error checking enrollment:", enrollmentError);
+      throw new Error("Failed to verify enrollment");
+    }
+
+    if (!enrollment) {
+      console.warn(`BLOCKED: User ${userId} not enrolled (paid) in challenge ${challengeId}`);
+      return new Response(
+        JSON.stringify({ error: "Not enrolled in this challenge", unlockedStamps: [] }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+      );
+    }
+
     console.log(`Checking milestone unlocks for user ${userId}, challenge ${challengeId}, total miles: ${totalMiles}`);
 
     // Get all milestones for this challenge where miles_required <= totalMiles
@@ -54,7 +76,6 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     if (!eligibleMilestones || eligibleMilestones.length === 0) {
-      console.log("No eligible milestones found");
       return new Response(JSON.stringify({ unlockedStamps: [], message: "No new stamps unlocked" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -75,12 +96,9 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     const existingMilestoneIds = new Set(existingStamps?.map((s) => s.milestone_id) || []);
-
-    // Filter to only new unlocks
     const newMilestones = eligibleMilestones.filter((m) => !existingMilestoneIds.has(m.id));
 
     if (newMilestones.length === 0) {
-      console.log("All eligible milestones already unlocked");
       return new Response(JSON.stringify({ unlockedStamps: [], message: "All stamps already unlocked" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -89,32 +107,26 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log(`Found ${newMilestones.length} new stamps to unlock`);
 
-    // Insert new stamp records
     const stampRecords = newMilestones.map((m) => ({
       user_id: userId,
       milestone_id: m.id,
     }));
 
     const { error: insertError } = await supabase.from("user_passport_stamps").insert(stampRecords);
-
     if (insertError) {
       console.error("Error inserting stamps:", insertError);
       throw insertError;
     }
 
-    // Also insert into user_milestones for backward compatibility
     const milestoneRecords = newMilestones.map((m) => ({
       user_id: userId,
       milestone_id: m.id,
     }));
-
     await supabase.from("user_milestones").insert(milestoneRecords).select();
 
-    // Get user email for sending stamp emails
     const { data: userData } = await supabase.auth.admin.getUserById(userId);
     const userEmail = userData?.user?.email;
 
-    // Format unlocked stamps for response
     const unlockedStamps: UnlockedStamp[] = newMilestones.map((m) => ({
       milestoneId: m.id,
       title: m.title,
@@ -125,7 +137,6 @@ serve(async (req: Request): Promise<Response> => {
       stampImageUrl: m.stamp_image_url,
     }));
 
-    // Trigger email sending for each unlocked stamp
     if (userEmail) {
       for (const stamp of unlockedStamps) {
         try {
@@ -139,15 +150,11 @@ serve(async (req: Request): Promise<Response> => {
               stampImageUrl: stamp.stampImageUrl,
             },
           });
-          console.log(`Email sent for stamp: ${stamp.stampTitle}`);
         } catch (emailError) {
           console.error(`Failed to send email for stamp ${stamp.stampTitle}:`, emailError);
-          // Don't fail the whole request if email fails
         }
       }
     }
-
-    console.log(`Successfully unlocked ${unlockedStamps.length} stamps`);
 
     return new Response(
       JSON.stringify({
