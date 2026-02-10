@@ -1,10 +1,38 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ChevronRight, MapPin, Award, Users, BookOpen, Footprints } from "lucide-react";
 import legacyfitLogo from "@/assets/legacyfit-logo.png";
 import { MapPreview } from "@/components/MapPreview";
+import { supabase } from "@/integrations/supabase/client";
 
 const Landing = () => {
+  const navigate = useNavigate();
+
+  const handleLogMiles = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      navigate("/auth?mode=signup");
+      return;
+    }
+
+    // Find active challenge
+    const { data } = await supabase
+      .from("user_challenges")
+      .select("challenge:challenges(slug)")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const challenge = data?.challenge as unknown as { slug: string | null } | null;
+    if (challenge?.slug) {
+      navigate(`/challenge/${challenge.slug}`);
+    } else {
+      navigate("/#challenges");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
@@ -106,7 +134,8 @@ const Landing = () => {
                 title: "Log Your Miles",
                 description: "Track your walking, running, or jogging miles manually or sync with Apple Health and Google Fit.",
                 preview: null,
-                link: "/auth?mode=signup",
+                link: null,
+                onClick: handleLogMiles,
               },
               {
                 icon: MapPin,
@@ -114,6 +143,7 @@ const Landing = () => {
                 description: "As you progress, unlock historical milestones and see them appear on your virtual map.",
                 preview: <MapPreview />,
                 link: "/auth?mode=signup",
+                onClick: undefined,
               },
               {
                 icon: Award,
@@ -121,28 +151,43 @@ const Landing = () => {
                 description: "Collect digital passport stamps and earn exclusive legacy coins - both digital and physical.",
                 preview: null,
                 link: "/auth?mode=signup",
+                onClick: undefined,
               },
-            ].map((step, i) => (
-              <Link
-                key={i}
-                to={step.link}
-                className="relative p-8 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors group cursor-pointer block"
-              >
-                <div className="absolute -top-4 -left-4 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
-                  {i + 1}
-                </div>
-                <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center mb-6 group-hover:bg-primary/10 transition-colors">
-                  <step.icon className="w-7 h-7 text-primary" />
-                </div>
-                <h3 className="text-xl font-semibold text-foreground mb-3">{step.title}</h3>
-                <p className="text-muted-foreground mb-4">{step.description}</p>
-                {step.preview && (
-                  <div className="mt-4">
-                    {step.preview}
+            ].map((step, i) => {
+              const content = (
+                <>
+                  <div className="absolute -top-4 -left-4 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+                    {i + 1}
                   </div>
-                )}
-              </Link>
-            ))}
+                  <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center mb-6 group-hover:bg-primary/10 transition-colors">
+                    <step.icon className="w-7 h-7 text-primary" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-foreground mb-3">{step.title}</h3>
+                  <p className="text-muted-foreground mb-4">{step.description}</p>
+                  {step.preview && (
+                    <div className="mt-4">
+                      {step.preview}
+                    </div>
+                  )}
+                </>
+              );
+
+              const className = "relative p-8 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors group cursor-pointer block";
+
+              if (step.onClick) {
+                return (
+                  <button key={i} onClick={step.onClick} className={className + " text-left w-full"}>
+                    {content}
+                  </button>
+                );
+              }
+
+              return (
+                <Link key={i} to={step.link!} className={className}>
+                  {content}
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
