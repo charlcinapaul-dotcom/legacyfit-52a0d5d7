@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.generate-challenge-images]
 verify_jwt = false
+
+[functions.legacy-guide]
+verify_jwt = false
