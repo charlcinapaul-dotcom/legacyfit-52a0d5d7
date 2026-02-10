@@ -1,20 +1,92 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { MapPin, Share2, X } from "lucide-react";
+import { MapPin, Share2, Volume2, VolumeX } from "lucide-react";
 import type { UnlockedStamp } from "@/hooks/useMileLogging";
+import { getStorytellerScript, type PhaseScript } from "@/lib/storytellerScripts";
 
 interface StampUnlockModalProps {
   stamps: UnlockedStamp[];
   onClose: () => void;
+  challengeSlug?: string;
+  /** 0-based order index of the first newly unlocked milestone within the challenge */
+  milestoneStartIndex?: number;
 }
 
-export function StampUnlockModal({ stamps, onClose }: StampUnlockModalProps) {
+function speakText(text: string, onEnd?: () => void): SpeechSynthesisUtterance | null {
+  if (!("speechSynthesis" in window)) return null;
+  window.speechSynthesis.cancel();
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 0.92;
+  utterance.pitch = 1.0;
+  utterance.volume = 1;
+
+  // Try to pick a good English voice
+  const voices = window.speechSynthesis.getVoices();
+  const preferred = voices.find(
+    (v) => v.lang.startsWith("en") && v.name.toLowerCase().includes("samantha")
+  ) || voices.find(
+    (v) => v.lang.startsWith("en") && v.name.toLowerCase().includes("female")
+  ) || voices.find(
+    (v) => v.lang.startsWith("en-US")
+  );
+  if (preferred) utterance.voice = preferred;
+
+  if (onEnd) utterance.onend = onEnd;
+  window.speechSynthesis.speak(utterance);
+  return utterance;
+}
+
+export function StampUnlockModal({
+  stamps,
+  onClose,
+  challengeSlug,
+  milestoneStartIndex = 0,
+}: StampUnlockModalProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [currentScript, setCurrentScript] = useState<PhaseScript | null>(null);
+  const hasSpokenRef = useRef<Set<number>>(new Set());
 
   const currentStamp = stamps[currentIndex];
   const hasMore = currentIndex < stamps.length - 1;
+
+  // Get script for current stamp
+  useEffect(() => {
+    if (!currentStamp || !challengeSlug) {
+      setCurrentScript(null);
+      return;
+    }
+    const milestoneIdx = milestoneStartIndex + currentIndex;
+    const script = getStorytellerScript(challengeSlug, milestoneIdx);
+    setCurrentScript(script);
+  }, [currentIndex, currentStamp, challengeSlug, milestoneStartIndex]);
+
+  // Auto-play narration when stamp appears
+  useEffect(() => {
+    if (!currentScript || !currentStamp) return;
+    if (hasSpokenRef.current.has(currentIndex)) return;
+
+    // Small delay to let the stamp animation settle
+    const timer = setTimeout(() => {
+      hasSpokenRef.current.add(currentIndex);
+      setIsSpeaking(true);
+      speakText(currentScript.text, () => setIsSpeaking(false));
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, [currentScript, currentIndex, currentStamp]);
+
+  // Cleanup speech on unmount
+  useEffect(() => {
+    return () => {
+      if ("speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (stamps.length > 0) {
@@ -27,10 +99,28 @@ export function StampUnlockModal({ stamps, onClose }: StampUnlockModalProps) {
   if (!currentStamp) return null;
 
   const handleNext = () => {
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    setIsSpeaking(false);
     if (hasMore) {
       setCurrentIndex((i) => i + 1);
     } else {
       onClose();
+    }
+  };
+
+  const handleClose = () => {
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+    onClose();
+  };
+
+  const toggleNarration = () => {
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    } else if (currentScript) {
+      setIsSpeaking(true);
+      speakText(currentScript.text, () => setIsSpeaking(false));
     }
   };
 
@@ -47,7 +137,7 @@ export function StampUnlockModal({ stamps, onClose }: StampUnlockModalProps) {
   };
 
   return (
-    <Dialog open={stamps.length > 0} onOpenChange={() => onClose()}>
+    <Dialog open={stamps.length > 0} onOpenChange={() => handleClose()}>
       <DialogContent className="sm:max-w-md bg-gradient-to-b from-background to-amber-950/10 border-amber-500/30">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-bold text-amber-400">
@@ -105,10 +195,45 @@ export function StampUnlockModal({ stamps, onClose }: StampUnlockModalProps) {
             )}
           </div>
 
-          {/* Motivational message */}
-          <p className="text-amber-500/80 text-sm italic text-center">
-            You're building your LegacyFit legacy, one mile at a time.
-          </p>
+          {/* Storyteller Narration */}
+          {currentScript && (
+            <div className="w-full px-2">
+              <div className="relative bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
+                <div className="flex items-start gap-3">
+                  <button
+                    onClick={toggleNarration}
+                    className="shrink-0 mt-0.5 w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center hover:bg-amber-500/30 transition-colors"
+                    aria-label={isSpeaking ? "Stop narration" : "Play narration"}
+                  >
+                    {isSpeaking ? (
+                      <VolumeX className="w-4 h-4 text-amber-400" />
+                    ) : (
+                      <Volume2 className="w-4 h-4 text-amber-400" />
+                    )}
+                  </button>
+                  <div>
+                    <p className="text-xs font-medium text-amber-400/80 uppercase tracking-wide mb-1">
+                      Legacy Guide · Phase {currentScript.phase}: {currentScript.label}
+                    </p>
+                    <p className="text-sm text-muted-foreground italic leading-relaxed">
+                      "{currentScript.text}"
+                    </p>
+                  </div>
+                </div>
+                {isSpeaking && (
+                  <div className="absolute bottom-2 left-14 right-4 flex gap-1">
+                    {[...Array(12)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="flex-1 h-1 rounded-full bg-amber-500/40 animate-pulse"
+                        style={{ animationDelay: `${i * 0.1}s` }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="flex gap-3 w-full">
