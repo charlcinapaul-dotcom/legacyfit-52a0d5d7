@@ -17,6 +17,8 @@ import {
   ChevronRight
 } from "lucide-react";
 import type { User, Session } from "@supabase/supabase-js";
+import { useActiveChallenge } from "@/hooks/useActiveChallenge";
+import { MileLogger } from "@/components/MileLogger";
 
 interface Profile {
   id: string;
@@ -45,6 +47,7 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userChallenges, setUserChallenges] = useState<UserChallenge[]>([]);
   const [loading, setLoading] = useState(true);
+  const { data: activeChallenge } = useActiveChallenge();
 
   useEffect(() => {
     // Set up auth state listener first
@@ -246,28 +249,31 @@ const Dashboard = () => {
           </Card>
         </div>
 
-        {/* Log Miles CTA */}
-        <Card className="bg-gradient-to-br from-primary/10 via-card to-accent/10 border-border mb-8">
-          <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-center sm:text-left">
-              <h3 className="text-xl font-semibold text-foreground mb-1">Log Your Miles</h3>
-              <p className="text-muted-foreground">Track your progress and unlock new milestones</p>
-            </div>
-            <Button 
-              className="bg-primary text-primary-foreground hover:bg-primary/90 glow-gold"
-              onClick={() => {
-                if (userChallenges.length > 0 && userChallenges[0].challenge?.slug) {
-                  navigate(`/challenge/${userChallenges[0].challenge.slug}`);
-                } else {
-                  navigate("/#challenges");
-                }
-              }}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Log Miles
-            </Button>
-          </CardContent>
-        </Card>
+        {/* Log Miles - inline if active challenge exists */}
+        {activeChallenge ? (
+          <div className="mb-8">
+            <MileLogger 
+              challengeId={activeChallenge.challengeId} 
+              challengeSlug={activeChallenge.slug || undefined}
+            />
+          </div>
+        ) : (
+          <Card className="bg-gradient-to-br from-primary/10 via-card to-accent/10 border-border mb-8">
+            <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-center sm:text-left">
+                <h3 className="text-xl font-semibold text-foreground mb-1">Log Your Miles</h3>
+                <p className="text-muted-foreground">Join a challenge to start tracking your progress</p>
+              </div>
+              <Button 
+                className="bg-primary text-primary-foreground hover:bg-primary/90 glow-gold"
+                onClick={() => navigate("/#challenges")}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Explore Challenges
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Active Challenges */}
         <div className="mb-8">

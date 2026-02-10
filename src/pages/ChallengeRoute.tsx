@@ -7,6 +7,7 @@ import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar 
 import { cn } from "@/lib/utils";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
 import { LegacyGuide } from "@/components/LegacyGuide";
+import { MileLogger } from "@/components/MileLogger";
 import { useChallengeBySlug } from "@/hooks/useChallengeBySlug";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -381,16 +382,16 @@ const ChallengeRoute = () => {
             />
           </div>
 
+          {/* Log Miles Section */}
+          <div className="mt-8">
+            <MileLogger 
+              challengeId={challenge.id} 
+              challengeSlug={slug}
+            />
+          </div>
+
           {/* Action Buttons */}
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/auth?mode=signup">
-              <Button 
-                size="lg" 
-                className={cn("text-lg px-8 py-6", colors.button)}
-              >
-                Start This Challenge
-              </Button>
-            </Link>
             <Link to={`/challenge/${slug}/passport`}>
               <Button 
                 size="lg" 
