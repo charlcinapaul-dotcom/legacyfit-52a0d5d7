@@ -13,11 +13,13 @@ import { Link } from "react-router-dom";
 
 interface MileLoggerProps {
   challengeId: string;
+  challengeSlug?: string;
+  totalMilestones?: number;
 }
 
 const QUICK_MILES = [1, 3, 5, 10];
 
-export function MileLogger({ challengeId }: MileLoggerProps) {
+export function MileLogger({ challengeId, challengeSlug, totalMilestones = 6 }: MileLoggerProps) {
   const [miles, setMiles] = useState<number>(1);
   const [notes, setNotes] = useState("");
   const [showCustom, setShowCustom] = useState(false);
@@ -206,6 +208,7 @@ export function MileLogger({ challengeId }: MileLoggerProps) {
       <StampUnlockModal
         stamps={newlyUnlockedStamps}
         onClose={clearUnlockedStamps}
+        challengeSlug={challengeSlug}
       />
     </>
   );

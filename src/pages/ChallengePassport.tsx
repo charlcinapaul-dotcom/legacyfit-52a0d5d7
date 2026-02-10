@@ -107,7 +107,7 @@ export default function ChallengePassport() {
         {/* Mile Logger */}
         {challengeId && (
           <div className="mb-8">
-            <MileLogger challengeId={challengeId} />
+            <MileLogger challengeId={challengeId} challengeSlug={slug} />
           </div>
         )}
 
