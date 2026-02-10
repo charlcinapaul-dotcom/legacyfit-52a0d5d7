@@ -255,6 +255,7 @@ const Dashboard = () => {
             <MileLogger 
               challengeId={activeChallenge.challengeId} 
               challengeSlug={activeChallenge.slug || undefined}
+              challengeName={activeChallenge.title}
             />
           </div>
         ) : (

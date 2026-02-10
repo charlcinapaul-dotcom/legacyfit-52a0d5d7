@@ -8,8 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PassportStamp } from "@/components/PassportStamp";
 import { PassportCheckpointMap } from "@/components/PassportCheckpointMap";
 import { MileLogger } from "@/components/MileLogger";
+import { EnrollmentBadge } from "@/components/EnrollmentBadge";
 import { usePassportStamps, type StampWithMilestone } from "@/hooks/usePassportStamps";
 import { useChallengeBySlug } from "@/hooks/useChallengeBySlug";
+import { useEnrollmentStatus } from "@/hooks/useEnrollmentStatus";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useState } from "react";
 
@@ -21,6 +23,7 @@ export default function ChallengePassport() {
   const { data: challengeData, isLoading: challengeLoading } = useChallengeBySlug(slug);
   const challengeId = challengeData?.challenge?.id;
   
+  const { data: enrollment } = useEnrollmentStatus(challengeId);
   const { stamps, unlockedCount, totalCount, isLoading: stampsLoading } = usePassportStamps(challengeId);
 
   const progressPercent = totalCount > 0 ? (unlockedCount / totalCount) * 100 : 0;
@@ -76,6 +79,7 @@ export default function ChallengePassport() {
             <div className="flex items-center gap-2">
               <Book className="w-6 h-6 text-amber-500" />
               <h1 className="text-xl font-bold">{challenge.title} Passport</h1>
+              {enrollment && <EnrollmentBadge status={enrollment.status} />}
             </div>
           </div>
         </div>
@@ -107,7 +111,7 @@ export default function ChallengePassport() {
         {/* Mile Logger */}
         {challengeId && (
           <div className="mb-8">
-            <MileLogger challengeId={challengeId} challengeSlug={slug} />
+            <MileLogger challengeId={challengeId} challengeSlug={slug} challengeName={challenge.title} />
           </div>
         )}
 

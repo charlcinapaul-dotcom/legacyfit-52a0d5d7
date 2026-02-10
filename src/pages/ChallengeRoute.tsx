@@ -8,7 +8,9 @@ import { cn } from "@/lib/utils";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
 import { LegacyGuide } from "@/components/LegacyGuide";
 import { MileLogger } from "@/components/MileLogger";
+import { EnrollmentBadge } from "@/components/EnrollmentBadge";
 import { useChallengeBySlug } from "@/hooks/useChallengeBySlug";
+import { useEnrollmentStatus } from "@/hooks/useEnrollmentStatus";
 import { Skeleton } from "@/components/ui/skeleton";
 
 // Color styling helper for challenge themes
@@ -65,7 +67,8 @@ const getDefaultDays = (totalMiles: number): number => {
 const ChallengeRoute = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data, isLoading, error } = useChallengeBySlug(slug);
-
+  const challengeId = data?.challenge?.id;
+  const { data: enrollment } = useEnrollmentStatus(challengeId);
   // Transform database data to component format
   const challenge = useMemo(() => {
     if (!data) return null;
@@ -205,9 +208,12 @@ const ChallengeRoute = () => {
                 <span className={cn("text-xs font-medium uppercase tracking-wide", challenge.color === "pride" && colors.text)}>{challenge.title}</span>
               </div>
 
-              <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-3">
-                {challenge.name}
-              </h2>
+              <div className="flex items-center gap-3 flex-wrap mb-3">
+                <h2 className="text-3xl md:text-4xl font-bold text-foreground">
+                  {challenge.name}
+                </h2>
+                {enrollment && <EnrollmentBadge status={enrollment.status} />}
+              </div>
               <p className="text-muted-foreground max-w-xl mb-8">
                 {challenge.description}
               </p>
@@ -387,6 +393,7 @@ const ChallengeRoute = () => {
             <MileLogger 
               challengeId={challenge.id} 
               challengeSlug={slug}
+              challengeName={challenge.name}
             />
           </div>
 
