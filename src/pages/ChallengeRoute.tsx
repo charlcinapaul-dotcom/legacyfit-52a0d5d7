@@ -9,6 +9,7 @@ import { DisclaimerBanner } from "@/components/DisclaimerBanner";
 import { LegacyGuide } from "@/components/LegacyGuide";
 import { MileLogger } from "@/components/MileLogger";
 import { EnrollmentBadge } from "@/components/EnrollmentBadge";
+import { ChallengePricing } from "@/components/ChallengePricing";
 import { useChallengeBySlug } from "@/hooks/useChallengeBySlug";
 import { useEnrollmentStatus } from "@/hooks/useEnrollmentStatus";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -55,7 +56,13 @@ const getColorStyles = (color: string) => {
 // Map edition to color theme
 const getEditionColor = (edition: string): string => {
   if (edition.toLowerCase().includes("pride")) return "pride";
-  // Alternate between gold and cyan for women's history
+  return "gold";
+};
+
+// Map edition to pricing accent
+const getPricingEditionColor = (edition: string): "gold" | "burgundy" | "pride" => {
+  if (edition.toLowerCase().includes("pride")) return "pride";
+  if (edition.toLowerCase().includes("women")) return "burgundy";
   return "gold";
 };
 
@@ -316,6 +323,14 @@ const ChallengeRoute = () => {
               <span>{userProgress.daysRemaining} days remaining</span>
               <span>{Math.round(progressPercent)}% complete</span>
             </div>
+          </div>
+
+          {/* Pricing Section */}
+          <div className="bg-card rounded-xl border border-border p-6 md:p-8 mb-8">
+            <ChallengePricing
+              challengeName={challenge.name}
+              editionColor={getPricingEditionColor(data?.challenge?.edition || "")}
+            />
           </div>
 
           {/* Virtual Route Visualization */}
