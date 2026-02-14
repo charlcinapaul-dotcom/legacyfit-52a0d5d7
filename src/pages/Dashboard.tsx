@@ -191,7 +191,7 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-3 gap-4 mb-8">
           <Card className="bg-card border-border">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
@@ -234,19 +234,6 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                  <Award className="w-5 h-5 text-accent" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">0</p>
-                  <p className="text-xs text-muted-foreground">Coins</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Log Miles - inline if active challenge exists */}
@@ -350,7 +337,7 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid sm:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 gap-4">
           <Card 
             className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer"
             onClick={() => navigate("/passport")}
@@ -378,17 +365,6 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Award className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <h3 className="font-medium text-foreground">Coins</h3>
-                <p className="text-sm text-muted-foreground">Your collection</p>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </main>
     </div>
