@@ -1,22 +1,57 @@
+## Conqueror-Style Stamp Grid Background for Landing Page Hero
+
+### What We're Building
+
+Replace the current single blurred coin background with a tiled grid of 12 real digital passport stamps from the database, similar to The Conqueror's medal mosaic hero. The stamps will fill the hero section as a repeating grid backdrop, appearing opaque but non-printable, ending before the "How it works" section.
+
+### Approach
+
+**New Component: `StampGridBackground.tsx**`
+
+- Fetches 12 stamp images from the `milestones` table (stamp_image_url column, which contains base64 data)
+- Renders them in a 4-column x 3-row CSS grid that fills the hero section
+- Each stamp is displayed as an `<img>` element inside a grid cell
+- Applies a slight opacity (0.35-0.45 range) so stamps are clearly visible but don't overpower text
+- Applies CSS `print-color-adjust` and media query `@media print { display: none }` to prevent printing
+- Dark overlay on top for text readability (same rgba(0,0,0,0.55))
+- No blur -- stamps should be recognizable like the Conqueror medals
+
+**Changes to `Landing.tsx**`
+
+- Remove the current single-image background div
+- Remove the `heroCoinBg` import (no longer needed)
+- Insert the new `StampGridBackground` component as the first child of the hero section (absolute positioned, inset-0)
+- Keep all hero text, buttons, and z-10 container completely untouched
+- No color changes, no structural changes
+
+**Styling Details**
+
+- Grid: `grid grid-cols-3 md:grid-cols-4` to create a mosaic
+- Each cell slightly rotated randomly (-5 to 5 degrees) for organic feel
+- Stamps sized to fill cells with slight padding
+- Layer order: stamps grid (bottom) -> dark overlay (middle) -> content z-10 (top)
+- CSS property `-webkit-print-color-adjust: exact` plus `@media print { .stamp-grid { display: none !important; } }` to prevent printing
+
+**Performance Note**
+
+- The stamps are base64 data (~1MB+ each). To avoid blocking page load, the component will:
+  - Fetch stamps via a React Query hook
+  - Show the dark background immediately while stamps load
+  - Fade stamps in once loaded
+
+### Technical Changes
 
 
-## Fix: Make the Coin Background Visible on the Landing Page Hero
+| File                                     | Change                                                               |
+| ---------------------------------------- | -------------------------------------------------------------------- |
+| `src/components/StampGridBackground.tsx` | New component -- fetches 12 stamps from DB, renders as tiled grid    |
+| `src/pages/Landing.tsx`                  | Replace single-image background with `StampGridBackground` component |
+| `src/index.css`                          | Add `@media print` rule to hide stamp grid                           |
 
-### Problem
-The coin background image is technically present but nearly invisible because:
-- The image itself is set to `opacity: 0.15` (very faint)
-- A dark overlay (`rgba(0,0,0,0.55)`) is layered directly on top of it, blocking 55% of the remaining light
-- The combined effective visibility is only about 7% -- virtually undetectable
 
-### Solution
-Restructure the background layers so the overlay does not sit on top of the coin image. Instead, place the dark overlay BEHIND the coin, and increase the coin's opacity so it reads as a clear, textured watermark.
+### What Stays the Same
 
-### Changes (single file: `src/pages/Landing.tsx`)
-
-1. **Swap the layer order**: Move the dark overlay div BEFORE the coin image div, so the overlay darkens the page background but the coin renders on top of it
-2. **Increase coin opacity** from `0.15` to `0.22` so it's clearly visible as a subtle texture
-3. **Reduce blur** from `8px` to `6px` so the coin shape is more recognizable
-
-### Expected Result
-The coin will appear as a soft, recognizable watermark on the right side of the hero -- visible enough to feel branded and premium, but not so strong it competes with the headline text.
-
+- All hero text, buttons, badges, and CTA links
+- All colors, fonts, and spacing
+- All sections below the hero
+- No backend or database changes
