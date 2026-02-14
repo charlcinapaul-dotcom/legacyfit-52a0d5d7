@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PageLayout } from "@/components/PageLayout";
 import { Button } from "@/components/ui/button";
-import { MapPin, Award, ChevronRight } from "lucide-react";
+import { MapPin, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import legacyfitLogo from "@/assets/legacyfit-logo.png";
 
@@ -56,6 +56,26 @@ const Challenges = () => {
     </Link>
   );
 
+  const WomensHistoryCard = ({ c }: { c: Challenge }) => (
+    <Link
+      key={c.id}
+      to={`/challenge/${c.slug}`}
+      className="group relative overflow-hidden rounded-xl bg-card border border-border hover:border-[#9E2A3C] transition-colors p-6"
+      style={{ boxShadow: 'none' }}
+      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(122, 30, 44, 0.3)'; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}
+    >
+      <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-[#9E2A3C] transition-colors">
+        {c.title}
+      </h3>
+      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{c.description}</p>
+      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{c.total_miles} miles</span>
+      </div>
+      <ChevronRight className="absolute top-6 right-6 w-5 h-5 text-muted-foreground group-hover:text-[#9E2A3C] transition-colors" />
+    </Link>
+  );
+
   return (
     <PageLayout>
       {/* Hero */}
@@ -80,13 +100,12 @@ const Challenges = () => {
           {womensHistory.length > 0 && (
             <section className="pb-16 px-4">
               <div className="container mx-auto max-w-5xl">
-                <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
-                  <Award className="w-5 h-5 text-primary" />
-                  Women's History Edition
+                <h2 className="text-2xl font-bold mb-6">
+                  <span style={{ color: '#7A1E2C' }}>Women's History Edition</span>
                 </h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   {womensHistory.map((c) => (
-                    <ChallengeCard key={c.id} c={c} />
+                    <WomensHistoryCard key={c.id} c={c} />
                   ))}
                 </div>
               </div>
