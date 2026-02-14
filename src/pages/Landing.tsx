@@ -93,23 +93,35 @@ const Landing = () => {
 
           <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-6 max-w-6xl mx-auto">
             {[
-              { icon: Footprints, title: "Join a Challenge", desc: "Choose a themed virtual walking challenge." },
-              { icon: TrendingUp, title: "Log Your Miles", desc: "Walk at your pace. Every mile counts." },
-              { icon: MapPin, title: "Unlock Milestones", desc: "Reveal powerful women and moments." },
-              { icon: BookOpen, title: "Earn Stamps", desc: "Collect digital passport stamps." },
-              { icon: Award, title: "Build Legacy Miles", desc: "Your miles never reset." },
-            ].map((step, i) => (
-              <div key={i} className="relative text-center p-6 rounded-xl bg-card border border-border">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
-                  {i + 1}
-                </div>
-                <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mx-auto mb-4">
-                  <step.icon className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="text-sm font-semibold text-foreground mb-1">{step.title}</h3>
-                <p className="text-xs text-muted-foreground">{step.desc}</p>
-              </div>
-            ))}
+              { icon: Footprints, title: "Join a Challenge", desc: "Choose a themed virtual walking challenge.", to: "/challenges" },
+              { icon: TrendingUp, title: "Log Your Miles", desc: "Walk at your pace. Every mile counts.", action: "log" },
+              { icon: MapPin, title: "Unlock Milestones", desc: "Reveal powerful women and moments.", action: "log" },
+              { icon: BookOpen, title: "Earn Stamps", desc: "Collect digital passport stamps.", to: "/passport" },
+              { icon: Award, title: "Build Legacy Miles", desc: "Your miles never reset.", to: "/leaderboard" },
+            ].map((step, i) => {
+              const Wrapper = ({ children }: { children: React.ReactNode }) =>
+                step.action === "log" ? (
+                  <button key={i} onClick={handleLogMiles} className="relative text-center p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors cursor-pointer w-full">
+                    {children}
+                  </button>
+                ) : (
+                  <Link key={i} to={step.to!} className="relative text-center p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors">
+                    {children}
+                  </Link>
+                );
+              return (
+                <Wrapper key={i}>
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-6 h-6 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold">
+                    {i + 1}
+                  </div>
+                  <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mx-auto mb-4">
+                    <step.icon className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="text-sm font-semibold text-foreground mb-1">{step.title}</h3>
+                  <p className="text-xs text-muted-foreground">{step.desc}</p>
+                </Wrapper>
+              );
+            })}
           </div>
 
           <div className="text-center mt-10">
