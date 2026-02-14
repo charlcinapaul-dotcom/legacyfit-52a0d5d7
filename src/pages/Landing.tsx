@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight, MapPin, Award, Users, Footprints, TrendingUp, BookOpen, Heart } from "lucide-react";
 import { PageLayout } from "@/components/PageLayout";
 import { supabase } from "@/integrations/supabase/client";
+import heroCoinBg from "@/assets/rbg-challenge-backdrop.jpg";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -32,9 +33,21 @@ const Landing = () => {
     <PageLayout>
       {/* ───── 1. Hero ───── */}
       <section className="relative pt-16 pb-20 px-4 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-secondary/20" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+        {/* Branded coin background */}
+        <div className="absolute inset-0">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `url(${heroCoinBg})`,
+              backgroundSize: "65%",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "65% center",
+              filter: "blur(8px)",
+              opacity: 0.15,
+            }}
+          />
+          <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.55)" }} />
+        </div>
 
         <div className="container mx-auto text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary border border-border mb-8">
