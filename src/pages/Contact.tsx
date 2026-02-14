@@ -17,13 +17,13 @@ const Contact = () => (
 
         <div className="grid sm:grid-cols-2 gap-6 mb-12">
           <a
-            href="mailto:support@legacyfit.com"
+            href="mailto:support@legacyfitvirtual.com"
             className="flex items-start gap-4 p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors"
           >
             <Mail className="w-8 h-8 text-primary shrink-0" />
             <div>
               <h3 className="font-semibold text-foreground mb-1">Email Support</h3>
-              <p className="text-sm text-muted-foreground">support@legacyfit.com</p>
+              <p className="text-sm text-muted-foreground">support@legacyfitvirtual.com</p>
             </div>
           </a>
 
