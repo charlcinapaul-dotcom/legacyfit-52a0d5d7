@@ -33,6 +33,7 @@ export const SiteFooter = () => (
           <h4 className="font-semibold text-foreground mb-3 text-sm">Company</h4>
           <div className="flex flex-col gap-2 text-sm text-muted-foreground">
             <Link to="/about" className="hover:text-foreground transition-colors">About</Link>
+            <Link to="/why-we-give" className="hover:text-foreground transition-colors">Why We Give</Link>
             <Link to="/faq" className="hover:text-foreground transition-colors">FAQ</Link>
             <Link to="/contact" className="hover:text-foreground transition-colors">Contact</Link>
           </div>
