@@ -260,6 +260,13 @@
   }
 }
 
+/* Prevent stamp grid from printing */
+@media print {
+  .stamp-grid-bg {
+    display: none !important;
+  }
+}
+
 /* Leaflet Map Customizations */
 .leaflet-container {
   background: hsl(var(--card)) !important;
