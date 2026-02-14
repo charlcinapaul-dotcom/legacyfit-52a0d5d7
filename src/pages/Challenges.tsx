@@ -97,8 +97,13 @@ const Challenges = () => {
           {pride.length > 0 && (
             <section className="pb-16 px-4">
               <div className="container mx-auto max-w-5xl">
-                <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
-                  🏳️‍🌈 Pride Edition
+                <h2 className="text-2xl font-bold mb-6">
+                  <span style={{
+                    background: 'linear-gradient(90deg, #C94F7C, #E07A5F, #D4A373, #6C9A8B, #4A90A4, #6D597A)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                  }}>Pride Edition</span>
                 </h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   {pride.map((c) => (
