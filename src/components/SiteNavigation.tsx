@@ -10,7 +10,7 @@ const navItems = [
   { label: "How It Works", to: "/how-it-works" },
   { label: "Leaderboard", to: "/leaderboard" },
   { label: "About", to: "/about" },
-  { label: "FAQ", to: "/faq" },
+  { label: "Why We Give", to: "/why-we-give" },
 ];
 
 export const SiteNavigation = () => {

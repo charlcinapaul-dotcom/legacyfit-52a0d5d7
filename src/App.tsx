@@ -12,6 +12,7 @@ import Passport from "./pages/Passport";
 import Leaderboard from "./pages/Leaderboard";
 import Legal from "./pages/Legal";
 import About from "./pages/About";
+import WhyWeGive from "./pages/WhyWeGive";
 import Challenges from "./pages/Challenges";
 import HowItWorks from "./pages/HowItWorks";
 import FAQ from "./pages/FAQ";
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/legal" element={<Legal />} />
           <Route path="/about" element={<About />} />
+          <Route path="/why-we-give" element={<WhyWeGive />} />
           <Route path="/challenges" element={<Challenges />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/faq" element={<FAQ />} />
