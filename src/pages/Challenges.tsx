@@ -35,6 +35,27 @@ const Challenges = () => {
   const active = challenges.filter((c) => c.is_active);
   const past = challenges.filter((c) => !c.is_active);
 
+  // Group active challenges by visual heading
+  const womensHistory = active.filter((c) => c.slug !== "pride");
+  const pride = active.filter((c) => c.slug === "pride");
+
+  const ChallengeCard = ({ c }: { c: Challenge }) => (
+    <Link
+      key={c.id}
+      to={`/challenge/${c.slug}`}
+      className="group relative overflow-hidden rounded-xl bg-card border border-border hover:border-primary/50 transition-colors p-6"
+    >
+      <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+        {c.title}
+      </h3>
+      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{c.description}</p>
+      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{c.total_miles} miles</span>
+      </div>
+      <ChevronRight className="absolute top-6 right-6 w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+    </Link>
+  );
+
   return (
     <PageLayout>
       {/* Hero */}
@@ -44,69 +65,70 @@ const Challenges = () => {
             Choose Your <span className="text-gradient-gold">Journey</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-            Each challenge follows the life of an inspiring woman. Log your miles to unlock historical milestones and earn exclusive passport stamps.
+            Each challenge follows the life of an inspiring figure. Log your miles to unlock historical milestones and earn exclusive passport stamps.
           </p>
         </div>
       </section>
 
-      {/* Active Challenges */}
-      <section className="pb-16 px-4">
-        <div className="container mx-auto max-w-5xl">
-          <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            Active Challenges
-          </h2>
-
-          {loading ? (
-            <div className="text-muted-foreground">Loading challenges...</div>
-          ) : active.length === 0 ? (
-            <div className="text-muted-foreground">No active challenges right now. Check back soon!</div>
-          ) : (
-            <div className="grid md:grid-cols-2 gap-6">
-              {active.map((c) => (
-                <Link
-                  key={c.id}
-                  to={`/challenge/${c.slug}`}
-                  className="group relative overflow-hidden rounded-xl bg-card border border-border hover:border-primary/50 transition-colors p-6"
-                >
-                  <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                    {c.title}
-                  </h3>
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{c.description}</p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{c.total_miles} miles</span>
-                    <span className="flex items-center gap-1"><Award className="w-4 h-4" />{c.edition}</span>
-                  </div>
-                  <ChevronRight className="absolute top-6 right-6 w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* Past Editions */}
-      {past.length > 0 && (
-        <section className="pb-20 px-4">
-          <div className="container mx-auto max-w-5xl">
-            <h2 className="text-2xl font-bold text-foreground mb-6">Past Editions</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {past.map((c) => (
-                <div
-                  key={c.id}
-                  className="rounded-xl bg-card border border-border p-6 opacity-70"
-                >
-                  <h3 className="text-xl font-semibold text-foreground mb-2">{c.title}</h3>
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{c.description}</p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{c.total_miles} miles</span>
-                    <span className="flex items-center gap-1"><Award className="w-4 h-4" />{c.edition}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+      {loading ? (
+        <section className="pb-16 px-4">
+          <div className="container mx-auto max-w-5xl text-muted-foreground">Loading challenges...</div>
         </section>
+      ) : (
+        <>
+          {/* Women's History Edition */}
+          {womensHistory.length > 0 && (
+            <section className="pb-16 px-4">
+              <div className="container mx-auto max-w-5xl">
+                <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
+                  <Award className="w-5 h-5 text-primary" />
+                  Women's History Edition
+                </h2>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {womensHistory.map((c) => (
+                    <ChallengeCard key={c.id} c={c} />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Pride Edition */}
+          {pride.length > 0 && (
+            <section className="pb-16 px-4">
+              <div className="container mx-auto max-w-5xl">
+                <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
+                  🏳️‍🌈 Pride Edition
+                </h2>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {pride.map((c) => (
+                    <ChallengeCard key={c.id} c={c} />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Past Editions */}
+          {past.length > 0 && (
+            <section className="pb-20 px-4">
+              <div className="container mx-auto max-w-5xl">
+                <h2 className="text-2xl font-bold text-foreground mb-6">Past Editions</h2>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {past.map((c) => (
+                    <div key={c.id} className="rounded-xl bg-card border border-border p-6 opacity-70">
+                      <h3 className="text-xl font-semibold text-foreground mb-2">{c.title}</h3>
+                      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{c.description}</p>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{c.total_miles} miles</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+        </>
       )}
     </PageLayout>
   );
