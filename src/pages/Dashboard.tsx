@@ -353,7 +353,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border-border hover:border-accent/50 transition-colors cursor-pointer">
+          <Card className="bg-card border-border hover:border-accent/50 transition-colors cursor-pointer" onClick={() => navigate("/leaderboard")}>
             <CardContent className="p-6 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
                 <Users className="w-6 h-6 text-accent" />

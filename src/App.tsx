@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import ChallengeRoute from "./pages/ChallengeRoute";
 import ChallengePassport from "./pages/ChallengePassport";
 import Passport from "./pages/Passport";
+import Leaderboard from "./pages/Leaderboard";
 import Legal from "./pages/Legal";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/challenge/:slug" element={<ChallengeRoute />} />
           <Route path="/challenge/:slug/passport" element={<ChallengePassport />} />
           <Route path="/passport" element={<Passport />} />
+          <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/legal" element={<Legal />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
