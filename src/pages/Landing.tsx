@@ -35,6 +35,7 @@ const Landing = () => {
       <section className="relative pt-16 pb-20 px-4 overflow-hidden">
         {/* Branded coin background */}
         <div className="absolute inset-0">
+          <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.55)" }} />
           <div
             className="absolute inset-0"
             style={{
@@ -42,11 +43,10 @@ const Landing = () => {
               backgroundSize: "65%",
               backgroundRepeat: "no-repeat",
               backgroundPosition: "65% center",
-              filter: "blur(8px)",
-              opacity: 0.15,
+              filter: "blur(6px)",
+              opacity: 0.22,
             }}
           />
-          <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.55)" }} />
         </div>
 
         <div className="container mx-auto text-center relative z-10">
