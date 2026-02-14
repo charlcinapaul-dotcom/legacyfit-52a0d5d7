@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-const ROTATIONS = [-4, 2, -2, 5, -3, 1, -5, 3, -1, 4, -2, 3];
+const ROTATIONS = [-4, 2, -2, 5, -3, 1, -5, 3, -1, 4, -2, 3, -3, 2, -1, 4, -5, 3, -2, 1, -4, 5, -3, 2];
+const GRID_COUNT = 24; // enough to fill the section without gaps
 
 const StampGridBackground = () => {
   const { data: stamps } = useQuery({
@@ -12,31 +13,39 @@ const StampGridBackground = () => {
         .select("id, stamp_image_url")
         .not("stamp_image_url", "is", null)
         .order("order_index")
-        .limit(12);
+        .limit(24);
       if (error) throw error;
       return data?.filter((m) => m.stamp_image_url) ?? [];
     },
     staleTime: 1000 * 60 * 30,
   });
 
+  // Repeat stamps to fill GRID_COUNT cells if we have fewer unique stamps
+  const gridStamps = stamps?.length
+    ? Array.from({ length: GRID_COUNT }, (_, i) => ({
+        ...stamps[i % stamps.length],
+        gridKey: `${stamps[i % stamps.length].id}-${i}`,
+      }))
+    : [];
+
   return (
     <div className="absolute inset-0 overflow-hidden stamp-grid-bg">
       {/* Stamp grid layer */}
       <div
-        className={`absolute inset-0 grid grid-cols-3 md:grid-cols-4 gap-2 p-2 transition-opacity duration-700 ${
-          stamps?.length ? "opacity-40" : "opacity-0"
+        className={`absolute inset-0 grid grid-cols-4 md:grid-cols-6 gap-1 p-1 transition-opacity duration-700 ${
+          gridStamps.length ? "opacity-40" : "opacity-0"
         }`}
       >
-        {stamps?.map((stamp, i) => (
+        {gridStamps.map((stamp, i) => (
           <div
-            key={stamp.id}
-            className="flex items-center justify-center p-1"
+            key={stamp.gridKey}
+            className="flex items-center justify-center p-0.5"
             style={{ transform: `rotate(${ROTATIONS[i % ROTATIONS.length]}deg)` }}
           >
             <img
               src={stamp.stamp_image_url!}
               alt=""
-              className="w-full h-full object-contain max-h-[180px]"
+              className="w-full h-full object-contain"
               loading="lazy"
               draggable={false}
             />
