@@ -90,7 +90,7 @@ const Legal = () => {
                   attribution, please reach out to our team at:
                 </p>
                 <p className="mt-2 font-medium text-foreground">
-                  legal@legacyfit.com
+                  legal@legacyfitvirtual.com
                 </p>
               </div>
             </section>
