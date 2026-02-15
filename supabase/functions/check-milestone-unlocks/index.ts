@@ -20,6 +20,7 @@ interface UnlockedStamp {
   milesRequired: number;
   locationName: string;
   stampImageUrl: string | null;
+  audioUrl: string | null;
 }
 
 serve(async (req: Request): Promise<Response> => {
@@ -65,7 +66,7 @@ serve(async (req: Request): Promise<Response> => {
     // Get all milestones for this challenge where miles_required <= totalMiles
     const { data: eligibleMilestones, error: milestonesError } = await supabase
       .from("milestones")
-      .select("id, title, stamp_title, stamp_copy, miles_required, location_name, stamp_image_url")
+      .select("id, title, stamp_title, stamp_copy, miles_required, location_name, stamp_image_url, audio_url")
       .eq("challenge_id", challengeId)
       .lte("miles_required", totalMiles)
       .order("miles_required", { ascending: true });
@@ -127,7 +128,7 @@ serve(async (req: Request): Promise<Response> => {
     const { data: userData } = await supabase.auth.admin.getUserById(userId);
     const userEmail = userData?.user?.email;
 
-    const unlockedStamps: UnlockedStamp[] = newMilestones.map((m) => ({
+    const unlockedStamps = newMilestones.map((m) => ({
       milestoneId: m.id,
       title: m.title,
       stampTitle: m.stamp_title || m.title,
@@ -135,6 +136,7 @@ serve(async (req: Request): Promise<Response> => {
       milesRequired: m.miles_required,
       locationName: m.location_name || "",
       stampImageUrl: m.stamp_image_url,
+      audioUrl: m.audio_url || null,
     }));
 
     if (userEmail) {

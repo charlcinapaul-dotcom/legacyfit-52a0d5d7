@@ -18,6 +18,7 @@ export interface UnlockedStamp {
   milesRequired: number;
   locationName: string;
   stampImageUrl: string | null;
+  audioUrl: string | null;
 }
 
 export function useMileLogging(challengeId?: string) {

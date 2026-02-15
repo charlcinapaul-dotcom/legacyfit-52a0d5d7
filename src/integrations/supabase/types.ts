@@ -205,6 +205,7 @@ export type Database = {
       }
       milestones: {
         Row: {
+          audio_url: string | null
           challenge_id: string
           created_at: string
           description: string | null
@@ -222,6 +223,7 @@ export type Database = {
           title: string
         }
         Insert: {
+          audio_url?: string | null
           challenge_id: string
           created_at?: string
           description?: string | null
@@ -239,6 +241,7 @@ export type Database = {
           title: string
         }
         Update: {
+          audio_url?: string | null
           challenge_id?: string
           created_at?: string
           description?: string | null
