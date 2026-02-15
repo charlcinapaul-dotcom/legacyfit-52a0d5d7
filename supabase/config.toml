@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.generate-all-milestone-audio]
 verify_jwt = false
+
+[functions.redeem-reward-code]
+verify_jwt = false
