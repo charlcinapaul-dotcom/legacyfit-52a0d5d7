@@ -139,22 +139,21 @@ serve(async (req: Request): Promise<Response> => {
       audioUrl: m.audio_url || null,
     }));
 
+    // Fire-and-forget email sending to avoid blocking the response
     if (userEmail) {
       for (const stamp of unlockedStamps) {
-        try {
-          await supabase.functions.invoke("send-stamp-email", {
-            body: {
-              email: userEmail,
-              stampTitle: stamp.stampTitle,
-              stampCopy: stamp.stampCopy,
-              milesRequired: stamp.milesRequired,
-              locationName: stamp.locationName,
-              stampImageUrl: stamp.stampImageUrl,
-            },
-          });
-        } catch (emailError) {
+        supabase.functions.invoke("send-stamp-email", {
+          body: {
+            email: userEmail,
+            stampTitle: stamp.stampTitle,
+            stampCopy: stamp.stampCopy,
+            milesRequired: stamp.milesRequired,
+            locationName: stamp.locationName,
+            stampImageUrl: stamp.stampImageUrl,
+          },
+        }).catch((emailError) => {
           console.error(`Failed to send email for stamp ${stamp.stampTitle}:`, emailError);
-        }
+        });
       }
     }
 
