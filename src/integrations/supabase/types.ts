@@ -535,6 +535,7 @@ export type Database = {
           id: string
           invite_code: string
           name: string
+          password: string
         }
         Insert: {
           challenge_id: string
@@ -543,6 +544,7 @@ export type Database = {
           id?: string
           invite_code?: string
           name: string
+          password?: string
         }
         Update: {
           challenge_id?: string
@@ -551,6 +553,7 @@ export type Database = {
           id?: string
           invite_code?: string
           name?: string
+          password?: string
         }
         Relationships: [
           {

@@ -10,6 +10,7 @@ import { LegacyGuide } from "@/components/LegacyGuide";
 import { MileLogger } from "@/components/MileLogger";
 import { EnrollmentBadge } from "@/components/EnrollmentBadge";
 import { ChallengePricing } from "@/components/ChallengePricing";
+import { GroupChallenge } from "@/components/GroupChallenge";
 import { useChallengeBySlug } from "@/hooks/useChallengeBySlug";
 import { useEnrollmentStatus } from "@/hooks/useEnrollmentStatus";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -396,9 +397,18 @@ const ChallengeRoute = () => {
             </div>
           </div>
 
+          {/* Group Challenge Section */}
+          <div className="mt-8">
+            <GroupChallenge
+              challengeId={challenge.id}
+              totalMiles={challenge.totalMiles}
+              isEnrolled={enrollment?.isEnrolled ?? false}
+            />
+          </div>
+
           {/* Educational Disclaimer */}
           <div className="mt-8">
-            <DisclaimerBanner 
+            <DisclaimerBanner
               variant="compact" 
               showLivingPersonNote={slug === "malala"}
             />
