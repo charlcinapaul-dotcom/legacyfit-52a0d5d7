@@ -19,6 +19,7 @@ import {
 import type { User, Session } from "@supabase/supabase-js";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
 import { MileLogger } from "@/components/MileLogger";
+import { ReferralCard } from "@/components/ReferralCard";
 
 interface Profile {
   id: string;
@@ -334,6 +335,11 @@ const Dashboard = () => {
               </CardContent>
             </Card>
           )}
+        </div>
+
+        {/* Referral Invite */}
+        <div className="mb-8">
+          <ReferralCard />
         </div>
 
         {/* Quick Actions */}

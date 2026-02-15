@@ -371,6 +371,94 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referral_redemptions: {
+        Row: {
+          created_at: string
+          id: string
+          referral_code_id: string
+          referred_user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referral_code_id: string
+          referred_user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referral_code_id?: string
+          referred_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_redemptions_referral_code_id_fkey"
+            columns: ["referral_code_id"]
+            isOneToOne: false
+            referencedRelation: "referral_codes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reward_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_redeemed: boolean
+          redeemed_at: string | null
+          redeemed_for_challenge_id: string | null
+          user_id: string
+        }
+        Insert: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_redeemed?: boolean
+          redeemed_at?: string | null
+          redeemed_for_challenge_id?: string | null
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_redeemed?: boolean
+          redeemed_at?: string | null
+          redeemed_for_challenge_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_codes_redeemed_for_challenge_id_fkey"
+            columns: ["redeemed_for_challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           created_at: string
