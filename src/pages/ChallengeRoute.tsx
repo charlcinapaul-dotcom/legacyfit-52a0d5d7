@@ -115,11 +115,11 @@ const ChallengeRoute = () => {
     }
   }, [challenge?.daysToComplete]);
 
-  // Mock user progress - in real app this would come from database
+  // Real user progress from enrollment data
   const userProgress = {
-    milesLogged: 12.5,
-    daysRemaining: Math.max(0, customDays - 12),
-    startedAt: "2025-01-10",
+    milesLogged: enrollment?.milesLogged ?? 0,
+    daysRemaining: customDays,
+    startedAt: "",
   };
 
   // Loading state
