@@ -19,6 +19,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const defaultMode = searchParams.get("mode") === "signup" ? "signup" : "login";
+  const referralCode = searchParams.get("ref") || "";
 
   const [activeTab, setActiveTab] = useState(defaultMode);
   const [loading, setLoading] = useState(false);
@@ -38,14 +39,35 @@ const Auth = () => {
     checkSession();
 
     // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_IN" && session && referralCode) {
+        // Record referral redemption
+        try {
+          const { data: refCodeData } = await supabase
+            .from("referral_codes")
+            .select("id")
+            .eq("code", referralCode.toUpperCase())
+            .maybeSingle();
+
+          if (refCodeData) {
+            await supabase
+              .from("referral_redemptions")
+              .insert({
+                referral_code_id: refCodeData.id,
+                referred_user_id: session.user.id,
+              });
+          }
+        } catch (err) {
+          console.error("Failed to record referral:", err);
+        }
+      }
       if (session) {
         navigate("/dashboard");
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, referralCode]);
 
   const validateForm = (isSignup: boolean): boolean => {
     const newErrors: { email?: string; password?: string; displayName?: string } = {};
@@ -297,6 +319,11 @@ const Auth = () => {
                 </TabsContent>
 
                 <TabsContent value="signup">
+                  {referralCode && (
+                    <div className="mb-4 p-3 rounded-lg bg-primary/10 border border-primary/20 text-center">
+                      <p className="text-sm text-primary font-medium">🎉 You were invited! Referral code: <span className="font-mono">{referralCode.toUpperCase()}</span></p>
+                    </div>
+                  )}
                   <form onSubmit={handleSignup} className="space-y-4">
                     <div className="space-y-2">
                       <Label htmlFor="signup-name">Display Name (optional)</Label>
