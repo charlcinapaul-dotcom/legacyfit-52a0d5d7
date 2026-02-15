@@ -1,9 +1,11 @@
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { RewardCodeRedemption } from "@/components/RewardCodeRedemption";
 
 interface ChallengePricingProps {
   challengeName: string;
+  challengeId?: string;
   editionColor?: "gold" | "burgundy" | "pride";
 }
 
@@ -58,7 +60,7 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
   }
 };
 
-export const ChallengePricing = ({ challengeName, editionColor = "gold" }: ChallengePricingProps) => {
+export const ChallengePricing = ({ challengeName, challengeId, editionColor = "gold" }: ChallengePricingProps) => {
   const accent = getAccentClasses(editionColor);
 
   return (
@@ -133,6 +135,16 @@ export const ChallengePricing = ({ challengeName, editionColor = "gold" }: Chall
           </Button>
         </div>
       </div>
+
+      {/* Reward Code Redemption */}
+      {challengeId && (
+        <div className="max-w-md mx-auto">
+          <RewardCodeRedemption
+            challengeId={challengeId}
+            editionColor={editionColor}
+          />
+        </div>
+      )}
 
       {/* Donation Transparency */}
       <div className="max-w-2xl mx-auto text-center space-y-2 pt-4 border-t border-border">
