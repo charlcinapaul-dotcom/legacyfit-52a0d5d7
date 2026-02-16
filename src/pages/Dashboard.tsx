@@ -19,7 +19,9 @@ import {
 import type { User, Session } from "@supabase/supabase-js";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
 import { MileLogger } from "@/components/MileLogger";
+import { StepLogger } from "@/components/StepLogger";
 import { ReferralCard } from "@/components/ReferralCard";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Profile {
   id: string;
@@ -240,11 +242,26 @@ const Dashboard = () => {
         {/* Log Miles - inline if active challenge exists */}
         {activeChallenge ? (
           <div className="mb-8">
-            <MileLogger 
-              challengeId={activeChallenge.challengeId} 
-              challengeSlug={activeChallenge.slug || undefined}
-              challengeName={activeChallenge.title}
-            />
+            <Tabs defaultValue="miles" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="miles">Log Miles</TabsTrigger>
+                <TabsTrigger value="steps">Log Steps</TabsTrigger>
+              </TabsList>
+              <TabsContent value="miles">
+                <MileLogger 
+                  challengeId={activeChallenge.challengeId} 
+                  challengeSlug={activeChallenge.slug || undefined}
+                  challengeName={activeChallenge.title}
+                />
+              </TabsContent>
+              <TabsContent value="steps">
+                <StepLogger
+                  challengeId={activeChallenge.challengeId}
+                  challengeSlug={activeChallenge.slug || undefined}
+                  challengeName={activeChallenge.title}
+                />
+              </TabsContent>
+            </Tabs>
           </div>
         ) : (
           <Card className="bg-gradient-to-br from-primary/10 via-card to-accent/10 border-border mb-8">
