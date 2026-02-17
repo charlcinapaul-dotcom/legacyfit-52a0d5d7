@@ -297,6 +297,10 @@ const Dashboard = () => {
                   challengeId={activeChallenge.challengeId} 
                   challengeSlug={activeChallenge.slug || undefined}
                   challengeName={activeChallenge.title}
+                  onChallengeCompleted={(data) => {
+                    setCertChallenge(data);
+                    setCertOpen(true);
+                  }}
                 />
               </TabsContent>
               <TabsContent value="steps">
