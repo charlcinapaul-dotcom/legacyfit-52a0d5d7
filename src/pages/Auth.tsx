@@ -61,6 +61,43 @@ const Auth = () => {
           console.error("Failed to record referral:", err);
         }
       }
+
+      // Send BIB email on first sign-in (new user only)
+      if (event === "SIGNED_IN" && session) {
+        try {
+          const createdAt = new Date(session.user.created_at);
+          const now = new Date();
+          const isNewUser = (now.getTime() - createdAt.getTime()) < 60000; // within 60s
+
+          if (isNewUser) {
+            // Small delay to let the profile trigger complete
+            setTimeout(async () => {
+              try {
+                const { data: profile } = await supabase
+                  .from("profiles")
+                  .select("bib_number, display_name")
+                  .eq("user_id", session.user.id)
+                  .maybeSingle();
+
+                if (profile?.bib_number) {
+                  await supabase.functions.invoke("send-bib-email", {
+                    body: {
+                      email: session.user.email,
+                      displayName: profile.display_name || "",
+                      bibNumber: profile.bib_number,
+                    },
+                  });
+                }
+              } catch (err) {
+                console.error("Failed to send BIB email:", err);
+              }
+            }, 2000);
+          }
+        } catch (err) {
+          console.error("Failed to check new user:", err);
+        }
+      }
+
       if (session) {
         navigate("/dashboard");
       }
