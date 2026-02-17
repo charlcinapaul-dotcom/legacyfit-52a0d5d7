@@ -21,6 +21,7 @@ import { useActiveChallenge } from "@/hooks/useActiveChallenge";
 import { MileLogger } from "@/components/MileLogger";
 import { StepLogger } from "@/components/StepLogger";
 import { ReferralCard } from "@/components/ReferralCard";
+import { DigitalBib } from "@/components/DigitalBib";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Profile {
@@ -353,6 +354,19 @@ const Dashboard = () => {
             </Card>
           )}
         </div>
+
+        {/* Digital BIB */}
+        {profile?.bib_number && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-foreground mb-4">Your Digital BIB</h2>
+            <div className="max-w-sm mx-auto">
+              <DigitalBib
+                displayName={profile.display_name || "Explorer"}
+                bibNumber={profile.bib_number}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Referral Invite */}
         <div className="mb-8">
