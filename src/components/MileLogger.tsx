@@ -18,11 +18,12 @@ interface MileLoggerProps {
   challengeSlug?: string;
   challengeName?: string;
   totalMilestones?: number;
+  onChallengeCompleted?: (data: { name: string; miles: number; imageUrl: string | null }) => void;
 }
 
 const QUICK_MILES = [1, 3, 5, 10];
 
-export function MileLogger({ challengeId, challengeSlug, challengeName, totalMilestones = 6 }: MileLoggerProps) {
+export function MileLogger({ challengeId, challengeSlug, challengeName, totalMilestones = 6, onChallengeCompleted }: MileLoggerProps) {
   const [miles, setMiles] = useState<number>(1);
   const [notes, setNotes] = useState("");
   const [showCustom, setShowCustom] = useState(false);
@@ -36,7 +37,20 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
     isLogging,
     newlyUnlockedStamps,
     clearUnlockedStamps,
+    completionData,
+    clearCompletionData,
   } = useMileLogging(challengeId);
+
+  useEffect(() => {
+    if (completionData?.challengeCompleted && onChallengeCompleted) {
+      onChallengeCompleted({
+        name: completionData.challengeName,
+        miles: completionData.challengeTotalMiles,
+        imageUrl: completionData.certificateImageUrl,
+      });
+      clearCompletionData();
+    }
+  }, [completionData, onChallengeCompleted, clearCompletionData]);
 
   const { data: enrollment, isLoading: enrollmentLoading } = useEnrollmentStatus(challengeId);
 
