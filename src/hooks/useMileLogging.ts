@@ -21,9 +21,17 @@ export interface UnlockedStamp {
   audioUrl: string | null;
 }
 
+export interface CompletionData {
+  challengeCompleted: boolean;
+  certificateImageUrl: string | null;
+  challengeName: string;
+  challengeTotalMiles: number;
+}
+
 export function useMileLogging(challengeId?: string) {
   const queryClient = useQueryClient();
   const [newlyUnlockedStamps, setNewlyUnlockedStamps] = useState<UnlockedStamp[]>([]);
+  const [completionData, setCompletionData] = useState<CompletionData | null>(null);
 
   // Get user's total miles for a challenge
   const totalMilesQuery = useQuery({
@@ -115,9 +123,83 @@ export function useMileLogging(challengeId?: string) {
         console.error("Error checking unlocks:", unlockError);
       }
 
+      // Check for challenge completion
+      let certificateImageUrl: string | null = null;
+      const { data: challengeData } = await supabase
+        .from("challenges")
+        .select("total_miles, title")
+        .eq("id", challengeId)
+        .single();
+
+      const { data: userChallengeData } = await supabase
+        .from("user_challenges")
+        .select("is_completed")
+        .eq("user_id", user.id)
+        .eq("challenge_id", challengeId)
+        .single();
+
+      if (
+        challengeData &&
+        userChallengeData &&
+        !userChallengeData.is_completed &&
+        newTotal >= Number(challengeData.total_miles)
+      ) {
+        // Mark challenge as completed
+        await supabase
+          .from("user_challenges")
+          .update({ is_completed: true, completed_at: new Date().toISOString() })
+          .eq("user_id", user.id)
+          .eq("challenge_id", challengeId);
+
+        // Get profile for display name
+        const { data: profileData } = await supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("user_id", user.id)
+          .single();
+
+        const displayName = profileData?.display_name || "Explorer";
+
+        // Generate certificate
+        try {
+          const { data: certResult } = await supabase.functions.invoke("generate-certificate", {
+            body: {
+              userId: user.id,
+              challengeId,
+              challengeName: challengeData.title,
+              displayName,
+              totalMiles: Number(challengeData.total_miles),
+            },
+          });
+          certificateImageUrl = certResult?.imageUrl || null;
+
+          // Send certificate email
+          const { data: { user: authUser } } = await supabase.auth.getUser();
+          if (authUser?.email) {
+            await supabase.functions.invoke("send-certificate-email", {
+              body: {
+                email: authUser.email,
+                displayName,
+                challengeName: challengeData.title,
+                totalMiles: Number(challengeData.total_miles),
+                certificateImageUrl,
+              },
+            });
+          }
+        } catch (certErr) {
+          console.error("Error generating certificate:", certErr);
+        }
+      }
+
       return {
         newTotal,
         unlockedStamps: unlockResult?.unlockedStamps || [],
+        challengeCompleted: certificateImageUrl !== null || (
+          challengeData && !userChallengeData?.is_completed && newTotal >= Number(challengeData.total_miles)
+        ),
+        certificateImageUrl,
+        challengeName: challengeData?.title,
+        challengeTotalMiles: challengeData ? Number(challengeData.total_miles) : 0,
       };
     },
     onSuccess: (result) => {
@@ -133,6 +215,17 @@ export function useMileLogging(challengeId?: string) {
       if (result.unlockedStamps.length > 0) {
         setNewlyUnlockedStamps(result.unlockedStamps);
       }
+
+      // Handle challenge completion
+      if (result.challengeCompleted) {
+        setCompletionData({
+          challengeCompleted: true,
+          certificateImageUrl: result.certificateImageUrl,
+          challengeName: result.challengeName || "",
+          challengeTotalMiles: result.challengeTotalMiles,
+        });
+        toast.success("🏆 Challenge complete! Your certificate is being generated!");
+      }
     },
     onError: (error) => {
       console.error("Error logging miles:", error);
@@ -144,6 +237,10 @@ export function useMileLogging(challengeId?: string) {
     setNewlyUnlockedStamps([]);
   };
 
+  const clearCompletionData = () => {
+    setCompletionData(null);
+  };
+
   return {
     totalMiles: totalMilesQuery.data || 0,
     userChallenge: userChallengeQuery.data,
@@ -152,5 +249,7 @@ export function useMileLogging(challengeId?: string) {
     isLogging: logMilesMutation.isPending,
     newlyUnlockedStamps,
     clearUnlockedStamps,
+    completionData,
+    clearCompletionData,
   };
 }
