@@ -112,7 +112,7 @@ serve(async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "LegacyFit <welcome@legacyfit.com>",
+        from: "LegacyFit <onboarding@resend.dev>",
         to: [email],
         subject: `🎽 Welcome to LegacyFit! Your BIB: ${bibNumber}`,
         html: emailHtml,
