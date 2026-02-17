@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { BookOpen } from "lucide-react";
+import legacyFitLogo from "@/assets/legacyfit-logo.png";
 
 export const SiteFooter = () => (
   <footer className="py-12 px-4 border-t border-border">
@@ -7,11 +7,8 @@ export const SiteFooter = () => (
       <div className="grid md:grid-cols-4 gap-8 mb-8">
         {/* Brand */}
         <div>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-full bg-gradient-gold flex items-center justify-center">
-              <BookOpen className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold text-cyan">LegacyFit</span>
+          <div className="mb-4">
+            <img src={legacyFitLogo} alt="LegacyFit" className="h-9 w-auto" />
           </div>
           <p className="text-sm text-muted-foreground">
             Movement with meaning for women 45+.
