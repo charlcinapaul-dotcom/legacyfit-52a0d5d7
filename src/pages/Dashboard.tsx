@@ -14,7 +14,8 @@ import {
   TrendingUp,
   Target,
   Loader2,
-  ChevronRight
+  ChevronRight,
+  Trophy
 } from "lucide-react";
 import type { User, Session } from "@supabase/supabase-js";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
@@ -36,6 +37,7 @@ interface Profile {
 interface UserChallenge {
   id: string;
   miles_logged: number | null;
+  is_completed: boolean | null;
   challenge: {
     id: string;
     title: string;
@@ -119,6 +121,7 @@ const Dashboard = () => {
         .select(`
           id,
           miles_logged,
+          is_completed,
           challenge:challenges (
             id,
             title,
@@ -334,10 +337,12 @@ const Dashboard = () => {
 
           {userChallenges.length > 0 ? (
             <div className="grid gap-4 md:grid-cols-2">
-              {userChallenges.map((uc) => (
+              {userChallenges.map((uc) => {
+                const isCompleted = uc.is_completed === true;
+                return (
                 <Card 
                   key={uc.id} 
-                  className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer"
+                  className={`bg-card border-border hover:border-primary/50 transition-colors cursor-pointer ${isCompleted ? "border-primary/30" : ""}`}
                   onClick={() => navigate(`/challenge/${uc.challenge?.slug}`)}
                 >
                   <CardContent className="p-4">
@@ -368,12 +373,38 @@ const Dashboard = () => {
                             }}
                           />
                         </div>
+                        {isCompleted && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="mt-2 h-7 px-2 text-xs text-primary hover:text-primary"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              const { data: cert } = await supabase
+                                .from("certificates")
+                                .select("image_url")
+                                .eq("user_id", user!.id)
+                                .eq("challenge_id", uc.challenge.id)
+                                .maybeSingle();
+                              setCertChallenge({
+                                name: uc.challenge.title,
+                                miles: uc.challenge.total_miles,
+                                imageUrl: cert?.image_url || null,
+                              });
+                              setCertOpen(true);
+                            }}
+                          >
+                            <Trophy className="w-3 h-3 mr-1" />
+                            View Certificate
+                          </Button>
+                        )}
                       </div>
                       <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                     </div>
                   </CardContent>
                 </Card>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <Card className="bg-card border-border border-dashed">
