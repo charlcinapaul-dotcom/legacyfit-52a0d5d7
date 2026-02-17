@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Menu, X, BookOpen } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import legacyFitLogo from "@/assets/legacyfit-logo.png";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -40,11 +41,8 @@ export const SiteNavigation = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="flex items-center gap-2 shrink-0">
-          <div className="w-8 h-8 rounded-full bg-gradient-gold flex items-center justify-center">
-            <BookOpen className="w-5 h-5 text-primary-foreground" />
-          </div>
-          <span className="text-xl font-bold text-cyan hidden sm:inline">LegacyFit</span>
+        <Link to="/" className="shrink-0">
+          <img src={legacyFitLogo} alt="LegacyFit" className="h-8 md:h-10 w-auto" />
         </Link>
 
         {/* Desktop nav */}
