@@ -22,6 +22,7 @@ import { MileLogger } from "@/components/MileLogger";
 import { StepLogger } from "@/components/StepLogger";
 import { ReferralCard } from "@/components/ReferralCard";
 import { DigitalBib } from "@/components/DigitalBib";
+import { CompletionCertificate } from "@/components/CompletionCertificate";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Profile {
@@ -51,6 +52,9 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userChallenges, setUserChallenges] = useState<UserChallenge[]>([]);
   const [loading, setLoading] = useState(true);
+  const [certOpen, setCertOpen] = useState(false);
+  const [certChallenge, setCertChallenge] = useState<{ name: string; miles: number; imageUrl: string | null } | null>(null);
+  const [certGenerating, setCertGenerating] = useState(false);
   const { data: activeChallenge } = useActiveChallenge();
 
   useEffect(() => {
@@ -134,6 +138,43 @@ const Dashboard = () => {
       console.error("Error:", err);
     }
   };
+
+  // Check for newly completed challenges and show certificate modal
+  useEffect(() => {
+    if (!user) return;
+    const checkCompletions = async () => {
+      const { data } = await supabase
+        .from("user_challenges")
+        .select("id, miles_logged, is_completed, challenge:challenges(id, title, total_miles)")
+        .eq("user_id", user.id)
+        .eq("is_completed", true);
+
+      if (!data || data.length === 0) return;
+
+      // Check if there's a completed challenge without a viewed certificate
+      const viewedKey = "legacyfit_cert_viewed";
+      const viewed = JSON.parse(localStorage.getItem(viewedKey) || "[]") as string[];
+      const unseen = data.find((uc) => !viewed.includes(uc.id));
+      if (!unseen || !unseen.challenge) return;
+
+      const ch = unseen.challenge as unknown as { id: string; title: string; total_miles: number };
+
+      // Check for existing certificate image
+      const { data: cert } = await supabase
+        .from("certificates")
+        .select("image_url")
+        .eq("user_id", user.id)
+        .eq("challenge_id", ch.id)
+        .maybeSingle();
+
+      setCertChallenge({ name: ch.title, miles: ch.total_miles, imageUrl: cert?.image_url || null });
+      setCertOpen(true);
+
+      // Mark as viewed
+      localStorage.setItem(viewedKey, JSON.stringify([...viewed, unseen.id]));
+    };
+    checkCompletions();
+  }, [user, userChallenges]);
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -403,6 +444,18 @@ const Dashboard = () => {
           </Card>
 
         </div>
+
+        {/* Completion Certificate Modal */}
+        {certChallenge && (
+          <CompletionCertificate
+            open={certOpen}
+            onOpenChange={setCertOpen}
+            challengeName={certChallenge.name}
+            totalMiles={certChallenge.miles}
+            certificateImageUrl={certChallenge.imageUrl}
+            isGenerating={certGenerating}
+          />
+        )}
       </main>
     </div>
   );
