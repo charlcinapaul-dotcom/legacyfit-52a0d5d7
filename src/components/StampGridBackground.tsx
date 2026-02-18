@@ -18,6 +18,8 @@ const StampGridBackground = () => {
       return data?.filter((m) => m.stamp_image_url) ?? [];
     },
     staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60,
+    refetchOnWindowFocus: false,
   });
 
   // Repeat stamps to fill GRID_COUNT cells if we have fewer unique stamps
@@ -33,7 +35,7 @@ const StampGridBackground = () => {
       {/* Stamp grid layer */}
       <div
         className={`absolute inset-0 grid grid-cols-4 md:grid-cols-6 gap-1 p-1 transition-opacity duration-700 ${
-          gridStamps.length ? "opacity-40" : "opacity-0"
+          gridStamps.length ? "opacity-[0.27]" : "opacity-0"
         }`}
       >
         {gridStamps.map((stamp, i) => (
@@ -46,7 +48,8 @@ const StampGridBackground = () => {
               src={stamp.stamp_image_url!}
               alt=""
               className="w-full h-full object-contain"
-              loading="lazy"
+              loading="eager"
+              fetchPriority="high"
               draggable={false}
             />
           </div>
