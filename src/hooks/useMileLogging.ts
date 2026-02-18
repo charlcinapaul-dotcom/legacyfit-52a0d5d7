@@ -164,7 +164,6 @@ export function useMileLogging(challengeId?: string) {
         try {
           const { data: certResult } = await supabase.functions.invoke("generate-certificate", {
             body: {
-              userId: user.id,
               challengeId,
               challengeName: challengeData.title,
               displayName,
@@ -174,18 +173,14 @@ export function useMileLogging(challengeId?: string) {
           certificateImageUrl = certResult?.imageUrl || null;
 
           // Send certificate email
-          const { data: { user: authUser } } = await supabase.auth.getUser();
-          if (authUser?.email) {
-            await supabase.functions.invoke("send-certificate-email", {
-              body: {
-                email: authUser.email,
-                displayName,
-                challengeName: challengeData.title,
-                totalMiles: Number(challengeData.total_miles),
-                certificateImageUrl,
-              },
-            });
-          }
+          await supabase.functions.invoke("send-certificate-email", {
+            body: {
+              displayName,
+              challengeName: challengeData.title,
+              totalMiles: Number(challengeData.total_miles),
+              certificateImageUrl,
+            },
+          });
         } catch (certErr) {
           console.error("Error generating certificate:", certErr);
         }

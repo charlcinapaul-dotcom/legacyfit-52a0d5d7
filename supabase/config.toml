@@ -38,3 +38,9 @@ verify_jwt = false
 
 [functions.redeem-beta-code]
 verify_jwt = false
+
+[functions.join-team]
+verify_jwt = false
+
+[functions.create-team]
+verify_jwt = false

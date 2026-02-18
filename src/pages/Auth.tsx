@@ -82,7 +82,6 @@ const Auth = () => {
                 if (profile?.bib_number) {
                   await supabase.functions.invoke("send-bib-email", {
                     body: {
-                      email: session.user.email,
                       displayName: profile.display_name || "",
                       bibNumber: profile.bib_number,
                     },

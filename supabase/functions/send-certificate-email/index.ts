@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,7 +7,6 @@ const corsHeaders = {
 };
 
 interface CertificateEmailRequest {
-  email: string;
   displayName: string;
   challengeName: string;
   totalMiles: number;
@@ -19,6 +19,35 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Auth check
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    // Use authenticated user's email - never trust client-supplied email
+    const userEmail = claimsData.claims.email as string;
+    if (!userEmail) {
+      return new Response(JSON.stringify({ error: "No email on account" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
 
     if (!resendApiKey) {
@@ -29,13 +58,13 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const { email, displayName, challengeName, totalMiles, certificateImageUrl }: CertificateEmailRequest = await req.json();
+    const { displayName, challengeName, totalMiles, certificateImageUrl }: CertificateEmailRequest = await req.json();
 
-    if (!email || !challengeName) {
-      throw new Error("Missing required fields: email, challengeName");
+    if (!challengeName) {
+      throw new Error("Missing required fields: challengeName");
     }
 
-    console.log(`Sending certificate email to ${email} for challenge: ${challengeName}`);
+    console.log(`Sending certificate email to ${userEmail} for challenge: ${challengeName}`);
 
     const certificateImageHtml = certificateImageUrl
       ? `<div style="text-align: center; margin: 30px 0;">
@@ -53,7 +82,6 @@ serve(async (req: Request): Promise<Response> => {
 </head>
 <body style="margin: 0; padding: 0; background-color: #1a1a2e; font-family: 'Georgia', serif;">
   <div style="max-width: 600px; margin: 0 auto; padding: 40px 20px;">
-    <!-- Header -->
     <div style="text-align: center; margin-bottom: 30px;">
       <h1 style="color: #d4af37; font-size: 32px; margin: 0; letter-spacing: 2px;">
         🏆 CHALLENGE COMPLETE!
@@ -62,8 +90,6 @@ serve(async (req: Request): Promise<Response> => {
         LegacyFit Certificate of Completion
       </p>
     </div>
-
-    <!-- Congrats Card -->
     <div style="background: linear-gradient(135deg, #2d2d44 0%, #1a1a2e 100%); border: 2px solid #d4af37; border-radius: 16px; padding: 30px; margin-bottom: 30px; text-align: center;">
       <h2 style="color: #e0e0e0; font-size: 22px; margin: 0 0 5px 0;">
         Congratulations, ${displayName || "Explorer"}!
@@ -78,32 +104,20 @@ serve(async (req: Request): Promise<Response> => {
         ${totalMiles} MILES COMPLETED
       </div>
     </div>
-
-    <!-- Certificate Image -->
     ${certificateImageHtml}
-
-    <!-- Message -->
     <div style="text-align: center; padding: 20px; background: rgba(212, 175, 55, 0.1); border-radius: 12px; margin-bottom: 30px;">
       <p style="color: #d4af37; font-size: 18px; margin: 0; font-style: italic;">
         "You didn't just walk miles — you walked through history."
       </p>
     </div>
-
-    <!-- CTA -->
     <div style="text-align: center; margin-bottom: 30px;">
       <a href="https://legacyfit.com/dashboard" style="display: inline-block; background: linear-gradient(135deg, #d4af37 0%, #b8962e 100%); color: #1a1a2e; text-decoration: none; padding: 15px 40px; border-radius: 30px; font-weight: bold; font-size: 16px; letter-spacing: 1px;">
         VIEW YOUR CERTIFICATE →
       </a>
     </div>
-
-    <!-- Footer -->
     <div style="text-align: center; border-top: 1px solid #333; padding-top: 20px;">
-      <p style="color: #666; font-size: 12px; margin: 0;">
-        Keep moving. Every mile writes your story.
-      </p>
-      <p style="color: #555; font-size: 11px; margin-top: 10px;">
-        © LegacyFit | Building Legacies Through Movement
-      </p>
+      <p style="color: #666; font-size: 12px; margin: 0;">Keep moving. Every mile writes your story.</p>
+      <p style="color: #555; font-size: 11px; margin-top: 10px;">© LegacyFit | Building Legacies Through Movement</p>
     </div>
   </div>
 </body>
@@ -118,7 +132,7 @@ serve(async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify({
         from: "LegacyFit <certificates@legacyfit.com>",
-        to: [email],
+        to: [userEmail],
         subject: `🏆 Congratulations! You Completed ${challengeName}!`,
         html: emailHtml,
       }),

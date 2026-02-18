@@ -31,7 +31,12 @@ serve(async (req: Request): Promise<Response> => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Preserve original auth header for forwarding to other edge functions
+    const originalAuthHeader = req.headers.get("Authorization");
+
 
     const { userId, challengeId, totalMiles }: UnlockRequest = await req.json();
 
@@ -139,12 +144,14 @@ serve(async (req: Request): Promise<Response> => {
       audioUrl: m.audio_url || null,
     }));
 
-    // Fire-and-forget email sending to avoid blocking the response
-    if (userEmail) {
+    // Fire-and-forget email sending using user's auth context
+    if (userEmail && originalAuthHeader) {
+      const userScopedClient = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: originalAuthHeader } },
+      });
       for (const stamp of unlockedStamps) {
-        supabase.functions.invoke("send-stamp-email", {
+        userScopedClient.functions.invoke("send-stamp-email", {
           body: {
-            email: userEmail,
             stampTitle: stamp.stampTitle,
             stampCopy: stamp.stampCopy,
             milesRequired: stamp.milesRequired,
