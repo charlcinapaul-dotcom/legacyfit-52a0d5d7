@@ -9,8 +9,10 @@ import { Footprints, Loader2, LogIn, ShieldAlert } from "lucide-react";
 import { useMileLogging } from "@/hooks/useMileLogging";
 import { useEnrollmentStatus } from "@/hooks/useEnrollmentStatus";
 import { useDailyMilesLogged } from "@/hooks/useDailyMilesLogged";
+import { useRateLimitCountdown } from "@/hooks/useRateLimitCountdown";
 import { StampUnlockModal } from "./StampUnlockModal";
 import { MileLogConfirmDialog } from "./MileLogConfirmDialog";
+import { RateLimitBanner } from "./RateLimitBanner";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 
@@ -43,6 +45,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
   } = useMileLogging(challengeId);
 
   const { dailyLogged, dailyRemaining, maxSingleEntry, maxDailyAggregate, refetch: refetchDaily } = useDailyMilesLogged(challengeId);
+  const { isRateLimited, formatCountdown, triggerRateLimit } = useRateLimitCountdown(challengeId);
 
   useEffect(() => {
     if (completionData?.challengeCompleted && onChallengeCompleted) {
@@ -90,6 +93,12 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
     }, {
       onSettled: () => {
         refetchDaily();
+      },
+      onError: (error: any) => {
+        const msg = error?.message || "";
+        if (msg.toLowerCase().includes("rate limit")) {
+          triggerRateLimit();
+        }
       },
     });
     setPendingMiles(null);
@@ -179,6 +188,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
+          {isRateLimited && <RateLimitBanner countdown={formatCountdown()} />}
           {/* Quick buttons */}
           <div className="grid grid-cols-4 gap-2">
             {QUICK_MILES.map((quickMiles) => (
@@ -187,7 +197,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
                 variant="outline"
                 size="sm"
                 onClick={() => handleQuickLog(quickMiles)}
-                disabled={isLogging || quickMiles > dailyRemaining}
+                disabled={isLogging || isRateLimited || quickMiles > dailyRemaining}
                 className="h-12 text-lg font-bold hover:bg-primary hover:text-primary-foreground transition-colors"
               >
                 {isLogging ? (
@@ -256,7 +266,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
               )}
               <Button
                 onClick={handleCustomLog}
-                disabled={isLogging || miles <= 0 || miles > maxSingleEntry || miles > dailyRemaining}
+                disabled={isLogging || isRateLimited || miles <= 0 || miles > maxSingleEntry || miles > dailyRemaining}
                 className="w-full"
               >
                 {isLogging ? (

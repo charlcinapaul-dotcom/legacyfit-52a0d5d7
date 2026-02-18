@@ -7,8 +7,10 @@ import { Footprints, Loader2, ArrowRight } from "lucide-react";
 import { stepsToMiles, STEPS_PER_MILE } from "@/lib/health-sync";
 import { useMileLogging } from "@/hooks/useMileLogging";
 import { useDailyMilesLogged } from "@/hooks/useDailyMilesLogged";
+import { useRateLimitCountdown } from "@/hooks/useRateLimitCountdown";
 import { StampUnlockModal } from "./StampUnlockModal";
 import { MileLogConfirmDialog } from "./MileLogConfirmDialog";
+import { RateLimitBanner } from "./RateLimitBanner";
 
 interface StepLoggerProps {
   challengeId: string;
@@ -30,6 +32,7 @@ export function StepLogger({ challengeId, challengeSlug, challengeName }: StepLo
   } = useMileLogging(challengeId);
 
   const { dailyRemaining, maxSingleEntry, refetch: refetchDaily } = useDailyMilesLogged(challengeId);
+  const { isRateLimited, formatCountdown, triggerRateLimit } = useRateLimitCountdown(challengeId);
 
   const convertedMiles = steps ? stepsToMiles(Number(steps)) : 0;
   const pendingMiles = pendingSteps ? stepsToMiles(pendingSteps) : 0;
@@ -57,6 +60,12 @@ export function StepLogger({ challengeId, challengeSlug, challengeName }: StepLo
       onSettled: () => {
         refetchDaily();
       },
+      onError: (error: any) => {
+        const msg = error?.message || "";
+        if (msg.toLowerCase().includes("rate limit")) {
+          triggerRateLimit();
+        }
+      },
     });
     setPendingSteps(null);
     setSteps("");
@@ -75,6 +84,7 @@ export function StepLogger({ challengeId, challengeSlug, challengeName }: StepLo
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
+          {isRateLimited && <RateLimitBanner countdown={formatCountdown()} />}
           {/* Quick step buttons */}
           <div className="grid grid-cols-4 gap-2">
             {QUICK_STEPS.map((qs) => (
@@ -83,7 +93,7 @@ export function StepLogger({ challengeId, challengeSlug, challengeName }: StepLo
                 variant="outline"
                 size="sm"
                 onClick={() => handleQuickLog(qs)}
-                disabled={isLogging || stepsToMiles(qs) > dailyRemaining}
+                disabled={isLogging || isRateLimited || stepsToMiles(qs) > dailyRemaining}
                 className="h-14 flex flex-col gap-0.5 hover:bg-accent hover:text-accent-foreground transition-colors"
               >
                 {isLogging ? (
@@ -113,7 +123,7 @@ export function StepLogger({ challengeId, challengeSlug, challengeName }: StepLo
               />
               <Button
                 onClick={handleCustomLog}
-                disabled={isLogging || !steps || Number(steps) <= 0 || convertedMiles > maxSingleEntry || convertedMiles > dailyRemaining}
+                disabled={isLogging || isRateLimited || !steps || Number(steps) <= 0 || convertedMiles > maxSingleEntry || convertedMiles > dailyRemaining}
                 size="default"
               >
                 {isLogging ? (
