@@ -1,7 +1,10 @@
-import { Check } from "lucide-react";
+import { Check, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { RewardCodeRedemption } from "@/components/RewardCodeRedemption";
+import { useActiveChallenge } from "@/hooks/useActiveChallenge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Link } from "react-router-dom";
 
 interface ChallengePricingProps {
   challengeName: string;
@@ -62,6 +65,10 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
 
 export const ChallengePricing = ({ challengeName, challengeId, editionColor = "gold" }: ChallengePricingProps) => {
   const accent = getAccentClasses(editionColor);
+  const { data: activeChallenge } = useActiveChallenge();
+
+  // User already has a different active challenge
+  const hasOtherActiveChallenge = activeChallenge && challengeId && activeChallenge.challengeId !== challengeId;
 
   return (
     <div className="space-y-8">
@@ -74,6 +81,21 @@ export const ChallengePricing = ({ challengeName, challengeId, editionColor = "g
           Every 30-Day LegacyFit Challenge includes guided milestones, digital collectibles, and a contribution toward breast cancer support.
         </p>
       </div>
+
+      {/* One-challenge limit banner */}
+      {hasOtherActiveChallenge && (
+        <Alert className="max-w-3xl mx-auto border-primary/30 bg-primary/5">
+          <AlertCircle className="h-4 w-4 text-primary" />
+          <AlertDescription className="text-sm">
+            <strong>Beta limit:</strong> You're currently enrolled in <strong>{activeChallenge.title}</strong>. 
+            During the beta, each participant may only have one active challenge at a time. 
+            Complete your current challenge to unlock a new one.{" "}
+            <Link to={`/challenge/${activeChallenge.slug}`} className="underline font-medium text-primary hover:text-primary/80">
+              Go to your challenge →
+            </Link>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/* Pricing Tiers */}
       <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
@@ -97,8 +119,9 @@ export const ChallengePricing = ({ challengeName, challengeId, editionColor = "g
             size="lg"
             variant="outline"
             className={cn("w-full text-base", accent.secondaryBtn)}
+            disabled={!!hasOtherActiveChallenge}
           >
-            Start Digital Journey
+            {hasOtherActiveChallenge ? "Challenge Limit Reached" : "Start Digital Journey"}
           </Button>
         </div>
 
@@ -130,14 +153,15 @@ export const ChallengePricing = ({ challengeName, challengeId, editionColor = "g
           <Button
             size="lg"
             className={cn("w-full text-base", accent.primaryBtn)}
+            disabled={!!hasOtherActiveChallenge}
           >
-            Upgrade to Boarding Pass Experience
+            {hasOtherActiveChallenge ? "Challenge Limit Reached" : "Upgrade to Boarding Pass Experience"}
           </Button>
         </div>
       </div>
 
       {/* Reward Code Redemption */}
-      {challengeId && (
+      {challengeId && !hasOtherActiveChallenge && (
         <div className="max-w-md mx-auto">
           <RewardCodeRedemption
             challengeId={challengeId}

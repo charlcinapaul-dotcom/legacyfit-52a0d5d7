@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PageLayout } from "@/components/PageLayout";
 import { Button } from "@/components/ui/button";
-import { MapPin, ChevronRight } from "lucide-react";
+import { MapPin, ChevronRight, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import legacyfitLogo from "@/assets/legacyfit-logo.png";
+import { useActiveChallenge } from "@/hooks/useActiveChallenge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Challenge {
   id: string;
@@ -20,6 +22,7 @@ interface Challenge {
 const Challenges = () => {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
+  const { data: activeChallenge } = useActiveChallenge();
 
   useEffect(() => {
     supabase
@@ -39,42 +42,77 @@ const Challenges = () => {
   const womensHistory = active.filter((c) => c.slug !== "pride");
   const pride = active.filter((c) => c.slug === "pride");
 
-  const ChallengeCard = ({ c }: { c: Challenge }) => (
-    <Link
-      key={c.id}
-      to={`/challenge/${c.slug}`}
-      className="group relative overflow-hidden rounded-xl bg-card border border-border hover:border-primary/50 transition-colors p-6"
-    >
-      <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-        {c.title}
-      </h3>
-      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{c.description}</p>
-      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-        <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{c.total_miles} miles</span>
-      </div>
-      <ChevronRight className="absolute top-6 right-6 w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-    </Link>
-  );
+  const ChallengeCard = ({ c }: { c: Challenge }) => {
+    const isCurrentChallenge = activeChallenge?.challengeId === c.id;
+    const isLocked = !!activeChallenge && !isCurrentChallenge;
 
-  const WomensHistoryCard = ({ c }: { c: Challenge }) => (
-    <Link
-      key={c.id}
-      to={`/challenge/${c.slug}`}
-      className="group relative overflow-hidden rounded-xl bg-card border border-border hover:border-[#C084FC] transition-colors p-6"
-      style={{ boxShadow: 'none' }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(192, 132, 252, 0.3)'; }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}
-    >
-      <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-[#C084FC] transition-colors">
-        {c.title}
-      </h3>
-      <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{c.description}</p>
-      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-        <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{c.total_miles} miles</span>
-      </div>
-      <ChevronRight className="absolute top-6 right-6 w-5 h-5 text-muted-foreground group-hover:text-[#C084FC] transition-colors" />
-    </Link>
-  );
+    const Wrapper = isLocked ? "div" : Link;
+    const wrapperProps = isLocked
+      ? { className: "group relative overflow-hidden rounded-xl bg-card border border-border p-6 opacity-50 cursor-not-allowed" }
+      : { to: `/challenge/${c.slug}`, className: "group relative overflow-hidden rounded-xl bg-card border border-border hover:border-primary/50 transition-colors p-6" };
+
+    return (
+      <Wrapper key={c.id} {...(wrapperProps as any)}>
+        <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+          {c.title}
+        </h3>
+        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{c.description}</p>
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{c.total_miles} miles</span>
+        </div>
+        {isCurrentChallenge && (
+          <span className="absolute top-6 right-6 text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+            Active
+          </span>
+        )}
+        {isLocked && (
+          <span className="absolute top-6 right-6 text-xs text-muted-foreground">Locked</span>
+        )}
+        {!isLocked && !isCurrentChallenge && (
+          <ChevronRight className="absolute top-6 right-6 w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+        )}
+      </Wrapper>
+    );
+  };
+
+  const WomensHistoryCard = ({ c }: { c: Challenge }) => {
+    const isCurrentChallenge = activeChallenge?.challengeId === c.id;
+    const isLocked = !!activeChallenge && !isCurrentChallenge;
+
+    const Wrapper = isLocked ? "div" : Link;
+    const wrapperProps = isLocked
+      ? { className: "group relative overflow-hidden rounded-xl bg-card border border-border p-6 opacity-50 cursor-not-allowed" }
+      : {
+          to: `/challenge/${c.slug}`,
+          className: "group relative overflow-hidden rounded-xl bg-card border border-border hover:border-[#C084FC] transition-colors p-6",
+          style: { boxShadow: 'none' } as React.CSSProperties,
+          onMouseEnter: (e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(192, 132, 252, 0.3)'; },
+          onMouseLeave: (e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; },
+        };
+
+    return (
+      <Wrapper key={c.id} {...(wrapperProps as any)}>
+        <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-[#C084FC] transition-colors">
+          {c.title}
+        </h3>
+        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{c.description}</p>
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{c.total_miles} miles</span>
+        </div>
+        {isCurrentChallenge && (
+          <span className="absolute top-6 right-6 text-xs font-medium px-2 py-1 rounded-full bg-[#C084FC]/10 text-[#C084FC] border border-[#C084FC]/20">
+            Active
+          </span>
+        )}
+        {isLocked && (
+          <span className="absolute top-6 right-6 text-xs text-muted-foreground">Locked</span>
+        )}
+        {!isLocked && !isCurrentChallenge && (
+          <ChevronRight className="absolute top-6 right-6 w-5 h-5 text-muted-foreground group-hover:text-[#C084FC] transition-colors" />
+        )}
+      </Wrapper>
+    );
+  };
 
   return (
     <PageLayout>
@@ -96,6 +134,23 @@ const Challenges = () => {
         </section>
       ) : (
         <>
+          {/* One-challenge limit banner */}
+          {activeChallenge && (
+            <section className="px-4 pb-8">
+              <div className="container mx-auto max-w-5xl">
+                <Alert className="border-primary/30 bg-primary/5">
+                  <AlertCircle className="h-4 w-4 text-primary" />
+                  <AlertDescription className="text-sm">
+                    <strong>Beta limit:</strong> You're currently enrolled in <strong>{activeChallenge.title}</strong>. 
+                    During the beta, each participant may only have one active challenge at a time.{" "}
+                    <Link to={`/challenge/${activeChallenge.slug}`} className="underline font-medium text-primary hover:text-primary/80">
+                      Go to your challenge →
+                    </Link>
+                  </AlertDescription>
+                </Alert>
+              </div>
+            </section>
+          )}
           {/* Women's History Edition */}
           {womensHistory.length > 0 && (
             <section className="pb-16 px-4">
