@@ -2,6 +2,7 @@ import { Check, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { RewardCodeRedemption } from "@/components/RewardCodeRedemption";
+import { BetaCodeRedemption } from "@/components/BetaCodeRedemption";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "react-router-dom";
@@ -160,9 +161,13 @@ export const ChallengePricing = ({ challengeName, challengeId, editionColor = "g
         </div>
       </div>
 
-      {/* Reward Code Redemption */}
+      {/* Beta Code Redemption */}
       {challengeId && !hasOtherActiveChallenge && (
-        <div className="max-w-md mx-auto">
+        <div className="max-w-md mx-auto space-y-2">
+          <BetaCodeRedemption
+            challengeId={challengeId}
+            editionColor={editionColor}
+          />
           <RewardCodeRedemption
             challengeId={challengeId}
             editionColor={editionColor}
