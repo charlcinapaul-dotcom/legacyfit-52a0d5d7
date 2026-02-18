@@ -36,10 +36,10 @@ export function useGroupChallenge(challengeId: string | undefined) {
 
       if (!membership) return null;
 
-      // Get the team (must be for this challenge)
+      // Get the team (must be for this challenge) - no password column selected
       const { data: team } = await supabase
         .from("teams")
-        .select("*")
+        .select("id, name, invite_code, created_by, challenge_id")
         .eq("id", membership.team_id)
         .eq("challenge_id", challengeId)
         .single();
@@ -94,21 +94,13 @@ export function useGroupChallenge(challengeId: string | undefined) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !challengeId) throw new Error("Not authenticated");
 
-      const { data: team, error } = await supabase
-        .from("teams")
-        .insert({ name, challenge_id: challengeId, created_by: user.id, password })
-        .select()
-        .single();
+      const { data, error } = await supabase.functions.invoke("create-team", {
+        body: { name, password, challengeId },
+      });
 
-      if (error) throw error;
-
-      // Add creator as member
-      const { error: memberError } = await supabase
-        .from("team_members")
-        .insert({ team_id: team.id, user_id: user.id });
-
-      if (memberError) throw memberError;
-      return team;
+      if (error) throw new Error(error.message || "Failed to create group");
+      if (data?.error) throw new Error(data.error);
+      return data.team;
     },
     onSuccess: () => {
       toast.success("Group created!");
@@ -122,25 +114,12 @@ export function useGroupChallenge(challengeId: string | undefined) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !challengeId) throw new Error("Not authenticated");
 
-      // Find team by invite code and challenge
-      const { data: team, error: teamError } = await supabase
-        .from("teams")
-        .select("id, password")
-        .eq("invite_code", inviteCode)
-        .eq("challenge_id", challengeId)
-        .single();
+      const { data, error } = await supabase.functions.invoke("join-team", {
+        body: { inviteCode, password, challengeId },
+      });
 
-      if (teamError || !team) throw new Error("Group not found. Check the invite code.");
-      if (team.password !== password) throw new Error("Incorrect group password.");
-
-      const { error } = await supabase
-        .from("team_members")
-        .insert({ team_id: team.id, user_id: user.id });
-
-      if (error) {
-        if (error.code === "23505") throw new Error("You're already in this group.");
-        throw error;
-      }
+      if (error) throw new Error(error.message || "Failed to join group");
+      if (data?.error) throw new Error(data.error);
     },
     onSuccess: () => {
       toast.success("Joined the group!");

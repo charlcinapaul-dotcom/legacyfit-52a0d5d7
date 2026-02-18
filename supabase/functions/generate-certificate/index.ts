@@ -7,7 +7,6 @@ const corsHeaders = {
 };
 
 interface CertificateRequest {
-  userId: string;
   challengeId: string;
   challengeName: string;
   displayName: string;
@@ -20,14 +19,36 @@ serve(async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Auth check
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader?.startsWith("Bearer ")) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY")!;
+
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const token = authHeader.replace("Bearer ", "");
+    const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
+    if (claimsError || !claimsData?.claims) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const userId = claimsData.claims.sub as string;
+
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { userId, challengeId, challengeName, displayName, totalMiles }: CertificateRequest = await req.json();
+    const { challengeId, challengeName, displayName, totalMiles }: CertificateRequest = await req.json();
 
-    if (!userId || !challengeId || !challengeName) {
+    if (!challengeId || !challengeName) {
       throw new Error("Missing required fields");
     }
 
@@ -100,7 +121,7 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log("Certificate image generated successfully");
 
-    // Store certificate in database
+    // Store certificate in database using the authenticated userId
     const { error: insertError } = await supabase.from("certificates").insert({
       user_id: userId,
       challenge_id: challengeId,
