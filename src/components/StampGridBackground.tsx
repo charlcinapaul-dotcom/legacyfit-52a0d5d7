@@ -34,8 +34,8 @@ const StampGridBackground = () => {
     <div className="absolute inset-0 overflow-hidden stamp-grid-bg">
       {/* Stamp grid layer */}
       <div
-        className={`absolute inset-0 grid grid-cols-4 md:grid-cols-6 gap-1 p-1 transition-opacity duration-700 ${
-          gridStamps.length ? "opacity-[0.27]" : "opacity-0"
+        className={`absolute inset-0 grid grid-cols-4 md:grid-cols-6 gap-0 p-0 transition-opacity duration-700 ${
+          gridStamps.length ? "opacity-100" : "opacity-0"
         }`}
       >
         {gridStamps.map((stamp, i) => (
@@ -47,7 +47,7 @@ const StampGridBackground = () => {
             <img
               src={stamp.stamp_image_url!}
               alt=""
-              className="w-full h-full object-contain"
+              className="w-full h-full object-contain opacity-50 blur-[0.5px]"
               loading="eager"
               fetchPriority="high"
               draggable={false}
@@ -59,7 +59,7 @@ const StampGridBackground = () => {
       {/* Dark overlay for text readability */}
       <div
         className="absolute inset-0"
-        style={{ backgroundColor: "rgba(0,0,0,0.55)" }}
+        style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
       />
     </div>
   );
