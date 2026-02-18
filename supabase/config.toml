@@ -35,3 +35,6 @@ verify_jwt = false
 
 [functions.send-certificate-email]
 verify_jwt = false
+
+[functions.redeem-beta-code]
+verify_jwt = false
