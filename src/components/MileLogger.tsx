@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Footprints, Loader2, LogIn, ShieldAlert } from "lucide-react";
 import { useMileLogging } from "@/hooks/useMileLogging";
 import { useEnrollmentStatus } from "@/hooks/useEnrollmentStatus";
+import { useDailyMilesLogged } from "@/hooks/useDailyMilesLogged";
 import { StampUnlockModal } from "./StampUnlockModal";
 import { MileLogConfirmDialog } from "./MileLogConfirmDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +22,7 @@ interface MileLoggerProps {
   onChallengeCompleted?: (data: { name: string; miles: number; imageUrl: string | null }) => void;
 }
 
-const QUICK_MILES = [1, 3, 5, 10];
+const QUICK_MILES = [1, 3, 5, 7];
 
 export function MileLogger({ challengeId, challengeSlug, challengeName, totalMilestones = 6, onChallengeCompleted }: MileLoggerProps) {
   const [miles, setMiles] = useState<number>(1);
@@ -40,6 +41,8 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
     completionData,
     clearCompletionData,
   } = useMileLogging(challengeId);
+
+  const { dailyLogged, dailyRemaining, maxSingleEntry, maxDailyAggregate, refetch: refetchDaily } = useDailyMilesLogged(challengeId);
 
   useEffect(() => {
     if (completionData?.challengeCompleted && onChallengeCompleted) {
@@ -84,6 +87,10 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
       miles: pendingMiles,
       challengeId,
       notes: pendingNotes || undefined,
+    }, {
+      onSettled: () => {
+        refetchDaily();
+      },
     });
     setPendingMiles(null);
     setPendingNotes("");
@@ -167,6 +174,9 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
           <p className="text-sm text-muted-foreground">
             Total logged: <span className="font-semibold text-primary">{totalMiles} miles</span>
           </p>
+          <p className="text-xs text-muted-foreground">
+            Today: {dailyLogged} / {maxDailyAggregate} mi · <span className="font-medium">{dailyRemaining} mi remaining</span>
+          </p>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Quick buttons */}
@@ -177,7 +187,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
                 variant="outline"
                 size="sm"
                 onClick={() => handleQuickLog(quickMiles)}
-                disabled={isLogging}
+                disabled={isLogging || quickMiles > dailyRemaining}
                 className="h-12 text-lg font-bold hover:bg-primary hover:text-primary-foreground transition-colors"
               >
                 {isLogging ? (
@@ -212,7 +222,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
                   value={[miles]}
                   onValueChange={([v]) => setMiles(v)}
                   min={0.5}
-                  max={26.2}
+                  max={Math.min(maxSingleEntry, dailyRemaining)}
                   step={0.5}
                   className="py-2"
                 />
@@ -238,9 +248,15 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
                 />
               </div>
 
+              {miles > maxSingleEntry && (
+                <p className="text-xs text-destructive">Max {maxSingleEntry} miles per entry.</p>
+              )}
+              {miles > dailyRemaining && miles <= maxSingleEntry && (
+                <p className="text-xs text-destructive">Only {dailyRemaining} miles remaining today.</p>
+              )}
               <Button
                 onClick={handleCustomLog}
-                disabled={isLogging || miles <= 0}
+                disabled={isLogging || miles <= 0 || miles > maxSingleEntry || miles > dailyRemaining}
                 className="w-full"
               >
                 {isLogging ? (

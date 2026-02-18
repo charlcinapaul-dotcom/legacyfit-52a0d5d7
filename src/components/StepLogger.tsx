@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Footprints, Loader2, ArrowRight } from "lucide-react";
 import { stepsToMiles, STEPS_PER_MILE } from "@/lib/health-sync";
 import { useMileLogging } from "@/hooks/useMileLogging";
+import { useDailyMilesLogged } from "@/hooks/useDailyMilesLogged";
 import { StampUnlockModal } from "./StampUnlockModal";
 import { MileLogConfirmDialog } from "./MileLogConfirmDialog";
 
@@ -27,6 +28,8 @@ export function StepLogger({ challengeId, challengeSlug, challengeName }: StepLo
     newlyUnlockedStamps,
     clearUnlockedStamps,
   } = useMileLogging(challengeId);
+
+  const { dailyRemaining, maxSingleEntry, refetch: refetchDaily } = useDailyMilesLogged(challengeId);
 
   const convertedMiles = steps ? stepsToMiles(Number(steps)) : 0;
   const pendingMiles = pendingSteps ? stepsToMiles(pendingSteps) : 0;
@@ -50,6 +53,10 @@ export function StepLogger({ challengeId, challengeSlug, challengeName }: StepLo
       challengeId,
       notes: `${pendingSteps.toLocaleString()} steps synced manually`,
       source: "manual",
+    }, {
+      onSettled: () => {
+        refetchDaily();
+      },
     });
     setPendingSteps(null);
     setSteps("");
@@ -76,7 +83,7 @@ export function StepLogger({ challengeId, challengeSlug, challengeName }: StepLo
                 variant="outline"
                 size="sm"
                 onClick={() => handleQuickLog(qs)}
-                disabled={isLogging}
+                disabled={isLogging || stepsToMiles(qs) > dailyRemaining}
                 className="h-14 flex flex-col gap-0.5 hover:bg-accent hover:text-accent-foreground transition-colors"
               >
                 {isLogging ? (
@@ -106,7 +113,7 @@ export function StepLogger({ challengeId, challengeSlug, challengeName }: StepLo
               />
               <Button
                 onClick={handleCustomLog}
-                disabled={isLogging || !steps || Number(steps) <= 0}
+                disabled={isLogging || !steps || Number(steps) <= 0 || convertedMiles > maxSingleEntry || convertedMiles > dailyRemaining}
                 size="default"
               >
                 {isLogging ? (
@@ -119,6 +126,12 @@ export function StepLogger({ challengeId, challengeSlug, challengeName }: StepLo
             {convertedMiles > 0 && (
               <p className="text-xs text-muted-foreground">
                 = <span className="font-semibold text-primary">{convertedMiles} miles</span>
+                {convertedMiles > maxSingleEntry && (
+                  <span className="text-destructive ml-1">(exceeds {maxSingleEntry}mi limit)</span>
+                )}
+                {convertedMiles <= maxSingleEntry && convertedMiles > dailyRemaining && (
+                  <span className="text-destructive ml-1">(only {dailyRemaining}mi remaining today)</span>
+                )}
               </p>
             )}
           </div>
