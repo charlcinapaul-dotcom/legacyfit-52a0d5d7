@@ -63,7 +63,6 @@ const getEditionColor = (edition: string): string => {
 // Map edition to pricing accent
 const getPricingEditionColor = (edition: string): "gold" | "burgundy" | "pride" => {
   if (edition.toLowerCase().includes("pride")) return "pride";
-  if (edition.toLowerCase().includes("women")) return "burgundy";
   return "gold";
 };
 
