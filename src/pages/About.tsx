@@ -18,7 +18,7 @@ const About = () => (
           </p>
           <p>LegacyFit was born from a simple truth:</p>
           <blockquote className="border-l-4 border-primary pl-6 py-2 text-foreground italic text-xl">
-            Movement doesn't belong to the young. It belongs to anyone willing to take one more step.
+            Seasoned. Strong. Still moving. And just getting started.
           </blockquote>
         </div>
       </div>
