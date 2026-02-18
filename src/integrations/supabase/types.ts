@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      beta_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          is_active: boolean
+          max_uses: number
+          times_used: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_uses?: number
+          times_used?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          max_uses?: number
+          times_used?: number
+        }
+        Relationships: []
+      }
       certificates: {
         Row: {
           challenge_id: string
