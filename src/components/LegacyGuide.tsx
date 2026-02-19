@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { MessageCircle, X, Send, Loader2 } from "lucide-react";
+import { MessageCircle, X, Send, Loader2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import type { Session } from "@supabase/supabase-js";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -19,6 +21,28 @@ interface LegacyGuideProps {
 }
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/legacy-guide`;
+const DAILY_MSG_LIMIT = 15;
+const STORAGE_KEY = "legacy_guide_daily_msgs";
+
+function getDailyCount(): { date: string; count: number } {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed.date === new Date().toISOString().slice(0, 10)) {
+        return parsed;
+      }
+    }
+  } catch {}
+  return { date: new Date().toISOString().slice(0, 10), count: 0 };
+}
+
+function incrementDailyCount(): number {
+  const current = getDailyCount();
+  const updated = { date: new Date().toISOString().slice(0, 10), count: current.count + 1 };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  return updated.count;
+}
 
 async function streamChat({
   messages,
@@ -33,7 +57,7 @@ async function streamChat({
   onDone: () => void;
   signal?: AbortSignal;
 }) {
-  const { data: { session } } = await (await import("@/integrations/supabase/client")).supabase.auth.getSession();
+  const { data: { session } } = await supabase.auth.getSession();
   const token = session?.access_token;
   if (!token) throw new Error("Not authenticated");
 
@@ -87,8 +111,16 @@ export function LegacyGuide({ challengeContext }: LegacyGuideProps) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const [dailyCount, setDailyCount] = useState(() => getDailyCount().count);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => setSession(s));
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -102,14 +134,19 @@ export function LegacyGuide({ challengeContext }: LegacyGuideProps) {
     }
   }, [open]);
 
+  const isAtLimit = dailyCount >= DAILY_MSG_LIMIT;
+
   const send = useCallback(async () => {
     const text = input.trim();
-    if (!text || isLoading) return;
+    if (!text || isLoading || isAtLimit) return;
 
     const userMsg: Msg = { role: "user", content: text };
     setInput("");
     setMessages((prev) => [...prev, userMsg]);
     setIsLoading(true);
+
+    const newCount = incrementDailyCount();
+    setDailyCount(newCount);
 
     let assistantSoFar = "";
     const upsert = (chunk: string) => {
@@ -140,13 +177,16 @@ export function LegacyGuide({ challengeContext }: LegacyGuideProps) {
         { role: "assistant", content: "I'm having trouble connecting right now. Please try again." },
       ]);
     }
-  }, [input, isLoading, messages, challengeContext]);
+  }, [input, isLoading, messages, challengeContext, isAtLimit]);
 
   const suggestions = [
     "How does this challenge work?",
     "What are the milestones?",
     "How do I earn stamps?",
   ];
+
+  // Don't render anything if not authenticated
+  if (!session) return null;
 
   if (!open) {
     return (
@@ -191,6 +231,7 @@ export function LegacyGuide({ challengeContext }: LegacyGuideProps) {
                   key={s}
                   onClick={() => { setInput(s); }}
                   className="w-full text-left text-sm px-3 py-2 rounded-lg border border-border hover:bg-secondary/50 text-muted-foreground hover:text-foreground transition-colors"
+                  disabled={isAtLimit}
                 >
                   {s}
                 </button>
@@ -221,6 +262,23 @@ export function LegacyGuide({ challengeContext }: LegacyGuideProps) {
         )}
       </div>
 
+      {/* Daily limit banner */}
+      {isAtLimit && (
+        <div className="px-4 py-2 bg-secondary/80 border-t border-border">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Lock className="w-3.5 h-3.5 shrink-0" />
+            <span>Daily limit reached ({DAILY_MSG_LIMIT} messages). Resets tomorrow.</span>
+          </div>
+        </div>
+      )}
+
+      {/* Message count */}
+      {!isAtLimit && dailyCount > 0 && (
+        <div className="px-4 pt-1 text-xs text-muted-foreground text-right">
+          {DAILY_MSG_LIMIT - dailyCount} messages remaining today
+        </div>
+      )}
+
       {/* Input */}
       <div className="px-3 py-3 border-t border-border">
         <form
@@ -231,14 +289,14 @@ export function LegacyGuide({ challengeContext }: LegacyGuideProps) {
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask Legacy Guide…"
+            placeholder={isAtLimit ? "Daily limit reached" : "Ask Legacy Guide…"}
             className="flex-1 bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-cyan"
-            disabled={isLoading}
+            disabled={isLoading || isAtLimit}
           />
           <Button
             type="submit"
             size="icon"
-            disabled={!input.trim() || isLoading}
+            disabled={!input.trim() || isLoading || isAtLimit}
             className="bg-cyan text-background hover:bg-cyan/90 shrink-0"
           >
             <Send className="w-4 h-4" />
