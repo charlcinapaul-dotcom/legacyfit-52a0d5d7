@@ -32,7 +32,7 @@ const Landing = () => {
   return (
     <PageLayout>
       {/* ───── 1. Hero ───── */}
-      <section className="relative pt-16 pb-20 px-4 overflow-hidden">
+      <section className="relative pt-16 pb-20 px-4 overflow-hidden w-full max-w-full">
         <StampGridBackground />
 
         <div className="container mx-auto text-center relative z-10">
