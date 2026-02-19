@@ -181,6 +181,8 @@ const Auth = () => {
         if (error.message.includes("already registered")) {
           toast.error("An account with this email already exists. Please sign in instead.");
           setActiveTab("login");
+        } else if (error.message.toLowerCase().includes("weak") || error.message.toLowerCase().includes("password")) {
+          toast.error("Your password is too weak. Please choose a stronger password with a mix of letters, numbers, and symbols.");
         } else {
           toast.error(error.message);
         }
