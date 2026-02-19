@@ -72,7 +72,7 @@ export const ChallengePricing = ({ challengeName, challengeId, editionColor = "g
   const hasOtherActiveChallenge = activeChallenge && challengeId && activeChallenge.challengeId !== challengeId;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 w-full max-w-full overflow-hidden">
       {/* Section Header */}
       <div className="text-center">
         <h3 className={cn("text-2xl md:text-3xl font-bold mb-3", accent.heading)}>
@@ -99,9 +99,9 @@ export const ChallengePricing = ({ challengeName, challengeId, editionColor = "g
       )}
 
       {/* Pricing Tiers */}
-      <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+      <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto w-full overflow-hidden">
         {/* Tier 1 — Digital Journey */}
-        <div className="relative rounded-xl border border-border bg-card p-6 flex flex-col">
+        <div className="relative rounded-xl border border-border bg-card p-4 sm:p-6 flex flex-col min-w-0">
           <h4 className="text-lg font-semibold text-foreground mb-1">Digital Journey</h4>
           <div className="flex items-baseline gap-1 mb-4">
             <span className={cn("text-3xl font-bold", accent.heading)}>$29</span>
@@ -127,7 +127,7 @@ export const ChallengePricing = ({ challengeName, challengeId, editionColor = "g
         </div>
 
         {/* Tier 2 — Boarding Pass */}
-        <div className={cn("relative rounded-xl border-2 bg-card p-6 flex flex-col", accent.ring, "ring-2")}>
+        <div className={cn("relative rounded-xl border-2 bg-card p-4 sm:p-6 flex flex-col min-w-0", accent.ring, "ring-2")}>
           {/* Popular badge */}
           <span className={cn("absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-semibold text-white", accent.popular)}>
             Most Popular
@@ -156,7 +156,7 @@ export const ChallengePricing = ({ challengeName, challengeId, editionColor = "g
             className={cn("w-full text-base", accent.primaryBtn)}
             disabled={!!hasOtherActiveChallenge}
           >
-            {hasOtherActiveChallenge ? "Challenge Limit Reached" : "Upgrade to Boarding Pass Experience"}
+            <span className="truncate">{hasOtherActiveChallenge ? "Challenge Limit Reached" : "Upgrade to Boarding Pass"}</span>
           </Button>
         </div>
       </div>
