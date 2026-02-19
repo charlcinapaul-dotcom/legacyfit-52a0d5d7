@@ -385,9 +385,11 @@ const ChallengeRoute = () => {
                           <MapPin className="w-3 h-3 inline mr-1" />
                           {milestone.location}
                         </p>
-                        <p className="text-sm text-muted-foreground">
-                          {milestone.description}
-                        </p>
+                        {isUnlocked && milestone.description && (
+                          <p className="text-sm text-muted-foreground">
+                            {milestone.description}
+                          </p>
+                        )}
                       </div>
                     </div>
                   );
