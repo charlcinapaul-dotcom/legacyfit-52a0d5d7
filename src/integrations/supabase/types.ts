@@ -795,11 +795,39 @@ export type Database = {
       }
     }
     Functions: {
+      get_leaderboard_entries: {
+        Args: { p_since?: string }
+        Returns: {
+          total_miles: number
+          user_id: string
+        }[]
+      }
+      get_team_for_member: {
+        Args: { _challenge_id: string; _team_id: string }
+        Returns: {
+          challenge_id: string
+          created_by: string
+          id: string
+          invite_code: string
+          name: string
+        }[]
+      }
+      get_weekly_consistency: {
+        Args: { p_user_ids: string[]; p_week_start: string }
+        Returns: {
+          distinct_days: number
+          user_id: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_team_member: {
+        Args: { _team_id: string; _user_id: string }
         Returns: boolean
       }
     }

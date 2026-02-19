@@ -36,13 +36,12 @@ export function useGroupChallenge(challengeId: string | undefined) {
 
       if (!membership) return null;
 
-      // Get the team (must be for this challenge) - no password column selected
-      const { data: team } = await supabase
-        .from("teams")
-        .select("id, name, invite_code, created_by, challenge_id")
-        .eq("id", membership.team_id)
-        .eq("challenge_id", challengeId)
-        .single();
+      // Get team data via secure RPC (excludes password)
+      const { data: teamRows } = await supabase.rpc("get_team_for_member", {
+        _team_id: membership.team_id,
+        _challenge_id: challengeId,
+      });
+      const team = teamRows?.[0] ?? null;
 
       if (!team) return null;
 
