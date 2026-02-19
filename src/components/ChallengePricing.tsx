@@ -153,10 +153,10 @@ export const ChallengePricing = ({ challengeName, challengeId, editionColor = "g
 
           <Button
             size="lg"
-            className={cn("w-full text-base", accent.primaryBtn)}
+            className={cn("w-full text-base whitespace-normal h-auto py-3", accent.primaryBtn)}
             disabled={!!hasOtherActiveChallenge}
           >
-            <span className="truncate">{hasOtherActiveChallenge ? "Challenge Limit Reached" : "Upgrade to Boarding Pass"}</span>
+            {hasOtherActiveChallenge ? "Challenge Limit Reached" : "Upgrade to Boarding Pass Experience"}
           </Button>
         </div>
       </div>
