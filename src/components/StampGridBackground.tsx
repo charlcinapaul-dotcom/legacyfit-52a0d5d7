@@ -33,30 +33,20 @@ const StampGridBackground = () => {
     <div className="absolute inset-0 overflow-hidden stamp-grid-bg">
       {/* Stamp sheet layer */}
       <div
-        className={`absolute inset-0 flex items-center justify-center transition-opacity duration-700 ${
+        className={`absolute inset-0 transition-opacity duration-700 ${
           gridStamps.length ? "opacity-100" : "opacity-0"
         }`}
       >
-        <div
-          className="grid grid-cols-4 md:grid-cols-6 gap-[1px] p-3 rounded-sm"
-          style={{
-            border: "2px dashed rgba(255,255,255,0.25)",
-            background: "rgba(255,255,255,0.03)",
-          }}
-        >
+        <div className="w-full h-full grid grid-cols-4 md:grid-cols-6">
           {gridStamps.map((stamp) => (
             <div
               key={stamp.gridKey}
-              className="w-20 h-20 md:w-24 md:h-24 flex items-center justify-center"
-              style={{
-                borderRight: "1px dashed rgba(255,255,255,0.12)",
-                borderBottom: "1px dashed rgba(255,255,255,0.12)",
-              }}
+              className="flex items-center justify-center p-1"
             >
               <img
                 src={stamp.stamp_image_url!}
                 alt=""
-                className="w-[90%] h-[90%] object-contain opacity-50 blur-[0.5px]"
+                className="w-full h-full object-contain opacity-50 blur-[0.5px]"
                 loading="eager"
                 fetchPriority="high"
                 draggable={false}
