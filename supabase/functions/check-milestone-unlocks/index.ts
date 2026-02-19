@@ -37,11 +37,38 @@ serve(async (req: Request): Promise<Response> => {
     // Preserve original auth header for forwarding to other edge functions
     const originalAuthHeader = req.headers.get("Authorization");
 
+    // Verify the authenticated user matches the requested userId
+    if (!originalAuthHeader) {
+      return new Response(
+        JSON.stringify({ error: "Missing authorization header" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
+      );
+    }
+
+    const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: originalAuthHeader } },
+    });
+    const { data: { user: authUser }, error: authError } = await userClient.auth.getUser();
+
+    if (authError || !authUser) {
+      return new Response(
+        JSON.stringify({ error: "Invalid or expired token" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 401 }
+      );
+    }
 
     const { userId, challengeId, totalMiles }: UnlockRequest = await req.json();
 
     if (!userId || !challengeId || totalMiles === undefined) {
       throw new Error("Missing required fields: userId, challengeId, totalMiles");
+    }
+
+    if (userId !== authUser.id) {
+      console.warn(`BLOCKED: Auth user ${authUser.id} tried to act as ${userId}`);
+      return new Response(
+        JSON.stringify({ error: "Unauthorized - user ID mismatch" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 403 }
+      );
     }
 
     // SERVER-SIDE ENROLLMENT VALIDATION
