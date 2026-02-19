@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { Footprints, ArrowLeft, Star, Loader2 } from "lucide-react";
+import { Footprints, ArrowLeft, Star, Loader2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -48,6 +48,26 @@ function getStartOfMonth() {
 const Leaderboard = () => {
   const navigate = useNavigate();
   const [filter, setFilter] = useState<TimeFilter>("all");
+
+  // Check if user is authenticated and has a paid challenge
+  const { data: accessStatus, isLoading: accessLoading } = useQuery({
+    queryKey: ["leaderboard-access"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return { authenticated: false, hasPaid: false };
+
+      const { data } = await supabase
+        .from("user_challenges")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("payment_status", "paid")
+        .limit(1);
+
+      return { authenticated: true, hasPaid: (data?.length ?? 0) > 0 };
+    },
+  });
+
+  const isAuthorized = accessStatus?.authenticated && accessStatus?.hasPaid;
 
   const weekStart = useMemo(() => getStartOfWeek(), []);
   const monthStart = useMemo(() => getStartOfMonth(), []);
@@ -109,6 +129,7 @@ const Leaderboard = () => {
       result.sort((a, b) => b.total_miles - a.total_miles);
       return result;
     },
+    enabled: !!isAuthorized,
   });
 
   const users = leaderboardData || [];
@@ -140,74 +161,103 @@ const Leaderboard = () => {
       </nav>
 
       <main className="container mx-auto px-4 py-8 max-w-2xl">
-        {/* Tone message */}
-        <p className="text-center text-muted-foreground italic mb-6">
-          "Walk at your pace. Every mile matters. Progress over competition."
-        </p>
-
-        {/* Time filters */}
-        <Tabs value={filter} onValueChange={(v) => setFilter(v as TimeFilter)} className="mb-8">
-          <TabsList className="w-full grid grid-cols-3">
-            <TabsTrigger value="week">This Week</TabsTrigger>
-            <TabsTrigger value="month">This Month</TabsTrigger>
-            <TabsTrigger value="all">All Time</TabsTrigger>
-          </TabsList>
-        </Tabs>
-
-        {isLoading ? (
+        {accessLoading ? (
           <div className="flex justify-center py-16">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
-        ) : users.length === 0 ? (
+        ) : !isAuthorized ? (
           <Card className="bg-card border-border">
-            <CardContent className="p-8 text-center">
-              <p className="text-muted-foreground">No miles logged yet. Be the first!</p>
+            <CardContent className="p-8 text-center space-y-4">
+              <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center mx-auto">
+                <Lock className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <h2 className="text-lg font-semibold text-foreground">Participants Only</h2>
+              <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                The leaderboard is available exclusively to enrolled challenge participants. Join a challenge to see how the community is progressing!
+              </p>
+              {!accessStatus?.authenticated ? (
+                <Button onClick={() => navigate("/auth")} className="mt-2">
+                  Sign In
+                </Button>
+              ) : (
+                <Button onClick={() => navigate("/challenges")} className="mt-2">
+                  Browse Challenges
+                </Button>
+              )}
             </CardContent>
           </Card>
         ) : (
-          <div className="space-y-8">
-            {grouped.map((tier) => (
-              <div key={tier.name}>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xl">{tier.emoji}</span>
-                  <h2 className="text-lg font-semibold text-foreground">{tier.name}</h2>
-                  <Badge variant="secondary" className="ml-auto text-xs">
-                    {tier.min}–{tier.max === Infinity ? "∞" : tier.max} mi
-                  </Badge>
-                </div>
-                <div className="space-y-2">
-                  {tier.users.map((user) => (
-                    <Card key={user.user_id} className="bg-card border-border">
-                      <CardContent className="p-4 flex items-center gap-3">
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage src={user.avatar_url || undefined} />
-                          <AvatarFallback className="bg-secondary text-foreground text-sm">
-                            {(user.display_name || "E")[0].toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-medium text-foreground truncate">
-                              {user.display_name}
-                            </span>
-                            {user.has_consistency_star && (
-                              <Star className="w-4 h-4 text-primary fill-primary flex-shrink-0" />
-                            )}
-                          </div>
-                          {user.bib_number && (
-                            <p className="text-xs text-muted-foreground">{user.bib_number}</p>
-                          )}
-                        </div>
-                        <span className="text-sm font-semibold text-primary tabular-nums">
-                          {user.total_miles} mi
-                        </span>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
+          <>
+            {/* Tone message */}
+            <p className="text-center text-muted-foreground italic mb-6">
+              "Walk at your pace. Every mile matters. Progress over competition."
+            </p>
+
+            {/* Time filters */}
+            <Tabs value={filter} onValueChange={(v) => setFilter(v as TimeFilter)} className="mb-8">
+              <TabsList className="w-full grid grid-cols-3">
+                <TabsTrigger value="week">This Week</TabsTrigger>
+                <TabsTrigger value="month">This Month</TabsTrigger>
+                <TabsTrigger value="all">All Time</TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            {isLoading ? (
+              <div className="flex justify-center py-16">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
               </div>
-            ))}
-          </div>
+            ) : users.length === 0 ? (
+              <Card className="bg-card border-border">
+                <CardContent className="p-8 text-center">
+                  <p className="text-muted-foreground">No miles logged yet. Be the first!</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="space-y-8">
+                {grouped.map((tier) => (
+                  <div key={tier.name}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className="text-xl">{tier.emoji}</span>
+                      <h2 className="text-lg font-semibold text-foreground">{tier.name}</h2>
+                      <Badge variant="secondary" className="ml-auto text-xs">
+                        {tier.min}–{tier.max === Infinity ? "∞" : tier.max} mi
+                      </Badge>
+                    </div>
+                    <div className="space-y-2">
+                      {tier.users.map((user) => (
+                        <Card key={user.user_id} className="bg-card border-border">
+                          <CardContent className="p-4 flex items-center gap-3">
+                            <Avatar className="w-10 h-10">
+                              <AvatarImage src={user.avatar_url || undefined} />
+                              <AvatarFallback className="bg-secondary text-foreground text-sm">
+                                {(user.display_name || "E")[0].toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-medium text-foreground truncate">
+                                  {user.display_name}
+                                </span>
+                                {user.has_consistency_star && (
+                                  <Star className="w-4 h-4 text-primary fill-primary flex-shrink-0" />
+                                )}
+                              </div>
+                              {user.bib_number && (
+                                <p className="text-xs text-muted-foreground">{user.bib_number}</p>
+                              )}
+                            </div>
+                            <span className="text-sm font-semibold text-primary tabular-nums">
+                              {user.total_miles} mi
+                            </span>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>
