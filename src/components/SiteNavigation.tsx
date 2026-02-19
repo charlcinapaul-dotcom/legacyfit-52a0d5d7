@@ -42,7 +42,7 @@ export const SiteNavigation = () => {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link to="/" className="shrink-0">
-          <img src={legacyFitLogo} alt="LegacyFit" className="h-14 md:h-14 w-auto" />
+          <img src={legacyFitLogo} alt="LegacyFit" className="h-14 md:h-14 w-auto" width="209" height="56" />
         </Link>
 
         {/* Desktop nav */}
