@@ -56,28 +56,20 @@ const Leaderboard = () => {
   const { data: leaderboardData, isLoading } = useQuery({
     queryKey: ["leaderboard-data", filter],
     queryFn: async () => {
-      // Get mile entries based on filter
-      let query = supabase
-        .from("mile_entries")
-        .select("user_id, miles, logged_at");
-
-      if (filter === "week") {
-        query = query.gte("logged_at", weekStart);
-      } else if (filter === "month") {
-        query = query.gte("logged_at", monthStart);
-      }
-
-      const { data: entries, error } = await query;
+      // Get aggregated leaderboard data via secure RPC
+      const since = filter === "week" ? weekStart : filter === "month" ? monthStart : null;
+      const { data: entries, error } = await supabase.rpc("get_leaderboard_entries", {
+        p_since: since,
+      });
       if (error) throw error;
 
-      // Aggregate miles per user
+      // Build user miles map
       const userMiles: Record<string, number> = {};
       for (const e of entries || []) {
-        userMiles[e.user_id] = (userMiles[e.user_id] || 0) + Number(e.miles);
+        userMiles[e.user_id] = Number(e.total_miles);
       }
 
-      // Filter out 0-mile users
-      const userIds = Object.keys(userMiles).filter((uid) => userMiles[uid] > 0);
+      const userIds = Object.keys(userMiles);
       if (userIds.length === 0) return [];
 
       // Get profiles
@@ -86,17 +78,15 @@ const Leaderboard = () => {
         .select("user_id, display_name, avatar_url, bib_number")
         .in("user_id", userIds);
 
-      // Check consistency star (3+ distinct days this week)
-      const { data: weekEntries } = await supabase
-        .from("mile_entries")
-        .select("user_id, logged_at")
-        .gte("logged_at", weekStart)
-        .in("user_id", userIds);
+      // Check consistency star via secure RPC
+      const { data: consistency } = await supabase.rpc("get_weekly_consistency", {
+        p_week_start: weekStart,
+        p_user_ids: userIds,
+      });
 
-      const userDays: Record<string, Set<string>> = {};
-      for (const e of weekEntries || []) {
-        if (!userDays[e.user_id]) userDays[e.user_id] = new Set();
-        userDays[e.user_id].add(new Date(e.logged_at).toDateString());
+      const userDays: Record<string, number> = {};
+      for (const c of consistency || []) {
+        userDays[c.user_id] = Number(c.distinct_days);
       }
 
       const profileMap = new Map(
@@ -111,7 +101,7 @@ const Leaderboard = () => {
           avatar_url: profile?.avatar_url || null,
           bib_number: profile?.bib_number || null,
           total_miles: Math.round(userMiles[uid] * 10) / 10,
-          has_consistency_star: (userDays[uid]?.size || 0) >= 3,
+          has_consistency_star: (userDays[uid] || 0) >= 3,
         };
       });
 
