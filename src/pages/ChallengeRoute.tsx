@@ -8,7 +8,9 @@ import { cn } from "@/lib/utils";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
 import { LegacyGuide } from "@/components/LegacyGuide";
 import { MileLogger } from "@/components/MileLogger";
+import { StepLogger } from "@/components/StepLogger";
 import { EnrollmentBadge } from "@/components/EnrollmentBadge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChallengePricing } from "@/components/ChallengePricing";
 import { GroupChallenge } from "@/components/GroupChallenge";
 import { useChallengeBySlug } from "@/hooks/useChallengeBySlug";
@@ -415,13 +417,28 @@ const ChallengeRoute = () => {
             />
           </div>
 
-          {/* Log Miles Section */}
+          {/* Log Miles / Steps Section */}
           <div className="mt-8">
-            <MileLogger 
-              challengeId={challenge.id} 
-              challengeSlug={slug}
-              challengeName={challenge.name}
-            />
+            <Tabs defaultValue="miles" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="miles">Log Miles</TabsTrigger>
+                <TabsTrigger value="steps">Log Steps</TabsTrigger>
+              </TabsList>
+              <TabsContent value="miles">
+                <MileLogger 
+                  challengeId={challenge.id} 
+                  challengeSlug={slug}
+                  challengeName={challenge.name}
+                />
+              </TabsContent>
+              <TabsContent value="steps">
+                <StepLogger
+                  challengeId={challenge.id}
+                  challengeSlug={slug}
+                  challengeName={challenge.name}
+                />
+              </TabsContent>
+            </Tabs>
           </div>
 
           {/* Action Buttons */}
