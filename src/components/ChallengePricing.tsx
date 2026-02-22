@@ -99,7 +99,7 @@ export const ChallengePricing = ({ challengeName, challengeId, editionColor = "g
       )}
 
       {/* Pricing Tiers */}
-      <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto w-full overflow-hidden">
+      <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto w-full pt-3">
         {/* Tier 1 — Digital Journey */}
         <div className="relative rounded-xl border border-border bg-card p-4 sm:p-6 flex flex-col min-w-0">
           <h4 className="text-lg font-semibold text-foreground mb-1">Digital Journey</h4>
