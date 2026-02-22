@@ -1,11 +1,14 @@
-import { Check, AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { Check, AlertCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { RewardCodeRedemption } from "@/components/RewardCodeRedemption";
 import { BetaCodeRedemption } from "@/components/BetaCodeRedemption";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 interface ChallengePricingProps {
   challengeName: string;
@@ -67,9 +70,47 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
 export const ChallengePricing = ({ challengeName, challengeId, editionColor = "gold" }: ChallengePricingProps) => {
   const accent = getAccentClasses(editionColor);
   const { data: activeChallenge } = useActiveChallenge();
+  const navigate = useNavigate();
+  const [loadingTier, setLoadingTier] = useState<string | null>(null);
 
-  // User already has a different active challenge
   const hasOtherActiveChallenge = activeChallenge && challengeId && activeChallenge.challengeId !== challengeId;
+
+  const handleCheckout = async (tier: "digital" | "boarding_pass") => {
+    if (!challengeId) return;
+
+    // Check if user is logged in
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in or create an account to enroll in a challenge.",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+
+    setLoadingTier(tier);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-checkout", {
+        body: { challengeId, tier },
+      });
+
+      if (error || !data?.url) {
+        throw new Error(error?.message || "Failed to create checkout session");
+      }
+
+      window.open(data.url, "_blank");
+    } catch (err: any) {
+      toast({
+        title: "Checkout error",
+        description: err.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingTier(null);
+    }
+  };
 
   return (
     <div className="space-y-8 w-full max-w-full overflow-hidden">
@@ -120,15 +161,17 @@ export const ChallengePricing = ({ challengeName, challengeId, editionColor = "g
             size="lg"
             variant="outline"
             className={cn("w-full text-base", accent.secondaryBtn)}
-            disabled={!!hasOtherActiveChallenge}
+            disabled={!!hasOtherActiveChallenge || loadingTier === "digital"}
+            onClick={() => handleCheckout("digital")}
           >
-            {hasOtherActiveChallenge ? "Challenge Limit Reached" : "Start Digital Journey"}
+            {loadingTier === "digital" ? (
+              <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing...</>
+            ) : hasOtherActiveChallenge ? "Challenge Limit Reached" : "Start Digital Journey"}
           </Button>
         </div>
 
         {/* Tier 2 — Boarding Pass */}
         <div className={cn("relative rounded-xl border-2 bg-card p-4 sm:p-6 flex flex-col min-w-0", accent.ring, "ring-2")}>
-          {/* Popular badge */}
           <span className={cn("absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-semibold text-white", accent.popular)}>
             Most Popular
           </span>
@@ -154,9 +197,12 @@ export const ChallengePricing = ({ challengeName, challengeId, editionColor = "g
           <Button
             size="lg"
             className={cn("w-full text-base whitespace-normal h-auto py-3", accent.primaryBtn)}
-            disabled={!!hasOtherActiveChallenge}
+            disabled={!!hasOtherActiveChallenge || loadingTier === "boarding_pass"}
+            onClick={() => handleCheckout("boarding_pass")}
           >
-            {hasOtherActiveChallenge ? "Challenge Limit Reached" : "Upgrade to Boarding Pass Experience"}
+            {loadingTier === "boarding_pass" ? (
+              <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing...</>
+            ) : hasOtherActiveChallenge ? "Challenge Limit Reached" : "Upgrade to Boarding Pass Experience"}
           </Button>
         </div>
       </div>
