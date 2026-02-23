@@ -138,8 +138,7 @@ serve(async (req: Request): Promise<Response> => {
     });
   } catch (error: unknown) {
     console.error("Error in generate-certificate:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    return new Response(JSON.stringify({ error: "An unexpected error occurred. Please try again." }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
