@@ -97,8 +97,7 @@ serve(async (req: Request): Promise<Response> => {
     );
   } catch (error: unknown) {
     console.error("Error in create-team:", error);
-    const msg = error instanceof Error ? error.message : "Unknown error";
-    return new Response(JSON.stringify({ error: msg }), {
+    return new Response(JSON.stringify({ error: "An unexpected error occurred. Please try again." }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
