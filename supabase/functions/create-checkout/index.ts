@@ -30,7 +30,7 @@ serve(async (req) => {
     const user = data.user;
     if (!user?.email) throw new Error("User not authenticated");
 
-    const { challengeId, tier } = await req.json();
+    const { challengeId, tier, slug } = await req.json();
     if (!challengeId) throw new Error("Missing challengeId");
 
     const priceId = PRICE_IDS[tier] || PRICE_IDS.digital;
@@ -54,7 +54,7 @@ serve(async (req) => {
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "payment",
       success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&challenge_id=${challengeId}`,
-      cancel_url: `${origin}/challenge/${challengeId}`,
+      cancel_url: `${origin}/challenge/${slug || challengeId}`,
       metadata: {
         user_id: user.id,
         challenge_id: challengeId,
