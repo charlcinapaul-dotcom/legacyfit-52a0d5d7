@@ -13,6 +13,7 @@ import { toast } from "@/hooks/use-toast";
 interface ChallengePricingProps {
   challengeName: string;
   challengeId?: string;
+  challengeSlug?: string;
   editionColor?: "gold" | "burgundy" | "pride";
 }
 
@@ -67,7 +68,7 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
   }
 };
 
-export const ChallengePricing = ({ challengeName, challengeId, editionColor = "gold" }: ChallengePricingProps) => {
+export const ChallengePricing = ({ challengeName, challengeId, challengeSlug, editionColor = "gold" }: ChallengePricingProps) => {
   const accent = getAccentClasses(editionColor);
   const { data: activeChallenge } = useActiveChallenge();
   const navigate = useNavigate();
@@ -93,7 +94,7 @@ export const ChallengePricing = ({ challengeName, challengeId, editionColor = "g
     setLoadingTier(tier);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { challengeId, tier },
+        body: { challengeId, tier, slug: challengeSlug },
       });
 
       if (error || !data?.url) {

@@ -332,6 +332,7 @@ const ChallengeRoute = () => {
             <ChallengePricing
               challengeName={challenge.name}
               challengeId={challenge.id}
+              challengeSlug={slug}
               editionColor={getPricingEditionColor(data?.challenge?.edition || "")}
             />
           </div>
