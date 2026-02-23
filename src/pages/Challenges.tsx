@@ -22,17 +22,29 @@ interface Challenge {
 const Challenges = () => {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const { data: activeChallenge } = useActiveChallenge();
 
-  useEffect(() => {
+  const fetchChallenges = () => {
+    setLoading(true);
+    setError(false);
     supabase
       .from("challenges")
       .select("id, title, slug, description, total_miles, edition, is_active, image_url")
       .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        setChallenges(data ?? []);
+      .then(({ data, error: fetchError }) => {
+        if (fetchError) {
+          console.error("Error fetching challenges:", fetchError);
+          setError(true);
+        } else {
+          setChallenges(data ?? []);
+        }
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchChallenges();
   }, []);
 
   const active = challenges.filter((c) => c.is_active);
@@ -131,6 +143,13 @@ const Challenges = () => {
       {loading ? (
         <section className="pb-16 px-4">
           <div className="container mx-auto max-w-5xl text-muted-foreground">Loading challenges...</div>
+        </section>
+      ) : error ? (
+        <section className="pb-16 px-4">
+          <div className="container mx-auto max-w-5xl text-center py-12">
+            <p className="text-muted-foreground mb-4">Unable to load challenges. Please try again.</p>
+            <Button variant="outline" onClick={fetchChallenges}>Retry</Button>
+          </div>
         </section>
       ) : (
         <>
