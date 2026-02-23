@@ -28,11 +28,18 @@ const Challenges = () => {
   const fetchChallenges = () => {
     setLoading(true);
     setError(false);
+
+    const timeout = setTimeout(() => {
+      setLoading(false);
+      setError(true);
+    }, 12000);
+
     supabase
       .from("challenges")
       .select("id, title, slug, description, total_miles, edition, is_active, image_url")
       .order("created_at", { ascending: false })
       .then(({ data, error: fetchError }) => {
+        clearTimeout(timeout);
         if (fetchError) {
           console.error("Error fetching challenges:", fetchError);
           setError(true);
