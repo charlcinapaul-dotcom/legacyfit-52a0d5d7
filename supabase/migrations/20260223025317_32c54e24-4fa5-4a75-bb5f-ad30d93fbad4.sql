@@ -1,0 +1,1 @@
+DROP POLICY "Team creators can view their teams" ON public.teams;
