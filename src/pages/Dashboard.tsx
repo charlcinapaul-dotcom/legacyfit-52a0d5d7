@@ -212,7 +212,7 @@ const Dashboard = () => {
               </div>
               <span className="text-xl font-bold text-gradient-gold">LegacyFit</span>
             </Link>
-            <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
+            <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-primary hover:text-primary/80 hover:bg-secondary/50 transition-colors">
               Home
             </Link>
           </div>
