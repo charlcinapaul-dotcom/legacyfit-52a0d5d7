@@ -120,7 +120,9 @@ export const SiteNavigation = () => {
                 className={`px-4 py-3 rounded-md text-sm font-medium transition-colors ${
                   location.pathname === item.to
                     ? "text-primary bg-secondary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                    : item.to === "/"
+                      ? "text-primary hover:text-primary/80 hover:bg-secondary/50"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                 }`}
               >
                 {item.label}
