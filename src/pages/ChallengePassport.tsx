@@ -191,6 +191,12 @@ export default function ChallengePassport() {
                   alt={selectedStamp.stamp_title || selectedStamp.title}
                   className="w-48 h-48 object-contain rounded-xl"
                 />
+              ) : selectedStamp.stamp_image_url ? (
+                <img
+                  src={selectedStamp.stamp_image_url}
+                  alt={selectedStamp.stamp_title || selectedStamp.title}
+                  className="w-48 h-48 object-contain rounded-xl grayscale opacity-50"
+                />
               ) : (
                 <div className="w-48 h-48 rounded-xl bg-muted flex items-center justify-center">
                   <Book className="w-16 h-16 text-muted-foreground" />
