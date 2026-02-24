@@ -50,7 +50,7 @@ export const SiteNavigation = () => {
             className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
               location.pathname === "/"
                 ? "text-primary bg-secondary"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                : "text-primary hover:text-primary/80 hover:bg-secondary/50"
             }`}
           >
             Home
