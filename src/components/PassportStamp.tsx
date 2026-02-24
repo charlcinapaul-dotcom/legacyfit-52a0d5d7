@@ -53,20 +53,36 @@ export function PassportStamp({ stamp, onClick }: PassportStampProps) {
         </>
       ) : (
         <>
-          {/* Locked stamp */}
-          <div className="flex flex-col items-center gap-3">
-            <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center border border-border/50">
-              <Lock className="w-6 h-6 text-muted-foreground" />
+          {/* Locked stamp - show grayed preview if image exists */}
+          {stamp.stamp_image_url ? (
+            <div className="relative w-full h-full flex items-center justify-center">
+              <img
+                src={stamp.stamp_image_url}
+                alt={displayTitle}
+                className="max-w-full max-h-full object-contain rounded-lg grayscale opacity-40"
+              />
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
+                <Lock className="w-6 h-6 text-muted-foreground drop-shadow-md" />
+                <span className="text-muted-foreground text-xs font-medium drop-shadow-md">
+                  {displayMiles}
+                </span>
+              </div>
             </div>
-            <div className="space-y-1">
-              <span className="text-muted-foreground font-medium text-sm block">
-                {displayMiles}
-              </span>
-              <span className="text-muted-foreground/60 text-xs block">
-                to unlock
-              </span>
+          ) : (
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center border border-border/50">
+                <Lock className="w-6 h-6 text-muted-foreground" />
+              </div>
+              <div className="space-y-1">
+                <span className="text-muted-foreground font-medium text-sm block">
+                  {displayMiles}
+                </span>
+                <span className="text-muted-foreground/60 text-xs block">
+                  to unlock
+                </span>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Locked overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-transparent to-black/10 rounded-xl" />
