@@ -40,10 +40,22 @@ export const SiteNavigation = () => {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Logo */}
-        <Link to="/" className="shrink-0">
-          <img src={legacyFitLogo} alt="LegacyFit" className="h-14 md:h-14 w-auto" width="209" height="56" />
-        </Link>
+        {/* Logo + Home */}
+        <div className="flex items-center gap-2">
+          <Link to="/" className="shrink-0">
+            <img src={legacyFitLogo} alt="LegacyFit" className="h-14 md:h-14 w-auto" width="209" height="56" />
+          </Link>
+          <Link
+            to="/"
+            className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              location.pathname === "/"
+                ? "text-primary bg-secondary"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            }`}
+          >
+            Home
+          </Link>
+        </div>
 
         {/* Desktop nav */}
         <div className="hidden lg:flex items-center gap-1">
