@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -205,11 +205,16 @@ const Dashboard = () => {
       {/* Navigation */}
       <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-gold flex items-center justify-center">
-              <Footprints className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold text-gradient-gold">LegacyFit</span>
+          <div className="flex items-center gap-3">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-gradient-gold flex items-center justify-center">
+                <Footprints className="w-5 h-5 text-primary-foreground" />
+              </div>
+              <span className="text-xl font-bold text-gradient-gold">LegacyFit</span>
+            </Link>
+            <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
+              Home
+            </Link>
           </div>
           
           <div className="flex items-center gap-4">

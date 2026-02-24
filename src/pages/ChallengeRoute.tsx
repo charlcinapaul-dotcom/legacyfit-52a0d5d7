@@ -130,10 +130,15 @@ const ChallengeRoute = () => {
       <div className="min-h-screen bg-background">
         <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
           <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-            <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-              <ArrowLeft className="w-5 h-5" />
-              <span>Back</span>
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
+                Home
+              </Link>
+              <Link to="/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+                <ArrowLeft className="w-5 h-5" />
+                <span>Dashboard</span>
+              </Link>
+            </div>
             <Skeleton className="h-6 w-32" />
             <div className="w-20" />
           </div>
@@ -186,10 +191,15 @@ const ChallengeRoute = () => {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-            <span>Back</span>
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition-colors">
+              Home
+            </Link>
+            <Link to="/dashboard" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+              <ArrowLeft className="w-5 h-5" />
+              <span>Dashboard</span>
+            </Link>
+          </div>
           <h1 className="text-lg font-semibold text-foreground">{challenge.name}</h1>
           <div className="w-20" />
         </div>
