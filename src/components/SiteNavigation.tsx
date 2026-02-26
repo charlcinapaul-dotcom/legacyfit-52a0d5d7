@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
   { label: "Home", to: "/" },
+  { label: "Free Walk", to: "/free-walk", badge: true },
   { label: "Challenges", to: "/challenges" },
   { label: "How It Works", to: "/how-it-works" },
   { label: "Leaderboard", to: "/leaderboard" },
@@ -63,13 +64,20 @@ export const SiteNavigation = () => {
             <Link
               key={item.to}
               to={item.to}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
                 location.pathname === item.to
                   ? "text-primary bg-secondary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                  : item.to === "/" || item.to === "/free-walk"
+                    ? "text-primary hover:text-primary/80 hover:bg-secondary/50"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
               }`}
             >
               {item.label}
+              {(item as any).badge && (
+                <span className="font-mono text-[9px] tracking-[0.15em] uppercase text-primary border border-primary/30 bg-primary/10 px-1.5 py-0.5 leading-none">
+                  Free
+                </span>
+              )}
             </Link>
           ))}
         </div>
