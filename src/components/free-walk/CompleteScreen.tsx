@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Queen } from "@/data/queens";
 import { Mono, BtnFill, BtnOutline, ArrowRight } from "./ui-primitives";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   queen: Queen | null;
@@ -23,6 +24,17 @@ export function CompleteScreen({
   onEnterStill,
 }: Props) {
   const q = queen ?? { name: "Sojourner Truth", domain: "Resistance", quote: "", truth: "" };
+  const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthed(!!session);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setIsAuthed(!!session);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <div className="relative min-h-screen bg-background flex items-center justify-center overflow-hidden">
@@ -100,6 +112,40 @@ export function CompleteScreen({
           </strong>{" "}
           — who walked so you could too.
         </p>
+
+        {/* Auth upsell — only when not signed in */}
+        {isAuthed === false && (
+          <div className="border border-primary bg-primary/[0.08] p-6 mb-7 text-left relative overflow-hidden">
+            {/* Subtle glow */}
+            <div className="pointer-events-none absolute top-0 right-0 w-32 h-32 rounded-full bg-primary/10 blur-2xl -translate-y-1/2 translate-x-1/2" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-3">
+                <span className="text-xl">🏅</span>
+                <Mono className="text-primary">Save Your Walk</Mono>
+              </div>
+              <p className="text-foreground font-sans text-[15px] font-semibold mb-1">
+                You just earned a badge.
+              </p>
+              <p className="text-muted-foreground text-[13px] leading-[1.6] mb-5">
+                Create a free account to save this walk, earn your <strong className="text-primary">First Walk Badge</strong>, and track your legacy on the leaderboard.
+              </p>
+              <div className="flex flex-wrap gap-2.5">
+                <Link
+                  to="/auth?mode=signup"
+                  className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-sans text-[12px] font-semibold tracking-[0.12em] uppercase px-6 py-3 hover:bg-primary/90 transition-colors"
+                >
+                  Create Free Account <ArrowRight size={12} />
+                </Link>
+                <Link
+                  to="/auth"
+                  className="inline-flex items-center gap-2 border border-primary/40 text-primary font-sans text-[12px] font-normal tracking-[0.12em] uppercase px-5 py-3 hover:bg-primary/10 transition-colors"
+                >
+                  Log In
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Upsell CTA */}
         <div className="border border-primary/40 bg-primary/[0.06] p-6 mb-7 text-left">
