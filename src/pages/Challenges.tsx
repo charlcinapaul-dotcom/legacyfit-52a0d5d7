@@ -177,6 +177,31 @@ const Challenges = () => {
               </div>
             </section>
           )}
+          {/* Free Walk */}
+          <section className="pb-10 px-4">
+            <div className="container mx-auto max-w-5xl">
+              <h2 className="text-2xl font-bold text-foreground mb-6">Free to Try</h2>
+              <Link
+                to="/free-walk"
+                className="group relative overflow-hidden rounded-xl bg-card border border-border hover:border-primary/50 transition-colors p-6 block max-w-sm"
+              >
+                <span className="absolute top-4 right-4 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                  Free
+                </span>
+                <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors pr-14">
+                  Free Walk Experience
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Take a virtual 5-mile walk through 11 historical milestones. No account needed — just lace up and go.
+                </p>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />5 miles</span>
+                </div>
+                <ChevronRight className="absolute bottom-6 right-6 w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              </Link>
+            </div>
+          </section>
+
           {/* Women's History Edition */}
           {womensHistory.length > 0 && (
             <section className="pb-16 px-4">
