@@ -351,7 +351,7 @@ const Dashboard = () => {
               </div>
               <Button 
                 className="bg-primary text-primary-foreground hover:bg-primary/90 glow-gold"
-                onClick={() => navigate("/#challenges")}
+                onClick={() => navigate("/challenges")}
               >
                 <Plus className="w-4 h-4 mr-2" />
                 Explore Challenges
@@ -364,7 +364,7 @@ const Dashboard = () => {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-foreground">Your Challenges</h2>
-            <Button variant="ghost" className="text-primary" onClick={() => navigate("/#challenges")}>
+            <Button variant="ghost" className="text-primary" onClick={() => navigate("/challenges")}>
               Browse All
             </Button>
           </div>
@@ -452,7 +452,7 @@ const Dashboard = () => {
                 </p>
                 <Button 
                   className="bg-primary text-primary-foreground hover:bg-primary/90"
-                  onClick={() => navigate("/#challenges")}
+                  onClick={() => navigate("/challenges")}
                 >
                   Explore Challenges
                 </Button>
