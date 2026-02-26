@@ -4,6 +4,8 @@ import { Queen } from "@/data/queens";
 import { Mono, BtnFill, BtnOutline, ArrowRight } from "./ui-primitives";
 import { supabase } from "@/integrations/supabase/client";
 
+const FREE_WALK_PENDING_KEY = "legacyfit_pending_free_walk";
+
 interface Props {
   queen: Queen | null;
   walkerName?: string;
@@ -132,12 +134,24 @@ export function CompleteScreen({
               <div className="flex flex-wrap gap-2.5">
                 <Link
                   to="/auth?mode=signup"
+                  onClick={() =>
+                    localStorage.setItem(
+                      FREE_WALK_PENDING_KEY,
+                      JSON.stringify({ miles: 5.0, time, calories })
+                    )
+                  }
                   className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-sans text-[12px] font-semibold tracking-[0.12em] uppercase px-6 py-3 hover:bg-primary/90 transition-colors"
                 >
                   Create Free Account <ArrowRight size={12} />
                 </Link>
                 <Link
                   to="/auth"
+                  onClick={() =>
+                    localStorage.setItem(
+                      FREE_WALK_PENDING_KEY,
+                      JSON.stringify({ miles: 5.0, time, calories })
+                    )
+                  }
                   className="inline-flex items-center gap-2 border border-primary/40 text-primary font-sans text-[12px] font-normal tracking-[0.12em] uppercase px-5 py-3 hover:bg-primary/10 transition-colors"
                 >
                   Log In
