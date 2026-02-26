@@ -1,95 +1,89 @@
 
+# Integrate Free Starter Walking App — LegacyFit Theme
 
-## Completion Certificate, Digital BIB, and Email Delivery
+## What the Free Starter Is
 
-### Overview
-Three new features: (1) a unique AI-generated completion certificate emailed when a participant finishes a challenge, (2) a digital BIB card issued upon signup and displayed in the dashboard, and (3) an email with the BIB sent at registration.
+The GitHub repository contains a self-contained 5-mile virtual walking experience called the "Free Track." It has 6 screens:
 
----
+1. **SplashScreen** — Entry point / landing for the free walk
+2. **OnboardScreen** — Name + fitness level + goal selection
+3. **RouteScreen** — Preview of the 11 historical queens / 5-mile route
+4. **ActiveWalkScreen** — Live timer, miles, steps, calories + queen milestone cards
+5. **CompleteScreen** — Walk summary + options (walk another, enter Still)
+6. **StillFeature** — 4-screen mindfulness companion (Home → Before → During → After)
 
-### 1. Digital BIB Card
+It also includes:
+- `src/data/queens.ts` — 11 historical women with quotes, domains, route stops
+- `src/data/still.ts` — Affirmations, spoken words, breath phases, reflection prompts
+- `src/hooks/useWalkTimer.ts` — Real-time walk timer (seconds → miles/steps/calories)
+- `src/hooks/useSilenceTimer.ts` — 60-second silence timer for Still feature
+- `src/components/ui-primitives.tsx` — Custom Mono label, BtnFill, BtnOutline, ArrowRight, StepTrack
 
-**What it does**: When a user signs up, they already get a `bib_number` (e.g., `LF-00711`) via the existing `generate_bib_number` database trigger. We will create a visual BIB component styled like a race bib -- dark/gold theme with the LegacyFit logo, user name, and bib number.
+The original app uses a warm terracotta/brown palette (`#1C1410`, `#BE5A30`, `#D4922A`, `#F4EDD8`). **All of these must be replaced** with the LegacyFit theme (black background, gold `hsl(45 67% 52%)`, cyan `hsl(193 100% 50%)`).
 
-**New component**: `src/components/DigitalBib.tsx`
-- Displays a styled race bib card with:
-  - LegacyFit logo (from `src/assets/legacyfit-logo.png`)
-  - User's display name
-  - BIB number in large bold text
-  - "LegacyFit Virtual Challenge" subtitle
-  - Gold border, dark background, matching brand aesthetic
-- Includes a "Download BIB" button that captures the card as an image (using html-to-canvas or a simple SVG approach)
+## Integration Strategy
 
-**Dashboard integration**: Add the digital BIB to `src/pages/Dashboard.tsx` -- show it prominently in a collapsible section or card near the top.
+The free starter will be added as a new route `/free-walk` within the existing LegacyFit app. It will be accessible from:
+- The main navigation ("Free Walk" link)
+- The landing page (a "Try Free" or "Start Free" CTA)
+- The challenges page (as a free tier option)
 
----
+The SplashScreen will use the LegacyFit logo, black background, and gold/cyan accents. The "Free Track" badge will remain but styled in gold. Upsell CTAs ("Upgrade to Full Challenge") will link to `/challenges`.
 
-### 2. BIB Email on Signup
+## Re-theming Rules
 
-**New edge function**: `supabase/functions/send-bib-email/index.ts`
-- Sends a branded HTML email with the user's BIB number, display name, and LegacyFit branding
-- Styled similarly to the existing stamp email (dark theme, gold accents, LegacyFit branding)
-- Called from the existing `handle_new_user` database trigger (via a new database trigger that fires after profile creation), or invoked from the auth flow in the frontend after signup
+| Original color | LegacyFit replacement |
+|---|---|
+| `#1C1410` / `#110E0A` / `#261C12` (backgrounds) | `hsl(var(--background))` = `#000` / `hsl(var(--card))` |
+| `#BE5A30` / `#C4562A` (primary accent — terracotta) | `hsl(var(--primary))` = gold `#D4AF37` |
+| `#D4922A` / `#C88430` (secondary warm gold) | `hsl(var(--primary))` or slightly lighter gold |
+| `#F4EDD8` (warm cream text) | `hsl(var(--foreground))` = white |
+| `#9A8A6E` / `#7A6E5E` (muted text) | `hsl(var(--muted-foreground))` |
+| `#4E6E4A` (green badge border) | `hsl(var(--border))` |
+| `white/[0.06]` borders | `hsl(var(--border))` |
+| Font serif + warm | Same font (Inter), gold gradients |
 
-**Trigger approach**: Create a new database function + trigger on the `profiles` table that fires on INSERT and calls the edge function with the new user's bib number and email. Alternatively, call from the frontend Auth page after successful signup for simplicity.
+## Files to Create
 
-**Chosen approach**: Frontend-triggered -- after successful signup and profile creation, invoke the edge function from the Auth page. This is simpler and avoids modifying auth triggers.
+### New data/hooks (copied and adapted from repo)
+- `src/data/queens.ts` — queens data + ROUTE_STOPS (identical content, no color changes needed)
+- `src/data/still.ts` — affirmations + spoken words (identical content)
+- `src/hooks/useWalkTimer.ts` — walk timer hook (identical logic)
+- `src/hooks/useSilenceTimer.ts` — silence timer hook
 
----
+### New components (re-themed)
+- `src/components/free-walk/ui-primitives.tsx` — Re-themed Mono, BtnFill, BtnOutline using CSS vars
+- `src/components/free-walk/SplashScreen.tsx` — LegacyFit logo, black bg, gold accents
+- `src/components/free-walk/OnboardScreen.tsx` — Dark bg, gold selection states
+- `src/components/free-walk/RouteScreen.tsx` — Dark bg, gold queen stops
+- `src/components/free-walk/ActiveWalkScreen.tsx` — Dark bg, gold pulse dot, cyan accent for stats
+- `src/components/free-walk/CompleteScreen.tsx` — Dark bg, gold gradient, upsell CTA
+- `src/components/free-walk/still/StillHome.tsx` — Dark bg, gold/cyan orb
+- `src/components/free-walk/still/StillBefore.tsx` — Dark bg, gold accents
+- `src/components/free-walk/still/StillDuring.tsx` — Dark bg, gold spoken word
+- `src/components/free-walk/still/StillAfter.tsx` — Dark bg, gold reflection
+- `src/components/free-walk/StillFeature.tsx` — Coordinator (minimal re-theme)
+- `src/components/free-walk/FreeWalkApp.tsx` — Root coordinator (replaces repo's App.tsx logic)
 
-### 3. Completion Certificate
+### New page
+- `src/pages/FreeWalk.tsx` — Simple wrapper that renders `<FreeWalkApp />`
 
-**New edge function**: `supabase/functions/generate-certificate/index.ts`
-- Uses the Lovable AI image generation API (same pattern as `generate-stamp-image`) to create a unique certificate
-- Prompt includes: LegacyFit branding, challenge name, user name, total miles, completion date, ornate/prestigious design
-- Stores the generated image URL in a new `certificates` table
+### Modified files
+- `src/App.tsx` — Add `<Route path="/free-walk" element={<FreeWalk />} />`
+- `src/components/SiteNavigation.tsx` — Add "Free Walk" nav link (styled with gold/cyan badge)
+- `src/pages/Landing.tsx` — Add "Try Free" button in hero CTA row
 
-**New edge function**: `supabase/functions/send-certificate-email/index.ts`
-- Sends a branded HTML email with the certificate image, congratulations message, and challenge details
-- Similar structure to the stamp email
+## Key Design Decisions
 
-**New database table**: `certificates`
-- `id` (uuid, PK)
-- `user_id` (uuid, NOT NULL)
-- `challenge_id` (uuid, NOT NULL)
-- `image_url` (text) -- URL of the AI-generated certificate
-- `created_at` (timestamptz)
-- RLS: users can view their own certificates
+1. **No auth required** for the free walk — it is truly free, no sign-in gate
+2. **Upsell moment** on CompleteScreen: a gold-bordered card saying "Ready to go further? Join the full 30-Day LegacyFit Challenge" with a link to `/challenges`
+3. **"Free Track" badge** kept on the SplashScreen, styled in gold (`text-primary border-primary/30 bg-primary/10`)
+4. **Navigation header** on each screen shows the LegacyFit logo (using the existing asset) + "Free Track" mono label
+5. **Still feature** is retained intact — re-themed to black/gold
 
-**Completion detection**: Modify the mile logging flow. After logging miles, if `miles_logged >= challenge.total_miles` and `is_completed` is false, mark the challenge as completed and trigger certificate generation + email.
+## Technical Notes
 
-**New component**: `src/components/CompletionCertificate.tsx`
-- Displays the certificate in a modal or card when a user completes a challenge
-- Shows the AI-generated certificate image with share/download options
-
----
-
-### 4. Integration into Mile Logging Flow
-
-Update `src/hooks/useMileLogging.ts` (or the check-milestone-unlocks edge function):
-- After miles are logged, check if `total miles logged >= challenge total miles`
-- If completed: update `user_challenges` set `is_completed = true`, `completed_at = now()`
-- Call `generate-certificate` edge function
-- Call `send-certificate-email` edge function
-- Show `CompletionCertificate` modal in the UI
-
----
-
-### Files to Create
-1. `src/components/DigitalBib.tsx` -- visual BIB card component
-2. `src/components/CompletionCertificate.tsx` -- certificate display component
-3. `supabase/functions/send-bib-email/index.ts` -- BIB welcome email
-4. `supabase/functions/generate-certificate/index.ts` -- AI certificate generation
-5. `supabase/functions/send-certificate-email/index.ts` -- certificate email delivery
-6. Database migration for `certificates` table
-
-### Files to Modify
-1. `src/pages/Dashboard.tsx` -- add Digital BIB section
-2. `src/pages/ChallengeRoute.tsx` -- show certificate for completed challenges
-3. `src/hooks/useMileLogging.ts` -- trigger completion flow
-4. `supabase/config.toml` -- register new edge functions
-
-### Dependencies
-- Uses existing Lovable AI gateway for image generation (LOVABLE_API_KEY already configured)
-- Uses Resend for email delivery (RESEND_API_KEY -- needs to be checked/added)
-
+- The `useWalkTimer` simulates a 5-mile walk over 90 minutes (1 second = ~0.055 miles). This is a virtual/demo timer — no GPS needed.
+- All inline hex color strings will be converted to Tailwind CSS variable-based classes or inline `hsl(var(--...))` styles.
+- The `font-serif` class references used in the original will render as Inter (existing font) which is fine for this integration.
+- The `still/StillBefore.tsx` and `still/StillAfter.tsx` files will also need to be fetched and re-themed (similar pattern).
