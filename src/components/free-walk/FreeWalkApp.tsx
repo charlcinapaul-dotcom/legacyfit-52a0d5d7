@@ -1,18 +1,20 @@
 import React, { useState, useCallback } from "react";
-import { Link } from "react-router-dom";
 import { useWalkTimer } from "@/hooks/useWalkTimer";
 import { SplashScreen } from "./SplashScreen";
 import { OnboardScreen } from "./OnboardScreen";
+import { ConfirmScreen } from "./ConfirmScreen";
 import { RouteScreen } from "./RouteScreen";
 import { ActiveWalkScreen } from "./ActiveWalkScreen";
 import { CompleteScreen } from "./CompleteScreen";
 import { StillFeature } from "./still/StillFeature";
 
-type Screen = "splash" | "onboard" | "route" | "walk" | "complete" | "still";
+type Screen = "splash" | "onboard" | "confirm" | "route" | "walk" | "complete" | "still";
 
 export function FreeWalkApp() {
   const [screen, setScreen] = useState<Screen>("splash");
   const [walkerName, setWalkerName] = useState("Walker");
+  const [fitnessLevel, setFitnessLevel] = useState("starting");
+  const [goals, setGoals] = useState<string[]>([]);
   const [finalTime, setFinalTime] = useState("—");
   const [finalCal, setFinalCal] = useState(0);
 
@@ -53,8 +55,23 @@ export function FreeWalkApp() {
 
       {screen === "onboard" && (
         <OnboardScreen
-          onNext={(name) => { setWalkerName(name); goTo("route"); }}
+          onNext={(name, fitness, g) => {
+            setWalkerName(name);
+            setFitnessLevel(fitness);
+            setGoals(g);
+            goTo("confirm");
+          }}
           onBack={() => goTo("splash")}
+        />
+      )}
+
+      {screen === "confirm" && (
+        <ConfirmScreen
+          walkerName={walkerName}
+          fitnessLevel={fitnessLevel}
+          goals={goals}
+          onConfirm={() => goTo("route")}
+          onBack={() => goTo("onboard")}
         />
       )}
 
