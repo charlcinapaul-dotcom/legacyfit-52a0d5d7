@@ -1,6 +1,6 @@
 import React from "react";
-import legacyFitLogo from "@/assets/legacyfit-logo.png";
 import { BtnFill, BtnOutline, ArrowRight } from "./ui-primitives";
+import { FreeWalkHeader } from "./FreeWalkHeader";
 
 interface Props {
   onStart: () => void;
@@ -28,17 +28,11 @@ export function SplashScreen({ onStart, onPreview }: Props) {
         }}
       />
 
-      <div className="relative z-10 flex flex-col min-h-screen px-6 md:px-[clamp(24px,6vw,72px)] pb-14">
-        {/* Top bar */}
-        <div className="flex justify-between items-center pt-10">
-          <img src={legacyFitLogo} alt="LegacyFit" className="h-10 w-auto" />
-          <span className="font-mono text-[9px] tracking-[0.2em] uppercase text-primary border border-primary/30 bg-primary/10 px-3.5 py-1.5">
-            Free Track
-          </span>
-        </div>
+      <div className="relative z-10 flex flex-col min-h-screen pb-14">
+        <FreeWalkHeader />
 
         {/* Center */}
-        <div className="flex-1 flex flex-col justify-center py-12 md:items-center md:text-center">
+        <div className="flex-1 flex flex-col justify-center py-12 px-6 md:px-[clamp(24px,6vw,72px)] md:items-center md:text-center">
           <div className="md:text-center">
             <h1
               className="font-sans font-black leading-[0.88] tracking-[-0.02em] text-foreground"
@@ -57,7 +51,7 @@ export function SplashScreen({ onStart, onPreview }: Props) {
         </div>
 
         {/* CTAs */}
-        <div className="flex flex-wrap gap-3 items-center md:justify-center">
+        <div className="flex flex-wrap gap-3 items-center px-6 md:px-[clamp(24px,6vw,72px)] md:justify-center">
           <BtnFill onClick={onStart}>
             <span>Start Your Walk</span>
             <ArrowRight />

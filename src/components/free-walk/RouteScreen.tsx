@@ -1,6 +1,7 @@
 import React from "react";
 import { ROUTE_STOPS } from "@/data/queens";
 import { Mono, BtnFill, BtnOutline, ArrowRight } from "./ui-primitives";
+import { FreeWalkHeader } from "./FreeWalkHeader";
 
 interface Props {
   onBegin: () => void;
@@ -10,8 +11,9 @@ interface Props {
 export function RouteScreen({ onBegin, onBack }: Props) {
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <FreeWalkHeader />
       {/* Hero band */}
-      <div className="relative bg-card border-b border-border px-6 md:px-[clamp(24px,6vw,72px)] pt-12 pb-10 overflow-hidden">
+      <div className="relative bg-card border-b border-border px-6 md:px-[clamp(24px,6vw,72px)] pt-6 pb-10 overflow-hidden">
         <div className="pointer-events-none absolute top-[-60px] right-[-60px] w-[300px] h-[300px] rounded-full border border-primary/[0.07]" />
 
         <h1

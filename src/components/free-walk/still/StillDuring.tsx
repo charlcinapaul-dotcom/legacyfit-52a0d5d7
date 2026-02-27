@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { SPOKEN_WORDS } from "@/data/still";
+import { FreeWalkHeader } from "@/components/free-walk/FreeWalkHeader";
 import { useSilenceTimer } from "@/hooks/useSilenceTimer";
 import { cn } from "@/lib/utils";
 
@@ -18,9 +19,8 @@ export function StillDuring({ onNext, onBack }: Props) {
     <div className="relative min-h-screen bg-background flex flex-col overflow-hidden">
       <div className="pointer-events-none absolute bottom-[-30%] left-1/2 -translate-x-1/2 w-[120%] h-[70%]" style={{background:"radial-gradient(ellipse at center bottom, hsl(var(--primary)/0.14) 0%, hsl(var(--primary)/0.05) 45%, transparent 70%)", animation:"orbPulse 8s ease-in-out infinite"}}/>
 
-      <div className="relative z-10 flex justify-between items-center px-6 md:px-14 pt-7 pb-0">
-        <span className="font-mono text-[10px] tracking-[0.28em] uppercase text-primary">Still · During</span>
-        <button onClick={onBack} className="font-mono text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 hover:text-primary transition-colors cursor-pointer bg-transparent border-none">← Back</button>
+      <div className="relative z-10">
+        <FreeWalkHeader />
       </div>
 
       <div className="relative z-10 flex-1 flex flex-col px-6 md:px-14 pb-12">

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Queen } from "@/data/queens";
 import { Mono, BtnFill, BtnOutline, ArrowRight } from "./ui-primitives";
+import { FreeWalkHeader } from "./FreeWalkHeader";
 import { supabase } from "@/integrations/supabase/client";
 
 const FREE_WALK_PENDING_KEY = "legacyfit_pending_free_walk";
@@ -39,7 +40,8 @@ export function CompleteScreen({
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-background flex items-center justify-center overflow-hidden">
+    <div className="relative min-h-screen bg-background flex flex-col overflow-hidden">
+      <FreeWalkHeader />
       {/* Gold glow */}
       <div
         className="pointer-events-none absolute bottom-[-10%] left-1/2 -translate-x-1/2 w-[160%] h-[80%]"
@@ -53,7 +55,7 @@ export function CompleteScreen({
       <div className="pointer-events-none absolute rounded-full border border-primary/[0.06] w-[500px] h-[500px] bottom-[-200px] left-1/2 -translate-x-1/2" />
       <div className="pointer-events-none absolute rounded-full border border-primary/[0.08] w-[340px] h-[340px] bottom-[-100px] left-1/2 -translate-x-1/2" />
 
-      <div className="relative z-10 px-8 md:px-[clamp(32px,6vw,72px)] py-16 text-center max-w-[560px] w-full mx-auto">
+      <div className="relative z-10 px-8 md:px-[clamp(32px,6vw,72px)] py-8 text-center max-w-[560px] w-full mx-auto flex-1 flex flex-col justify-center">
         {/* Eyebrow */}
         <div className="flex items-center justify-center gap-2.5 mb-5">
           <div className="w-5 h-px bg-primary" />
