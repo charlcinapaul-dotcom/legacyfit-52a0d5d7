@@ -6,6 +6,7 @@ import { FreeWalkHeader } from "./FreeWalkHeader";
 import { supabase } from "@/integrations/supabase/client";
 
 const FREE_WALK_PENDING_KEY = "legacyfit_pending_free_walk";
+const FREE_WALK_HISTORY_KEY = "legacyfit_free_walk_history";
 
 interface Props {
   queen: Queen | null;
@@ -32,6 +33,12 @@ export function CompleteScreen({
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsAuthed(!!session);
+      // If logged in, save directly to history
+      if (session) {
+        const hist = JSON.parse(localStorage.getItem(FREE_WALK_HISTORY_KEY) || "[]");
+        const entry = { miles: 5.0, time, calories, completedAt: new Date().toISOString() };
+        localStorage.setItem(FREE_WALK_HISTORY_KEY, JSON.stringify([entry, ...hist].slice(0, 10)));
+      }
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       setIsAuthed(!!session);
