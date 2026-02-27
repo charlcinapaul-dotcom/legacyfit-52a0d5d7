@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Mono, BtnFill, ArrowRight } from "@/components/free-walk/ui-primitives";
+import { FreeWalkHeader } from "@/components/free-walk/FreeWalkHeader";
 import { StillMoment } from "@/data/still";
 import { cn } from "@/lib/utils";
 
@@ -44,15 +45,8 @@ export function StillHome({ selectedMoment, onSelectMoment, onEnter, onBack }: P
         }}
       />
 
-      {/* Nav */}
-      <div className="relative z-10 flex justify-between items-center px-6 md:px-14 pt-8 pb-0">
-        <Mono className="text-muted-foreground">LegacyFit · Still</Mono>
-        <button
-          onClick={onBack}
-          className="font-mono text-[10px] tracking-[0.28em] uppercase text-muted-foreground hover:text-primary transition-colors duration-200 flex items-center gap-2 bg-transparent border-none cursor-pointer"
-        >
-          ← Walk With Queens
-        </button>
+      <div className="relative z-10">
+        <FreeWalkHeader />
       </div>
 
       {/* Center */}

@@ -44,16 +44,6 @@ export function FreeWalkApp() {
 
   return (
     <div className="font-sans antialiased relative">
-      {/* Floating Back to LegacyFit button */}
-      <Link
-        to="/"
-        className="fixed top-4 left-4 z-50 flex items-center gap-2 bg-background/80 backdrop-blur-sm border border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/60 transition-all duration-200 px-3 py-2 text-[11px] font-mono tracking-[0.22em] uppercase"
-      >
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-          <path d="M8 2L4 6l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-        </svg>
-        LegacyFit
-      </Link>
       {screen === "splash" && (
         <SplashScreen
           onStart={() => goTo("onboard")}

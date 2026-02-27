@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Queen } from "@/data/queens";
+import { FreeWalkHeader } from "@/components/free-walk/FreeWalkHeader";
 import { AFFIRMATIONS_BEFORE, INTENTION_OPTIONS } from "@/data/still";
 import { useBreath } from "@/hooks/useBreath";
 import { cn } from "@/lib/utils";
@@ -24,10 +25,7 @@ export function StillBefore({ queen, onNext, onBack }: Props) {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="flex justify-between items-center px-6 md:px-14 pt-7 pb-0">
-        <span className="font-mono text-[10px] tracking-[0.28em] uppercase text-primary">Still · Before</span>
-        <button onClick={onBack} className="font-mono text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 hover:text-primary transition-colors cursor-pointer bg-transparent border-none">← Back</button>
-      </div>
+      <FreeWalkHeader />
 
       <div className="flex-1 grid md:grid-cols-2">
         <div className="relative bg-card border-b md:border-b-0 md:border-r border-border p-8 md:p-14 flex flex-col justify-between overflow-hidden">

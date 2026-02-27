@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Mono, BtnFill, BtnOutline, ArrowRight } from "./ui-primitives";
+import { FreeWalkHeader } from "./FreeWalkHeader";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -22,8 +23,9 @@ export function OnboardScreen({ onNext, onBack }: Props) {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      <FreeWalkHeader />
       {/* Hero section */}
-      <div className="bg-card px-6 md:px-[clamp(24px,6vw,72px)] pt-12 pb-10 border-b border-border">
+      <div className="bg-card px-6 md:px-[clamp(24px,6vw,72px)] pt-8 pb-10 border-b border-border">
         <Mono className="text-primary mb-4">Before You Begin</Mono>
         <h2
           className="font-sans font-black leading-[1.05] text-foreground mb-5"

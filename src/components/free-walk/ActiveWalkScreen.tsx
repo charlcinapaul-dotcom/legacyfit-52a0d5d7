@@ -1,6 +1,7 @@
 import React from "react";
 import { Queen, QUEENS, ROUTE_STOPS } from "@/data/queens";
 import { Mono } from "./ui-primitives";
+import { FreeWalkHeader } from "./FreeWalkHeader";
 
 interface WalkStats {
   clock: string;
@@ -45,8 +46,9 @@ export function ActiveWalkScreen({
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Top bar — padded to clear the fixed floating back button */}
-      <div className="flex justify-between items-center px-5 md:px-12 pt-16 pb-5">
+      <FreeWalkHeader />
+      {/* Top bar */}
+      <div className="flex justify-between items-center px-5 md:px-12 pt-2 pb-5">
         <div className="flex items-center gap-2">
           <div
             className="w-[7px] h-[7px] rounded-full bg-primary"

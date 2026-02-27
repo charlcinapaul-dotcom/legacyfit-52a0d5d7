@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { Queen } from "@/data/queens";
+import { FreeWalkHeader } from "@/components/free-walk/FreeWalkHeader";
 import { REFLECTION_PROMPTS, AFFIRMATIONS_CLOSE } from "@/data/still";
 import { cn } from "@/lib/utils";
 
@@ -28,10 +29,7 @@ export function StillAfter({ queen, walkTime, onComplete, onBack }: Props) {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="flex justify-between items-center px-6 md:px-14 pt-7 pb-0">
-        <span className="font-mono text-[10px] tracking-[0.28em] uppercase text-primary">Still · After</span>
-        <button onClick={onBack} className="font-mono text-[10px] tracking-[0.2em] uppercase text-muted-foreground/50 hover:text-primary transition-colors cursor-pointer bg-transparent border-none">← During</button>
-      </div>
+      <FreeWalkHeader />
 
       <div className="flex-1 flex flex-col px-6 md:px-14 py-8">
         <div className="grid grid-cols-2 gap-0.5 mb-8 bg-white/[0.04]">
