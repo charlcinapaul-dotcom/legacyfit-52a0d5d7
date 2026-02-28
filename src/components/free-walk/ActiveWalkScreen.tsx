@@ -57,6 +57,11 @@ export function ActiveWalkScreen({
     setCelebrationFading(false);
     setCelebrationVisible(true);
 
+    // Haptic feedback: short-long-short pattern
+    if ("vibrate" in navigator) {
+      navigator.vibrate([80, 60, 180]);
+    }
+
     const fadeTimer = setTimeout(() => setCelebrationFading(true), 2500);
     const hideTimer = setTimeout(() => {
       setCelebrationVisible(false);
