@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Queen, QUEENS, ROUTE_STOPS } from "@/data/queens";
 import { Mono } from "./ui-primitives";
 import { FreeWalkHeader } from "./FreeWalkHeader";
@@ -40,6 +40,33 @@ export function ActiveWalkScreen({
 
   const currentQueenFull = QUEENS.find((q) => q.name === currentStop.title) ?? null;
 
+  // Milestone celebration overlay
+  const [celebrationStop, setCelebrationStop] = useState<typeof ROUTE_STOPS[0] | null>(null);
+  const [celebrationVisible, setCelebrationVisible] = useState(false);
+  const [celebrationFading, setCelebrationFading] = useState(false);
+  const seenStopsRef = useRef<Set<number>>(new Set());
+
+  useEffect(() => {
+    if (seenStopsRef.current.has(currentStopIndex)) return;
+    seenStopsRef.current.add(currentStopIndex);
+    // Don't show overlay for the very first stop on walk start (index 0) — only on crossings
+    if (currentStopIndex === 0 && seenStopsRef.current.size === 1) return;
+
+    const stop = ROUTE_STOPS[currentStopIndex];
+    setCelebrationStop(stop);
+    setCelebrationFading(false);
+    setCelebrationVisible(true);
+
+    const fadeTimer = setTimeout(() => setCelebrationFading(true), 2500);
+    const hideTimer = setTimeout(() => {
+      setCelebrationVisible(false);
+      setCelebrationStop(null);
+      setCelebrationFading(false);
+    }, 3200);
+
+    return () => { clearTimeout(fadeTimer); clearTimeout(hideTimer); };
+  }, [currentStopIndex]);
+
   const { isSpeaking, muted, toggleMute } = useQueenNarration({
     currentStopIndex,
     paused,
@@ -53,7 +80,81 @@ export function ActiveWalkScreen({
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col relative">
+
+      {/* ── Milestone Celebration Overlay ── */}
+      {celebrationVisible && celebrationStop && (() => {
+        const queen = QUEENS.find((q) => q.name === celebrationStop.title);
+        return (
+          <div
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center px-8 text-center"
+            style={{
+              background: "radial-gradient(ellipse at center, hsl(var(--primary)/0.18) 0%, hsl(var(--background)/0.97) 70%)",
+              opacity: celebrationFading ? 0 : 1,
+              transition: "opacity 0.7s ease-out",
+            }}
+          >
+            {/* Ambient ring */}
+            <div
+              className="absolute w-[340px] h-[340px] rounded-full border border-primary/20"
+              style={{ animation: "milestoneRing 1.8s ease-out forwards" }}
+            />
+            <div
+              className="absolute w-[240px] h-[240px] rounded-full border border-primary/30"
+              style={{ animation: "milestoneRing 1.4s ease-out forwards" }}
+            />
+
+            {/* Mile number */}
+            <div
+              className="font-sans font-black text-primary leading-none mb-2"
+              style={{
+                fontSize: "clamp(72px,18vw,120px)",
+                animation: "fade-in 0.4s ease-out",
+                textShadow: "0 0 60px hsl(var(--primary)/0.4)",
+              }}
+            >
+              {celebrationStop.dist}
+            </div>
+            <span
+              className="font-mono text-[10px] tracking-[0.28em] uppercase text-primary mb-6 block"
+              style={{ animation: "fade-in 0.5s ease-out" }}
+            >
+              Mile Mark Reached
+            </span>
+
+            {/* Queen name + domain */}
+            <div
+              className="mb-1 font-sans font-black text-foreground leading-tight"
+              style={{ fontSize: "clamp(24px,6vw,42px)", animation: "fade-in 0.6s ease-out" }}
+            >
+              {celebrationStop.title}
+            </div>
+            <span
+              className="font-mono text-[10px] tracking-[0.28em] uppercase text-primary/70 mb-8 block"
+              style={{ animation: "fade-in 0.65s ease-out" }}
+            >
+              {celebrationStop.queenLabel}
+            </span>
+
+            {/* Quote */}
+            {queen?.quote && (
+              <p
+                className="italic text-muted-foreground max-w-[420px] leading-[1.7]"
+                style={{ fontSize: "clamp(14px,2vw,18px)", animation: "fade-in 0.75s ease-out" }}
+              >
+                {queen.quote}
+              </p>
+            )}
+
+            {/* Bottom bar */}
+            <div
+              className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary/30"
+              style={{ animation: "milestoneBar 3.2s linear forwards" }}
+            />
+          </div>
+        );
+      })()}
+
       <FreeWalkHeader />
       {/* Top bar */}
       <div className="flex justify-between items-center px-5 md:px-12 pt-2 pb-5">
@@ -236,6 +337,15 @@ export function ActiveWalkScreen({
         @keyframes soundBar {
           from { transform: scaleY(0.4); }
           to { transform: scaleY(1.4); }
+        }
+        @keyframes milestoneRing {
+          0%   { transform: scale(0.6); opacity: 0.8; }
+          60%  { transform: scale(1.15); opacity: 0.4; }
+          100% { transform: scale(1.4); opacity: 0; }
+        }
+        @keyframes milestoneBar {
+          from { width: 100%; }
+          to   { width: 0%; }
         }
       `}</style>
     </div>
