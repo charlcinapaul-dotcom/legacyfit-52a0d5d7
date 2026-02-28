@@ -15,6 +15,7 @@ export function FreeWalkApp() {
   const [walkerName, setWalkerName] = useState("Walker");
   const [fitnessLevel, setFitnessLevel] = useState("starting");
   const [goals, setGoals] = useState<string[]>([]);
+  const [voiceURI, setVoiceURI] = useState<string>("");
   const [finalTime, setFinalTime] = useState("—");
   const [finalCal, setFinalCal] = useState(0);
 
@@ -55,10 +56,11 @@ export function FreeWalkApp() {
 
       {screen === "onboard" && (
         <OnboardScreen
-          onNext={(name, fitness, g) => {
+          onNext={(name, fitness, g, vURI) => {
             setWalkerName(name);
             setFitnessLevel(fitness);
             setGoals(g);
+            setVoiceURI(vURI);
             goTo("confirm");
           }}
           onBack={() => goTo("splash")}
@@ -86,6 +88,7 @@ export function FreeWalkApp() {
         <ActiveWalkScreen
           queen={null}
           walkerName={walkerName}
+          voiceURI={voiceURI}
           stats={{
             clock: timer.clock,
             miles: timer.miles,

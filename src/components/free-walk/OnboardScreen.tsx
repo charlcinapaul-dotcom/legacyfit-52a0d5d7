@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Mono, BtnFill, BtnOutline, ArrowRight } from "./ui-primitives";
 import { FreeWalkHeader } from "./FreeWalkHeader";
 import { cn } from "@/lib/utils";
 
 interface Props {
-  onNext: (name: string, fitnessLevel: string, goals: string[]) => void;
+  onNext: (name: string, fitnessLevel: string, goals: string[], voiceURI: string) => void;
   onBack: () => void;
 }
 
@@ -21,10 +21,50 @@ const GOALS = [
   { label: "My people", value: "people" },
 ];
 
+// Classify voices into friendly buckets
+function classifyVoice(v: SpeechSynthesisVoice) {
+  const name = v.name.toLowerCase();
+  const lang = v.lang.toLowerCase();
+  if (!lang.startsWith("en")) return null;
+  // Try to detect gender / accent heuristically by common voice names
+  if (name.includes("samantha") || name.includes("victoria") || name.includes("karen") ||
+      name.includes("moira") || name.includes("tessa") || name.includes("fiona") ||
+      name.includes("kate") || name.includes("serena") || name.includes("ava") ||
+      name.includes("allison") || name.includes("susan") || name.includes("zira") ||
+      name.includes("hazel") || name.includes("female") || name.includes("woman")) {
+    return "female";
+  }
+  if (name.includes("alex") || name.includes("daniel") || name.includes("fred") ||
+      name.includes("male") || name.includes("man") || name.includes("oliver") ||
+      name.includes("david") || name.includes("mark") || name.includes("james")) {
+    return "male";
+  }
+  return "other";
+}
+
 export function OnboardScreen({ onNext, onBack }: Props) {
   const [name, setName] = useState("");
   const [fitnessValue, setFitnessValue] = useState<string | null>(null);
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoiceURI, setSelectedVoiceURI] = useState<string>("");
+
+  // Load voices (some browsers load them async)
+  useEffect(() => {
+    const load = () => {
+      const all = window.speechSynthesis.getVoices();
+      const english = all.filter((v) => v.lang.toLowerCase().startsWith("en"));
+      setVoices(english);
+      if (english.length > 0 && !selectedVoiceURI) {
+        // Default: first female-sounding voice, else first English voice
+        const female = english.find((v) => classifyVoice(v) === "female");
+        setSelectedVoiceURI((female ?? english[0]).voiceURI);
+      }
+    };
+    load();
+    window.speechSynthesis.onvoiceschanged = load;
+    return () => { window.speechSynthesis.onvoiceschanged = null; };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleGoal = (value: string) => {
     setSelectedGoals((prev) =>
@@ -39,9 +79,20 @@ export function OnboardScreen({ onNext, onBack }: Props) {
   const goalsFilled = selectedGoals.length > 0;
   const progress = fitnessFilled && goalsFilled ? 100 : fitnessFilled || goalsFilled ? 50 : 10;
 
+  const previewVoice = (uri: string) => {
+    window.speechSynthesis.cancel();
+    const v = voices.find((v) => v.voiceURI === uri);
+    if (!v) return;
+    const u = new SpeechSynthesisUtterance("She walked out of bondage and never stopped moving.");
+    u.voice = v;
+    u.rate = 0.92;
+    window.speechSynthesis.speak(u);
+  };
+
   const handleNext = () => {
     if (!bothFilled) return;
-    onNext(name.trim() || "Walker", fitnessValue!, selectedGoals);
+    window.speechSynthesis.cancel();
+    onNext(name.trim() || "Walker", fitnessValue!, selectedGoals, selectedVoiceURI);
   };
 
   return (
@@ -156,6 +207,59 @@ export function OnboardScreen({ onNext, onBack }: Props) {
             })}
           </div>
         </div>
+
+        {/* Voice picker */}
+        {voices.length > 0 && (
+          <div>
+            <Mono className="text-muted-foreground mb-1">Narration Voice</Mono>
+            <p className="text-[11px] text-muted-foreground/60 mb-4 font-light">
+              Each queen's story will be read aloud as you walk
+            </p>
+            <div className="flex flex-col gap-2">
+              {voices.slice(0, 8).map((v) => {
+                const gender = classifyVoice(v);
+                const genderIcon = gender === "female" ? "♀" : gender === "male" ? "♂" : "◆";
+                const isSelected = selectedVoiceURI === v.voiceURI;
+                return (
+                  <div
+                    key={v.voiceURI}
+                    onClick={() => {
+                      setSelectedVoiceURI(v.voiceURI);
+                      previewVoice(v.voiceURI);
+                    }}
+                    className={cn(
+                      "flex items-center justify-between border px-4 py-3 cursor-pointer transition-all duration-200 select-none",
+                      isSelected
+                        ? "border-primary bg-primary/[0.08]"
+                        : "border-white/[0.12] bg-white/[0.02] hover:border-primary/40"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-primary font-mono text-[13px]">{genderIcon}</span>
+                      <div>
+                        <div className="text-[14px] font-semibold text-foreground leading-tight">{v.name}</div>
+                        <div className="font-mono text-[10px] tracking-wider text-muted-foreground uppercase">{v.lang}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {isSelected && <span className="w-2 h-2 rounded-full bg-primary" />}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); previewVoice(v.voiceURI); }}
+                        className="text-muted-foreground hover:text-primary transition-colors p-1"
+                        title="Preview voice"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                          <path d="M15.54 8.46a5 5 0 010 7.07"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* CTAs */}
