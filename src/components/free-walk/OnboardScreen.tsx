@@ -21,44 +21,47 @@ const GOALS = [
   { label: "My people", value: "people" },
 ];
 
-// Classify voices into friendly buckets
-function classifyVoice(v: SpeechSynthesisVoice) {
-  const name = v.name.toLowerCase();
-  const lang = v.lang.toLowerCase();
-  if (!lang.startsWith("en")) return null;
-  // Try to detect gender / accent heuristically by common voice names
-  if (name.includes("samantha") || name.includes("victoria") || name.includes("karen") ||
-      name.includes("moira") || name.includes("tessa") || name.includes("fiona") ||
-      name.includes("kate") || name.includes("serena") || name.includes("ava") ||
-      name.includes("allison") || name.includes("susan") || name.includes("zira") ||
-      name.includes("hazel") || name.includes("female") || name.includes("woman")) {
-    return "female";
-  }
-  if (name.includes("alex") || name.includes("daniel") || name.includes("fred") ||
-      name.includes("male") || name.includes("man") || name.includes("oliver") ||
-      name.includes("david") || name.includes("mark") || name.includes("james")) {
-    return "male";
-  }
-  return "other";
+// Curated voice slots — priority-ordered name fragments to match against available voices
+const VOICE_SLOTS = [
+  { gender: "female" as const, label: "Natasha",  hint: "Australian",  fragments: ["natasha"] },
+  { gender: "female" as const, label: "Zira",     hint: "American",    fragments: ["zira", "samantha", "ava", "allison", "hazel", "victoria", "karen"] },
+  { gender: "male"   as const, label: "William",  hint: "Australian",  fragments: ["william"] },
+  { gender: "male"   as const, label: "Guy",      hint: "American",    fragments: ["guy", "daniel", "alex", "fred", "david", "mark", "james", "oliver"] },
+];
+
+interface CuratedVoice {
+  voice: SpeechSynthesisVoice;
+  label: string;
+  hint: string;
+  gender: "female" | "male";
+}
+
+function buildCuratedList(all: SpeechSynthesisVoice[]): CuratedVoice[] {
+  const english = all.filter((v) => v.lang.toLowerCase().startsWith("en"));
+  return VOICE_SLOTS.map((slot) => {
+    const match = slot.fragments.reduce<SpeechSynthesisVoice | null>((found, frag) => {
+      if (found) return found;
+      return english.find((v) => v.name.toLowerCase().includes(frag)) ?? null;
+    }, null);
+    return match ? { voice: match, label: slot.label, hint: slot.hint, gender: slot.gender } : null;
+  }).filter(Boolean) as CuratedVoice[];
 }
 
 export function OnboardScreen({ onNext, onBack }: Props) {
   const [name, setName] = useState("");
   const [fitnessValue, setFitnessValue] = useState<string | null>(null);
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [curatedVoices, setCuratedVoices] = useState<CuratedVoice[]>([]);
   const [selectedVoiceURI, setSelectedVoiceURI] = useState<string>("");
 
   // Load voices (some browsers load them async)
   useEffect(() => {
     const load = () => {
       const all = window.speechSynthesis.getVoices();
-      const english = all.filter((v) => v.lang.toLowerCase().startsWith("en"));
-      setVoices(english);
-      if (english.length > 0 && !selectedVoiceURI) {
-        // Default: first female-sounding voice, else first English voice
-        const female = english.find((v) => classifyVoice(v) === "female");
-        setSelectedVoiceURI((female ?? english[0]).voiceURI);
+      const curated = buildCuratedList(all);
+      setCuratedVoices(curated);
+      if (curated.length > 0 && !selectedVoiceURI) {
+        setSelectedVoiceURI(curated[0].voice.voiceURI);
       }
     };
     load();
@@ -81,10 +84,10 @@ export function OnboardScreen({ onNext, onBack }: Props) {
 
   const previewVoice = (uri: string) => {
     window.speechSynthesis.cancel();
-    const v = voices.find((v) => v.voiceURI === uri);
-    if (!v) return;
+    const cv = curatedVoices.find((cv) => cv.voice.voiceURI === uri);
+    if (!cv) return;
     const u = new SpeechSynthesisUtterance("She walked out of bondage and never stopped moving.");
-    u.voice = v;
+    u.voice = cv.voice;
     u.rate = 0.92;
     window.speechSynthesis.speak(u);
   };
@@ -209,23 +212,22 @@ export function OnboardScreen({ onNext, onBack }: Props) {
         </div>
 
         {/* Voice picker */}
-        {voices.length > 0 && (
+        {curatedVoices.length > 0 && (
           <div>
             <Mono className="text-muted-foreground mb-1">Narration Voice</Mono>
             <p className="text-[11px] text-muted-foreground/60 mb-4 font-light">
               Each queen's story will be read aloud as you walk
             </p>
             <div className="flex flex-col gap-2">
-              {voices.slice(0, 8).map((v) => {
-                const gender = classifyVoice(v);
-                const genderIcon = gender === "female" ? "♀" : gender === "male" ? "♂" : "◆";
-                const isSelected = selectedVoiceURI === v.voiceURI;
+              {curatedVoices.map((cv) => {
+                const genderIcon = cv.gender === "female" ? "♀" : "♂";
+                const isSelected = selectedVoiceURI === cv.voice.voiceURI;
                 return (
                   <div
-                    key={v.voiceURI}
+                    key={cv.voice.voiceURI}
                     onClick={() => {
-                      setSelectedVoiceURI(v.voiceURI);
-                      previewVoice(v.voiceURI);
+                      setSelectedVoiceURI(cv.voice.voiceURI);
+                      previewVoice(cv.voice.voiceURI);
                     }}
                     className={cn(
                       "flex items-center justify-between border px-4 py-3 cursor-pointer transition-all duration-200 select-none",
@@ -237,14 +239,14 @@ export function OnboardScreen({ onNext, onBack }: Props) {
                     <div className="flex items-center gap-3">
                       <span className="text-primary font-mono text-[13px]">{genderIcon}</span>
                       <div>
-                        <div className="text-[14px] font-semibold text-foreground leading-tight">{v.name}</div>
-                        <div className="font-mono text-[10px] tracking-wider text-muted-foreground uppercase">{v.lang}</div>
+                        <div className="text-[14px] font-semibold text-foreground leading-tight">{cv.label}</div>
+                        <div className="font-mono text-[10px] tracking-wider text-muted-foreground uppercase">{cv.hint} · {cv.voice.lang}</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {isSelected && <span className="w-2 h-2 rounded-full bg-primary" />}
                       <button
-                        onClick={(e) => { e.stopPropagation(); previewVoice(v.voiceURI); }}
+                        onClick={(e) => { e.stopPropagation(); previewVoice(cv.voice.voiceURI); }}
                         className="text-muted-foreground hover:text-primary transition-colors p-1"
                         title="Preview voice"
                       >
