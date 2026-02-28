@@ -2,6 +2,7 @@ import React from "react";
 import { Queen, QUEENS, ROUTE_STOPS } from "@/data/queens";
 import { Mono } from "./ui-primitives";
 import { FreeWalkHeader } from "./FreeWalkHeader";
+import { useQueenNarration } from "@/hooks/useQueenNarration";
 
 interface WalkStats {
   clock: string;
@@ -35,14 +36,18 @@ export function ActiveWalkScreen({
   const currentStopIndex = ROUTE_STOPS.indexOf(currentStop);
   const nextStop = ROUTE_STOPS[currentStopIndex + 1] ?? null;
 
-  const currentQueenData = queen ?? {
-    name: currentStop.title,
-    domain: "",
-    quote: "",
-    truth: "",
-  };
+  const currentQueenFull = QUEENS.find((q) => q.name === currentStop.title) ?? null;
 
-  const currentQueenFull = QUEENS.find((q) => q.name === currentStop.title) ?? currentQueenData;
+  const { isSpeaking, muted, toggleMute } = useQueenNarration({
+    currentStopIndex,
+    paused,
+    active: true,
+  });
+
+  const handleFinish = () => {
+    window.speechSynthesis.cancel();
+    onFinish();
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -63,11 +68,30 @@ export function ActiveWalkScreen({
       <div className="mx-5 md:mx-12 mb-5 bg-card border-l-[3px] border-primary px-5 py-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <Mono className="text-primary mb-1">Walking With</Mono>
+            <div className="flex items-center gap-3 mb-1">
+              <Mono className="text-primary">Walking With</Mono>
+              {isSpeaking && (
+                <div className="flex items-center gap-1.5">
+                  <div className="flex items-end gap-[2px] h-[12px]">
+                    {[1, 2, 3, 2, 1].map((h, i) => (
+                      <div
+                        key={i}
+                        className="w-[3px] bg-primary rounded-full"
+                        style={{
+                          height: `${h * 4}px`,
+                          animation: `soundBar 0.8s ease-in-out ${i * 0.12}s infinite alternate`,
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <Mono className="text-primary text-[9px]">Now Narrating</Mono>
+                </div>
+              )}
+            </div>
             <div className="font-sans text-[22px] font-bold text-foreground leading-tight mb-2">
               {currentStop.title}
             </div>
-            {currentQueenFull.quote && (
+            {currentQueenFull?.quote && (
               <p className="italic text-muted-foreground text-[14px] leading-[1.5]">
                 {currentQueenFull.quote}
               </p>
@@ -171,8 +195,30 @@ export function ActiveWalkScreen({
             </>
           )}
         </button>
+
+        {/* Mute toggle */}
         <button
-          onClick={onFinish}
+          onClick={toggleMute}
+          title={muted ? "Unmute narration" : "Mute narration"}
+          className="flex items-center justify-center bg-transparent border border-white/[0.08] text-muted-foreground px-4 py-[18px] cursor-pointer transition-all duration-200 hover:border-primary/50 hover:text-primary"
+        >
+          {muted ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+              <line x1="23" y1="9" x2="17" y2="15"/>
+              <line x1="17" y1="9" x2="23" y2="15"/>
+            </svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+              <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+              <path d="M15.54 8.46a5 5 0 010 7.07"/>
+              <path d="M19.07 4.93a10 10 0 010 14.14"/>
+            </svg>
+          )}
+        </button>
+
+        <button
+          onClick={handleFinish}
           className="flex items-center justify-center bg-transparent border border-white/[0.08] text-muted-foreground font-sans text-[12px] font-normal tracking-[0.15em] uppercase px-6 py-[18px] cursor-pointer transition-all duration-200 hover:border-primary/50 hover:text-primary"
         >
           Finish Walk
@@ -183,6 +229,10 @@ export function ActiveWalkScreen({
         @keyframes blink {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.3; }
+        }
+        @keyframes soundBar {
+          from { transform: scaleY(0.4); }
+          to { transform: scaleY(1.4); }
         }
       `}</style>
     </div>
