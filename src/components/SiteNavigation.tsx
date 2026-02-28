@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
-  { label: "Home", to: "/" },
-  { label: "Free Walk", to: "/free-walk", badge: true },
   { label: "Challenges", to: "/challenges" },
   { label: "How It Works", to: "/how-it-works" },
   { label: "Leaderboard", to: "/leaderboard" },
@@ -46,16 +44,14 @@ export const SiteNavigation = () => {
           <Link to="/" className="shrink-0">
             <img src={legacyFitLogo} alt="LegacyFit" className="h-14 md:h-14 w-auto" width="209" height="56" />
           </Link>
-          <Link
-            to="/"
-            className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-              location.pathname === "/"
-                ? "text-primary bg-secondary"
-                : "text-primary hover:text-primary/80 hover:bg-secondary/50"
-            }`}
-          >
-            Home
-          </Link>
+          {location.pathname !== "/" && (
+            <Link
+              to="/"
+              className="px-3 py-2 rounded-md text-sm font-medium transition-colors text-primary hover:text-primary/80 hover:bg-secondary/50"
+            >
+              Home
+            </Link>
+          )}
         </div>
 
         {/* Desktop nav */}
@@ -64,20 +60,13 @@ export const SiteNavigation = () => {
             <Link
               key={item.to}
               to={item.to}
-              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1.5 ${
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                 location.pathname === item.to
                   ? "text-primary bg-secondary"
-                  : item.to === "/" || item.to === "/free-walk"
-                    ? "text-primary hover:text-primary/80 hover:bg-secondary/50"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
               }`}
             >
               {item.label}
-              {(item as any).badge && (
-                <span className="font-mono text-[9px] tracking-[0.15em] uppercase text-primary border border-primary/30 bg-primary/10 px-1.5 py-0.5 leading-none">
-                  Free
-                </span>
-              )}
             </Link>
           ))}
         </div>
@@ -121,6 +110,14 @@ export const SiteNavigation = () => {
       {mobileOpen && (
         <div className="lg:hidden bg-background border-b border-border">
           <div className="container mx-auto px-4 py-4 flex flex-col gap-1">
+            {location.pathname !== "/" && (
+              <Link
+                to="/"
+                className="px-4 py-3 rounded-md text-sm font-medium transition-colors text-primary hover:text-primary/80 hover:bg-secondary/50"
+              >
+                Home
+              </Link>
+            )}
             {navItems.map((item) => (
               <Link
                 key={item.to}
@@ -128,9 +125,7 @@ export const SiteNavigation = () => {
                 className={`px-4 py-3 rounded-md text-sm font-medium transition-colors ${
                   location.pathname === item.to
                     ? "text-primary bg-secondary"
-                    : item.to === "/"
-                      ? "text-primary hover:text-primary/80 hover:bg-secondary/50"
-                      : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
                 }`}
               >
                 {item.label}
