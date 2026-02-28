@@ -18,6 +18,7 @@ interface Props {
   queen: Queen | null;
   walkerName?: string;
   stats: WalkStats;
+  voiceURI?: string;
   onTogglePause: () => void;
   onFinish: () => void;
 }
@@ -26,6 +27,7 @@ export function ActiveWalkScreen({
   queen,
   walkerName = "Walker",
   stats,
+  voiceURI = "",
   onTogglePause,
   onFinish,
 }: Props) {
@@ -42,6 +44,7 @@ export function ActiveWalkScreen({
     currentStopIndex,
     paused,
     active: true,
+    voiceURI,
   });
 
   const handleFinish = () => {
