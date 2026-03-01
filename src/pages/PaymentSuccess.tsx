@@ -83,7 +83,8 @@ const PaymentSuccess = () => {
             <AlertCircle className="w-16 h-16 text-destructive mx-auto" />
             <h1 className="text-2xl font-bold text-foreground">Something went wrong</h1>
             <p className="text-muted-foreground">
-              We couldn't verify your payment. If you were charged, please contact support.
+              We couldn't verify your payment. If you were charged, please{" "}
+              <Link to="/contact" className="text-primary hover:underline">contact support</Link>.
             </p>
             <Link to="/challenges">
               <Button size="lg" variant="outline">Back to Challenges</Button>
