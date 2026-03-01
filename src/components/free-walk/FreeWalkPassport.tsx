@@ -1,9 +1,10 @@
-import { X, Book, Lock, MapPin } from "lucide-react";
+import { X, Book, Lock, Check } from "lucide-react";
 import { ROUTE_STOPS } from "@/data/queens";
 import type { FreeWalkStampEntry } from "@/hooks/useFreeWalkStamps";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import { Mono } from "./ui-primitives";
+import { useFreeWalkStampImages } from "@/hooks/useFreeWalkStampImages";
 
 interface Props {
   unlockedMilestoneIds: Set<string>;
@@ -11,6 +12,8 @@ interface Props {
 }
 
 export function FreeWalkPassport({ unlockedMilestoneIds, onClose }: Props) {
+  const { data: stampImages } = useFreeWalkStampImages();
+
   const stamps: FreeWalkStampEntry[] = ROUTE_STOPS.map((stop) => ({
     milestoneId: stop.dist,
     title: stop.title,
@@ -18,7 +21,7 @@ export function FreeWalkPassport({ unlockedMilestoneIds, onClose }: Props) {
     stampCopy: stop.desc,
     milesRequired: parseFloat(stop.dist),
     locationName: stop.queenLabel,
-    stampImageUrl: null,
+    stampImageUrl: stampImages?.get(stop.title) ?? null,
     audioUrl: null,
     isUnlocked: unlockedMilestoneIds.has(stop.dist),
   }));
@@ -71,49 +74,87 @@ export function FreeWalkPassport({ unlockedMilestoneIds, onClose }: Props) {
 
         {/* Stamp grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {stamps.map((stamp) => (
-            <div
-              key={stamp.milestoneId}
-              className={cn(
-                "relative aspect-square border-2 rounded-none flex flex-col items-center justify-center p-4 text-center transition-all duration-300",
-                stamp.isUnlocked
-                  ? "bg-gradient-to-br from-primary/20 to-primary/10 border-primary/50 shadow-sm shadow-primary/20"
-                  : "bg-muted/20 border-border/40"
-              )}
-            >
-              {stamp.isUnlocked ? (
-                <>
-                  {/* Unlocked */}
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center mb-2 shadow-lg">
-                    <MapPin className="w-7 h-7 text-primary-foreground" />
+          {stamps.map((stamp) => {
+            const hasImage = !!stamp.stampImageUrl;
+            return (
+              <div
+                key={stamp.milestoneId}
+                className={cn(
+                  "relative aspect-square border-2 rounded-none overflow-hidden transition-all duration-300",
+                  stamp.isUnlocked
+                    ? "border-primary/60 shadow-sm shadow-primary/20"
+                    : "border-border/40"
+                )}
+              >
+                {hasImage ? (
+                  <>
+                    {/* Real stamp image */}
+                    <img
+                      src={stamp.stampImageUrl!}
+                      alt={stamp.stampTitle ?? stamp.title}
+                      className={cn(
+                        "w-full h-full object-cover transition-all duration-500",
+                        !stamp.isUnlocked && "grayscale opacity-40"
+                      )}
+                    />
+                    {/* Locked overlay */}
+                    {!stamp.isUnlocked && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-background/10">
+                        <Lock className="w-7 h-7 text-white/70 drop-shadow-lg" />
+                        <span className="font-mono text-[9px] tracking-widest text-white/60 uppercase">
+                          {stamp.milesRequired} mi
+                        </span>
+                      </div>
+                    )}
+                    {/* Unlocked EARNED badge */}
+                    {stamp.isUnlocked && (
+                      <div className="absolute top-2 right-2 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 flex items-center gap-0.5 shadow-md">
+                        <Check className="w-2.5 h-2.5" />
+                        EARNED
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  /* Fallback: no image yet */
+                  <div
+                    className={cn(
+                      "w-full h-full flex flex-col items-center justify-center p-4 text-center",
+                      stamp.isUnlocked
+                        ? "bg-gradient-to-br from-primary/20 to-primary/10"
+                        : "bg-muted/20"
+                    )}
+                  >
+                    {stamp.isUnlocked ? (
+                      <>
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center mb-2 shadow-lg">
+                          <Check className="w-7 h-7 text-primary-foreground" />
+                        </div>
+                        <span className="font-sans font-bold text-[13px] text-foreground leading-tight line-clamp-2 mb-1">
+                          {stamp.stampTitle}
+                        </span>
+                        <Mono className="text-primary/70 text-[9px]">{stamp.milesRequired} mi</Mono>
+                        <div className="absolute -top-1.5 -right-1.5 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow">
+                          ✓
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-14 h-14 rounded-full bg-muted/50 border border-border/50 flex items-center justify-center mb-2">
+                          <Lock className="w-6 h-6 text-muted-foreground" />
+                        </div>
+                        <Mono className="text-muted-foreground/70 text-[10px] mb-1">
+                          {stamp.milesRequired} mi
+                        </Mono>
+                        <span className="text-muted-foreground/50 text-[11px] leading-tight line-clamp-2">
+                          {stamp.stampTitle}
+                        </span>
+                      </>
+                    )}
                   </div>
-                  <span className="font-sans font-bold text-[13px] text-foreground leading-tight line-clamp-2 mb-1">
-                    {stamp.stampTitle}
-                  </span>
-                  <Mono className="text-primary/70 text-[9px]">
-                    {stamp.milesRequired} mi
-                  </Mono>
-                  {/* Earned badge */}
-                  <div className="absolute -top-1.5 -right-1.5 bg-primary text-primary-foreground text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow">
-                    ✓
-                  </div>
-                </>
-              ) : (
-                <>
-                  {/* Locked */}
-                  <div className="w-14 h-14 rounded-full bg-muted/50 border border-border/50 flex items-center justify-center mb-2">
-                    <Lock className="w-6 h-6 text-muted-foreground" />
-                  </div>
-                  <Mono className="text-muted-foreground/70 text-[10px] mb-1">
-                    {stamp.milesRequired} mi
-                  </Mono>
-                  <span className="text-muted-foreground/50 text-[11px] leading-tight line-clamp-2">
-                    {stamp.stampTitle}
-                  </span>
-                </>
-              )}
-            </div>
-          ))}
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Footer */}
