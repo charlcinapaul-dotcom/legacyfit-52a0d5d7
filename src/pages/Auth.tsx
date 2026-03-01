@@ -440,9 +440,9 @@ const Auth = () => {
 
                     <p className="text-xs text-center text-muted-foreground">
                       By signing up, you agree to our{" "}
-                      <a href="#" className="text-primary hover:underline">Terms of Service</a>
+                      <Link to="/legal" className="text-primary hover:underline">Terms of Service</Link>
                       {" "}and{" "}
-                      <a href="#" className="text-primary hover:underline">Privacy Policy</a>
+                      <Link to="/legal" className="text-primary hover:underline">Privacy Policy</Link>
                     </p>
                   </form>
                 </TabsContent>
