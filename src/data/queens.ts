@@ -151,7 +151,7 @@ export const ROUTE_STOPS: RouteStop[] = [
   {
     num: "09",
     title: "Malala Yousafzai",
-    queenLabel: "EDUCATION ACTIVIST · 2007–",
+    queenLabel: "EDUCATION ACTIVIST · 1997–",
     desc: "They tried to silence her. She came back louder. She walked onto the Nobel stage at 17 and spoke for every girl still waiting for her seat.",
     dist: "4.1",
     distLabel: "mile",
