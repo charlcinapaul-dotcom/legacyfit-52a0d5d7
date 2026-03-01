@@ -1,52 +1,39 @@
 project_id = "utfexhdncajccdpvquky"
 
-[functions.check-milestone-unlocks]
-verify_jwt = false
-
-[functions.generate-stamp-image]
-verify_jwt = false
-
-[functions.send-stamp-email]
-verify_jwt = false
-
-[functions.generate-all-stamps]
-verify_jwt = false
-
-[functions.generate-challenge-images]
-verify_jwt = false
-
-[functions.legacy-guide]
-verify_jwt = false
-
-[functions.generate-milestone-audio]
-verify_jwt = false
-
-[functions.generate-all-milestone-audio]
-verify_jwt = false
-
-[functions.redeem-reward-code]
-verify_jwt = false
-
-[functions.send-bib-email]
-verify_jwt = false
-
-[functions.generate-certificate]
-verify_jwt = false
-
-[functions.send-certificate-email]
-verify_jwt = false
-
-[functions.redeem-beta-code]
-verify_jwt = false
-
-[functions.join-team]
-verify_jwt = false
-
-[functions.create-team]
-verify_jwt = false
-
-[functions.create-checkout]
-verify_jwt = false
-
-[functions.verify-payment]
-verify_jwt = false
+[functions]
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.check-milestone-unlocks]
+    verify_jwt = false
+  [functions.create-checkout]
+    verify_jwt = false
+  [functions.create-team]
+    verify_jwt = false
+  [functions.generate-all-milestone-audio]
+    verify_jwt = false
+  [functions.generate-all-stamps]
+    verify_jwt = false
+  [functions.generate-certificate]
+    verify_jwt = false
+  [functions.generate-challenge-images]
+    verify_jwt = false
+  [functions.generate-milestone-audio]
+    verify_jwt = false
+  [functions.generate-stamp-image]
+    verify_jwt = false
+  [functions.join-team]
+    verify_jwt = false
+  [functions.legacy-guide]
+    verify_jwt = false
+  [functions.redeem-beta-code]
+    verify_jwt = false
+  [functions.redeem-reward-code]
+    verify_jwt = false
+  [functions.send-bib-email]
+    verify_jwt = false
+  [functions.send-certificate-email]
+    verify_jwt = false
+  [functions.send-stamp-email]
+    verify_jwt = false
+  [functions.verify-payment]
+    verify_jwt = false
