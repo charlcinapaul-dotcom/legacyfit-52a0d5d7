@@ -153,7 +153,7 @@ export const ROUTE_STOPS: RouteStop[] = [
     title: "Malala Yousafzai",
     queenLabel: "EDUCATION ACTIVIST · 1997–",
     desc: "They tried to silence her. She came back louder. She walked onto the Nobel stage at 17 and spoke for every girl still waiting for her seat.",
-    dist: "4.1",
+    dist: "4.3",
     distLabel: "mile",
   },
   {
@@ -161,7 +161,7 @@ export const ROUTE_STOPS: RouteStop[] = [
     title: "Toni Morrison",
     queenLabel: "NOBEL LAUREATE · 1931–2019",
     desc: "She wrote the stories that weren't supposed to be written. She put Black women at the center of American literature and dared the world to look away.",
-    dist: "4.6",
+    dist: "4.7",
     distLabel: "mile",
   },
   {
