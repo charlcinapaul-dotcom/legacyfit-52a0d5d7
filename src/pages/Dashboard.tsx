@@ -68,6 +68,8 @@ const Dashboard = () => {
   const [userChallenges, setUserChallenges] = useState<UserChallenge[]>([]);
   const [loading, setLoading] = useState(true);
   const [freeWalkHistory, setFreeWalkHistory] = useState<FreeWalkEntry[]>([]);
+  const [milestoneCount, setMilestoneCount] = useState(0);
+  const [stampCount, setStampCount] = useState(0);
   const [certOpen, setCertOpen] = useState(false);
   const [certChallenge, setCertChallenge] = useState<{ name: string; miles: number; imageUrl: string | null } | null>(null);
   const [certGenerating, setCertGenerating] = useState(false);
@@ -96,6 +98,7 @@ const Dashboard = () => {
         setTimeout(() => {
           fetchProfile(session.user.id);
           fetchUserChallenges(session.user.id);
+          fetchCounts(session.user.id);
           savePendingFreeWalk(session.user.id);
         }, 0);
       }
@@ -111,6 +114,7 @@ const Dashboard = () => {
       } else {
         fetchProfile(session.user.id);
         fetchUserChallenges(session.user.id);
+        fetchCounts(session.user.id);
       }
     });
 
@@ -194,6 +198,15 @@ const Dashboard = () => {
     } catch (err) {
       console.error("Error:", err);
     }
+  };
+
+  const fetchCounts = async (userId: string) => {
+    const [{ count: mCount }, { count: sCount }] = await Promise.all([
+      supabase.from("user_milestones").select("*", { count: "exact", head: true }).eq("user_id", userId),
+      supabase.from("user_passport_stamps").select("*", { count: "exact", head: true }).eq("user_id", userId),
+    ]);
+    setMilestoneCount(mCount ?? 0);
+    setStampCount(sCount ?? 0);
   };
 
   // Check for newly completed challenges and show certificate modal
@@ -320,8 +333,8 @@ const Dashboard = () => {
                   <Target className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-foreground">0</p>
-                  <p className="text-xs text-muted-foreground">Milestones</p>
+                   <p className="text-2xl font-bold text-foreground">{milestoneCount}</p>
+                   <p className="text-xs text-muted-foreground">Milestones</p>
                 </div>
               </div>
             </CardContent>
@@ -334,8 +347,8 @@ const Dashboard = () => {
                   <Award className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-foreground">0</p>
-                  <p className="text-xs text-muted-foreground">Stamps</p>
+                   <p className="text-2xl font-bold text-foreground">{stampCount}</p>
+                   <p className="text-xs text-muted-foreground">Stamps</p>
                 </div>
               </div>
             </CardContent>
