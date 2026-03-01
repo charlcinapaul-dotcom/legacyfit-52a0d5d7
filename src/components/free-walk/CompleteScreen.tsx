@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Queen } from "@/data/queens";
 import { Mono, BtnFill, BtnOutline, ArrowRight } from "./ui-primitives";
 import { FreeWalkHeader } from "./FreeWalkHeader";
+import { FreeWalkPassport } from "./FreeWalkPassport";
 import { supabase } from "@/integrations/supabase/client";
 
 const FREE_WALK_PENDING_KEY = "legacyfit_pending_free_walk";
@@ -13,6 +14,7 @@ interface Props {
   walkerName?: string;
   time: string;
   calories: number;
+  unlockedStampIds?: Set<string>;
   onRestart: () => void;
   onWalkAnother: () => void;
   onEnterStill: () => void;
@@ -23,12 +25,14 @@ export function CompleteScreen({
   walkerName = "Walker",
   time,
   calories,
+  unlockedStampIds = new Set(),
   onRestart,
   onWalkAnother,
   onEnterStill,
 }: Props) {
   const q = queen ?? { name: "Sojourner Truth", domain: "Resistance", quote: "", truth: "" };
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
+  const [showPassport, setShowPassport] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -189,6 +193,25 @@ export function CompleteScreen({
 
         {/* Actions */}
         <div className="flex flex-col gap-2.5 w-full">
+          {/* View Passport CTA */}
+          <button
+            onClick={() => setShowPassport(true)}
+            className="w-full flex items-center justify-between px-6 py-5 border border-primary bg-primary/[0.10] hover:bg-primary/[0.18] transition-colors duration-200 group"
+          >
+            <div className="text-left">
+              <div className="font-sans text-[15px] font-bold text-foreground mb-0.5">
+                View Passport
+              </div>
+              <div className="font-mono text-[9px] tracking-[0.22em] uppercase text-muted-foreground">
+                Your Queen Stamps
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-primary group-hover:translate-x-1 transition-transform">
+              <span className="text-xl">📜</span>
+              <ArrowRight size={14} />
+            </div>
+          </button>
+
           {/* Still CTA */}
           <button
             onClick={onEnterStill}
@@ -216,6 +239,15 @@ export function CompleteScreen({
           </BtnOutline>
         </div>
       </div>
+
+      {/* Queen Passport overlay */}
+      {showPassport && (
+        <FreeWalkPassport
+          unlockedMilestoneIds={unlockedStampIds}
+          onClose={() => setShowPassport(false)}
+        />
+      )}
     </div>
   );
 }
+
