@@ -31,61 +31,35 @@ export function FreeWalkPassport({ unlockedMilestoneIds, onClose }: Props) {
   const progressPercent = totalCount > 0 ? (unlockedCount / totalCount) * 100 : 0;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-background">
+    <div className="fixed inset-0 z-50 overflow-y-auto min-h-screen bg-gradient-to-b from-background via-amber-950/5 to-background">
 
-      {/* Header */}
-      <div className="sticky top-0 z-10 border-b border-border bg-background">
-        <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between relative overflow-hidden">
-          {/* Postal cancellation SVG decoration */}
-          <svg
-            className="absolute right-12 top-0 h-full opacity-20 pointer-events-none"
-            width="80"
-            height="60"
-            viewBox="0 0 80 60"
-            fill="none"
-          >
-            {[0, 8, 16, 24, 32, 40].map((y) => (
-              <line
-                key={y}
-                x1="0"
-                y1={y}
-                x2="80"
-                y2={y + 12}
-                stroke="#7c3a00"
-                strokeWidth="1.5"
-              />
-            ))}
-          </svg>
-
-          <div className="flex items-center gap-2.5 relative z-10">
-            <Book className="w-5 h-5 text-foreground" />
-            <div>
-              <div className="font-sans font-bold text-foreground text-base leading-tight">
-                Walk With Queens
-              </div>
-              <Mono className="text-muted-foreground text-[10px]">Queen Passport</Mono>
-            </div>
+      {/* Header — matches ChallengePassport sticky header */}
+      <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-lg border-b border-border/50">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Book className="w-6 h-6 text-amber-500" />
+            <h1 className="text-xl font-bold">Walk With Queens Passport</h1>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center text-foreground hover:text-foreground/80 transition-colors relative z-10"
+            className="w-8 h-8 flex items-center justify-center text-foreground hover:text-foreground/80 transition-colors"
           >
             <X size={18} />
           </button>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        {/* Progress card */}
-        <div className="border border-border p-5 mb-6 bg-card">
-          <div className="flex items-center justify-between mb-3">
-            <Mono className="text-muted-foreground">Stamps Collected</Mono>
-            <span className="font-sans text-2xl font-bold text-foreground">
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Progress card — matches ChallengePassport Card */}
+        <div className="mb-8 rounded-xl border border-amber-500/30 bg-gradient-to-r from-amber-900/20 to-amber-800/10 p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-amber-400 font-semibold">Stamps Collected</span>
+            <span className="text-2xl font-bold text-amber-400">
               {unlockedCount} / {totalCount}
             </span>
           </div>
-          <Progress value={progressPercent} className="h-2" />
-          <p className="text-xs text-muted-foreground mt-2">
+          <Progress value={progressPercent} className="h-3 bg-amber-950/50" />
+          <p className="text-sm text-muted-foreground mt-2">
             {unlockedCount === 0
               ? "Walk the route to earn your first Queen stamp"
               : unlockedCount === totalCount
@@ -95,7 +69,7 @@ export function FreeWalkPassport({ unlockedMilestoneIds, onClose }: Props) {
         </div>
 
         {/* Stamp grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
           {stamps.map((stamp) => {
             const hasImage = !!stamp.stampImageUrl;
             return (
