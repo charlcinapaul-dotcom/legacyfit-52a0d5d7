@@ -77,15 +77,15 @@ export function FreeWalkPassport({ unlockedMilestoneIds, onClose }: Props) {
 
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Progress card */}
-        <div className="border border-border p-5 mb-6 bg-card">
+        <div className="mb-6 bg-gradient-to-r from-amber-900/20 to-amber-800/10 border border-amber-500/30 rounded-xl p-5">
           <div className="flex items-center justify-between mb-3">
-            <Mono className="text-muted-foreground">Stamps Collected</Mono>
-            <span className="font-sans text-2xl font-bold text-foreground">
+            <span className="text-amber-400 font-bold text-lg">Stamps Collected</span>
+            <span className="font-sans text-2xl font-bold text-amber-400">
               {unlockedCount} / {totalCount}
             </span>
           </div>
-          <Progress value={progressPercent} className="h-2" />
-          <p className="text-xs text-muted-foreground mt-2">
+          <Progress value={progressPercent} className="h-3 bg-amber-950/50" />
+          <p className="text-sm text-muted-foreground mt-2">
             {unlockedCount === 0
               ? "Walk the route to earn your first Queen stamp"
               : unlockedCount === totalCount
@@ -102,10 +102,10 @@ export function FreeWalkPassport({ unlockedMilestoneIds, onClose }: Props) {
               <div
                 key={stamp.milestoneId}
                 className={cn(
-                  "relative aspect-square border-2 rounded-none overflow-hidden transition-all duration-300",
+                  "relative aspect-square border-2 rounded-xl overflow-hidden transition-all duration-300",
                   stamp.isUnlocked
-                    ? "border-amber-700 shadow-sm shadow-amber-800/30"
-                    : "border-dashed border-amber-800/40"
+                    ? "border-amber-500/50 shadow-lg shadow-amber-500/20"
+                    : "border-border/50"
                 )}
                 style={{ backgroundColor: "#ede0c4" }}
               >
