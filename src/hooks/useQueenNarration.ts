@@ -82,13 +82,8 @@ export function useQueenNarration({ currentStopIndex, paused, active, voiceURI =
     if (muted) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
-    } else if (active && !paused) {
-      const stop = ROUTE_STOPS[currentStopIndex];
-      if (!stop) return;
-      const utterance = makeUtterance(stop.desc, voiceURI, onStart, onEnd);
-      utteranceRef.current = utterance;
-      window.speechSynthesis.speak(utterance);
     }
+    // On unmute, do nothing — the next mile marker crossing will trigger fresh narration
   }, [muted]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleMute = () => setMuted((m) => !m);
