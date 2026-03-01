@@ -77,14 +77,14 @@ export function FreeWalkPassport({ unlockedMilestoneIds, onClose }: Props) {
 
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Progress card */}
-        <div className="mb-6 bg-gradient-to-r from-amber-900/20 to-amber-800/10 border border-amber-500/30 rounded-xl p-5">
+        <div className="mb-6 bg-gradient-to-r from-[#7A1E2C]/20 to-[#7A1E2C]/10 border border-[#7A1E2C]/40 rounded-xl p-5">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-amber-400 font-bold text-lg">Stamps Collected</span>
-            <span className="font-sans text-2xl font-bold text-amber-400">
+            <span className="text-[#C084FC] font-bold text-lg">Stamps Collected</span>
+            <span className="font-sans text-2xl font-bold text-[#C084FC]">
               {unlockedCount} / {totalCount}
             </span>
           </div>
-          <Progress value={progressPercent} className="h-3 bg-amber-950/50" />
+          <Progress value={progressPercent} className="h-3 bg-[#7A1E2C]/30" />
           <p className="text-sm text-muted-foreground mt-2">
             {unlockedCount === 0
               ? "Walk the route to earn your first Queen stamp"
@@ -104,10 +104,9 @@ export function FreeWalkPassport({ unlockedMilestoneIds, onClose }: Props) {
                 className={cn(
                   "relative aspect-square border-2 rounded-xl overflow-hidden transition-all duration-300",
                   stamp.isUnlocked
-                    ? "border-amber-500/50 shadow-lg shadow-amber-500/20"
-                    : "border-border/30"
+                    ? "border-[#C084FC]/50 shadow-lg shadow-[#C084FC]/20"
+                    : "border-white/20"
                 )}
-                style={{ backgroundColor: "#ede0c4" }}
               >
                 {hasImage ? (
                   <>
@@ -120,57 +119,57 @@ export function FreeWalkPassport({ unlockedMilestoneIds, onClose }: Props) {
                       )}
                     />
                     {/* Locked overlay */}
-                    {!stamp.isUnlocked && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-amber-950/10">
-                        <Lock className="w-7 h-7 text-amber-950/70 drop-shadow-lg" />
-                        <span className="font-mono text-[9px] tracking-widest text-amber-950/60 uppercase">
-                          {stamp.milesRequired} mi
-                        </span>
-                      </div>
-                    )}
-                    {/* Unlocked EARNED badge */}
-                    {stamp.isUnlocked && (
-                      <div className="absolute top-2 right-2 bg-amber-700 text-amber-50 text-[9px] font-bold px-1.5 py-0.5 flex items-center gap-0.5 shadow-md">
-                        <Check className="w-2.5 h-2.5" />
-                        EARNED
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div
-                    className={cn(
-                      "w-full h-full flex flex-col items-center justify-center p-4 text-center",
-                      stamp.isUnlocked
-                        ? "bg-gradient-to-br from-amber-800/20 to-amber-700/10"
-                        : "bg-amber-900/5"
-                    )}
-                  >
-                    {stamp.isUnlocked ? (
-                      <>
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-700 to-amber-600 flex items-center justify-center mb-2 shadow-lg">
-                          <Check className="w-7 h-7 text-amber-50" />
-                        </div>
-                        <span className="font-sans font-bold text-[13px] text-amber-950 leading-tight line-clamp-2 mb-1">
-                          {stamp.stampTitle}
-                        </span>
-                        <Mono className="text-amber-700 text-[9px]">{stamp.milesRequired} mi</Mono>
-                        <div className="absolute -top-1.5 -right-1.5 bg-amber-700 text-amber-50 text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow">
-                          ✓
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="w-14 h-14 rounded-full bg-amber-800/10 border border-amber-800/30 flex items-center justify-center mb-2">
-                          <Lock className="w-6 h-6 text-amber-800/50" />
-                        </div>
-                        <Mono className="text-amber-800/60 text-[10px] mb-1">
-                          {stamp.milesRequired} mi
-                        </Mono>
-                        <span className="text-amber-800/40 text-[11px] leading-tight line-clamp-2">
-                          {stamp.stampTitle}
-                        </span>
-                      </>
-                    )}
+                     {!stamp.isUnlocked && (
+                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5 bg-[#7A1E2C]/10">
+                         <Lock className="w-7 h-7 text-white/70 drop-shadow-lg" />
+                         <span className="font-mono text-[9px] tracking-widest text-white/60 uppercase">
+                           {stamp.milesRequired} mi
+                         </span>
+                       </div>
+                     )}
+                     {/* Unlocked EARNED badge */}
+                     {stamp.isUnlocked && (
+                       <div className="absolute top-2 right-2 bg-[#7A1E2C] text-white text-[9px] font-bold px-1.5 py-0.5 flex items-center gap-0.5 shadow-md">
+                         <Check className="w-2.5 h-2.5" />
+                         EARNED
+                       </div>
+                     )}
+                   </>
+                 ) : (
+                   <div
+                     className={cn(
+                       "w-full h-full flex flex-col items-center justify-center p-4 text-center",
+                       stamp.isUnlocked
+                         ? "bg-gradient-to-br from-[#7A1E2C]/20 to-[#7A1E2C]/10"
+                         : "bg-white/5"
+                     )}
+                   >
+                     {stamp.isUnlocked ? (
+                       <>
+                         <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#7A1E2C] to-[#9E2A3C] flex items-center justify-center mb-2 shadow-lg">
+                           <Check className="w-7 h-7 text-white" />
+                         </div>
+                         <span className="font-sans font-bold text-[13px] text-white leading-tight line-clamp-2 mb-1">
+                           {stamp.stampTitle}
+                         </span>
+                         <Mono className="text-[#C084FC] text-[9px]">{stamp.milesRequired} mi</Mono>
+                         <div className="absolute -top-1.5 -right-1.5 bg-[#7A1E2C] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow">
+                           ✓
+                         </div>
+                       </>
+                     ) : (
+                       <>
+                         <div className="w-14 h-14 rounded-full bg-white/5 border border-white/20 flex items-center justify-center mb-2">
+                           <Lock className="w-6 h-6 text-white/40" />
+                         </div>
+                         <Mono className="text-white/50 text-[10px] mb-1">
+                           {stamp.milesRequired} mi
+                         </Mono>
+                         <span className="text-white/30 text-[11px] leading-tight line-clamp-2">
+                           {stamp.stampTitle}
+                         </span>
+                       </>
+                     )}
                   </div>
                 )}
               </div>
