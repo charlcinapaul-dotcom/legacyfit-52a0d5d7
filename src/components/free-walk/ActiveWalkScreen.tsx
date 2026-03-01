@@ -3,6 +3,8 @@ import { Queen, QUEENS, ROUTE_STOPS } from "@/data/queens";
 import { Mono } from "./ui-primitives";
 import { FreeWalkHeader } from "./FreeWalkHeader";
 import { useQueenNarration } from "@/hooks/useQueenNarration";
+import { useFreeWalkStamps } from "@/hooks/useFreeWalkStamps";
+import { StampUnlockModal } from "@/components/StampUnlockModal";
 
 interface WalkStats {
   clock: string;
@@ -79,6 +81,8 @@ export function ActiveWalkScreen({
     voiceURI,
   });
 
+  const { pendingStamps, clearPendingStamps } = useFreeWalkStamps(currentMiles);
+
   const handleFinish = () => {
     window.speechSynthesis.cancel();
     onFinish();
@@ -86,6 +90,14 @@ export function ActiveWalkScreen({
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative">
+
+      {/* ── Stamp Unlock Modal (reuses existing stamp system) ── */}
+      {pendingStamps.length > 0 && (
+        <StampUnlockModal
+          stamps={pendingStamps}
+          onClose={clearPendingStamps}
+        />
+      )}
 
       {/* ── Milestone Celebration Overlay ── */}
       {celebrationVisible && celebrationStop && (() => {
