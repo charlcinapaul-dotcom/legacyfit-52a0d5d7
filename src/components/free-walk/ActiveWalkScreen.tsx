@@ -23,6 +23,7 @@ interface Props {
   voiceURI?: string;
   onTogglePause: () => void;
   onFinish: () => void;
+  onStampsUnlocked?: (ids: Set<string>) => void;
 }
 
 export function ActiveWalkScreen({
@@ -32,6 +33,7 @@ export function ActiveWalkScreen({
   voiceURI = "",
   onTogglePause,
   onFinish,
+  onStampsUnlocked,
 }: Props) {
   const { clock, miles, pct, steps, calories, pace, paused } = stats;
   const currentMiles = parseFloat(miles);
@@ -81,7 +83,12 @@ export function ActiveWalkScreen({
     voiceURI,
   });
 
-  const { pendingStamps, clearPendingStamps } = useFreeWalkStamps(currentMiles);
+  const { pendingStamps, clearPendingStamps, unlockedIds } = useFreeWalkStamps(currentMiles);
+
+  // Bubble unlocked IDs up so CompleteScreen can show the passport
+  useEffect(() => {
+    if (unlockedIds.size > 0) onStampsUnlocked?.(unlockedIds);
+  }, [unlockedIds, onStampsUnlocked]);
 
   const handleFinish = () => {
     window.speechSynthesis.cancel();

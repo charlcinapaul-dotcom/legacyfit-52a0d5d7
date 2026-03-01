@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { useWalkTimer } from "@/hooks/useWalkTimer";
 import { SplashScreen } from "./SplashScreen";
 import { OnboardScreen } from "./OnboardScreen";
@@ -18,6 +18,8 @@ export function FreeWalkApp() {
   const [voiceURI, setVoiceURI] = useState<string>("");
   const [finalTime, setFinalTime] = useState("—");
   const [finalCal, setFinalCal] = useState(0);
+  const [unlockedStampIds, setUnlockedStampIds] = useState<Set<string>>(new Set());
+  const unlockedRef = useRef<Set<string>>(new Set());
 
   const timer = useWalkTimer();
 
@@ -100,6 +102,9 @@ export function FreeWalkApp() {
           }}
           onTogglePause={timer.togglePause}
           onFinish={handleFinishWalk}
+          onStampsUnlocked={(ids) => {
+            unlockedRef.current = ids;
+          }}
         />
       )}
 
@@ -109,6 +114,7 @@ export function FreeWalkApp() {
           walkerName={walkerName}
           time={finalTime}
           calories={finalCal}
+          unlockedStampIds={unlockedRef.current}
           onRestart={() => goTo("splash")}
           onWalkAnother={() => goTo("route")}
           onEnterStill={() => goTo("still")}

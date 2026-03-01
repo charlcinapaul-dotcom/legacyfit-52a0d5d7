@@ -2,6 +2,10 @@ import { useState, useRef, useEffect } from "react";
 import { ROUTE_STOPS } from "@/data/queens";
 import type { UnlockedStamp } from "@/hooks/useMileLogging";
 
+export interface FreeWalkStampEntry extends UnlockedStamp {
+  isUnlocked: boolean;
+}
+
 /**
  * Tracks mile-marker crossings during a Free Walk and produces
  * UnlockedStamp objects that can be fed directly into StampUnlockModal.
@@ -11,6 +15,7 @@ import type { UnlockedStamp } from "@/hooks/useMileLogging";
  */
 export function useFreeWalkStamps(currentMiles: number) {
   const [pendingStamps, setPendingStamps] = useState<UnlockedStamp[]>([]);
+  const [unlockedIds, setUnlockedIds] = useState<Set<string>>(new Set());
   const seenRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -21,7 +26,7 @@ export function useFreeWalkStamps(currentMiles: number) {
       if (currentMiles >= distNum && !seenRef.current.has(stop.dist)) {
         seenRef.current.add(stop.dist);
         newStamps.push({
-          milestoneId: stop.dist, // use dist as a stable local ID
+          milestoneId: stop.dist,
           title: stop.title,
           stampTitle: stop.title,
           stampCopy: stop.desc,
@@ -35,10 +40,11 @@ export function useFreeWalkStamps(currentMiles: number) {
 
     if (newStamps.length > 0) {
       setPendingStamps((prev) => [...prev, ...newStamps]);
+      setUnlockedIds(new Set(seenRef.current));
     }
   }, [currentMiles]);
 
   const clearPendingStamps = () => setPendingStamps([]);
 
-  return { pendingStamps, clearPendingStamps };
+  return { pendingStamps, clearPendingStamps, unlockedIds };
 }
