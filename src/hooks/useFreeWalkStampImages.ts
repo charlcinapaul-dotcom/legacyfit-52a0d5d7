@@ -1,69 +1,40 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import sojournerImg from "@/assets/stamps/free-walk/sojourner-truth.png";
+import idaImg from "@/assets/stamps/free-walk/ida-wells.png";
+import eleanorImg from "@/assets/stamps/free-walk/eleanor-roosevelt.png";
+import wilmaImg from "@/assets/stamps/free-walk/wilma-rudolph.png";
+import fannieImg from "@/assets/stamps/free-walk/fannie-lou-hamer.png";
+import mayaImg from "@/assets/stamps/free-walk/maya-angelou.png";
+import katherineImg from "@/assets/stamps/free-walk/katherine-johnson.png";
+import ruthImg from "@/assets/stamps/free-walk/ruth-bader-ginsburg.png";
+import malalaImg from "@/assets/stamps/free-walk/malala-yousafzai.png";
+import toniImg from "@/assets/stamps/free-walk/toni-morrison.png";
+import janeImg from "@/assets/stamps/free-walk/jane-goodall.png";
 
-const QUEEN_SLUGS = [
-  "sojourner",
-  "ida",
-  "eleanor",
-  "wilma",
-  "fannie",
-  "maya",
-  "katherine",
-  "ruth-bader-ginsburg",
-  "malala",
-  "toni",
-  "jane-goodall",
-];
-
-// Maps ROUTE_STOP title → challenge slug
-export const TITLE_TO_SLUG: Record<string, string> = {
-  "Sojourner Truth": "sojourner",
-  "Ida B. Wells": "ida",
-  "Eleanor Roosevelt": "eleanor",
-  "Wilma Rudolph": "wilma",
-  "Fannie Lou Hamer": "fannie",
-  "Maya Angelou": "maya",
-  "Katherine Johnson": "katherine",
-  "Ruth Bader Ginsburg": "ruth-bader-ginsburg",
-  "Malala Yousafzai": "malala",
-  "Toni Morrison": "toni",
-  "Jane Goodall": "jane-goodall",
+/**
+ * Maps each ROUTE_STOP title to its unique Walk With Queens stamp image.
+ * These are purpose-built assets distinct from the Women's History Edition stamps.
+ */
+export const FREE_WALK_STAMP_IMAGES: Record<string, string> = {
+  "Sojourner Truth": sojournerImg,
+  "Ida B. Wells": idaImg,
+  "Eleanor Roosevelt": eleanorImg,
+  "Wilma Rudolph": wilmaImg,
+  "Fannie Lou Hamer": fannieImg,
+  "Maya Angelou": mayaImg,
+  "Katherine Johnson": katherineImg,
+  "Ruth Bader Ginsburg": ruthImg,
+  "Malala Yousafzai": malalaImg,
+  "Toni Morrison": toniImg,
+  "Jane Goodall": janeImg,
 };
 
 /**
- * Fetches the first milestone stamp image for each Queen challenge.
- * Returns a Map<title, stamp_image_url> for easy lookup by ROUTE_STOP title.
+ * Returns a Map<title, stampImageUrl> for Free Walk stamp lookup.
+ * Uses locally bundled unique artwork — no database query needed.
  */
 export function useFreeWalkStampImages() {
-  return useQuery({
-    queryKey: ["free-walk-stamp-images"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("milestones")
-        .select("stamp_image_url, challenge_id, challenges!inner(slug)")
-        .in("challenges.slug", QUEEN_SLUGS)
-        .eq("order_index", 1);
-
-      if (error) throw error;
-
-      // Build a slug → image URL map first
-      const slugToImage = new Map<string, string>();
-      for (const row of data ?? []) {
-        const slug = (row.challenges as { slug: string } | null)?.slug;
-        if (slug && row.stamp_image_url) {
-          slugToImage.set(slug, row.stamp_image_url);
-        }
-      }
-
-      // Then build title → image URL map
-      const titleToImage = new Map<string, string>();
-      for (const [title, slug] of Object.entries(TITLE_TO_SLUG)) {
-        const img = slugToImage.get(slug);
-        if (img) titleToImage.set(title, img);
-      }
-
-      return titleToImage;
-    },
-    staleTime: 1000 * 60 * 10, // 10 minutes
-  });
+  const data = new Map<string, string>(
+    Object.entries(FREE_WALK_STAMP_IMAGES)
+  );
+  return { data, isLoading: false, error: null };
 }
