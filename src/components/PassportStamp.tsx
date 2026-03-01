@@ -59,7 +59,7 @@ export function PassportStamp({ stamp, onClick }: PassportStampProps) {
               <img
                 src={stamp.stamp_image_url}
                 alt={displayTitle}
-                className="max-w-full max-h-full object-contain rounded-lg grayscale opacity-40"
+                className="max-w-full max-h-full object-contain rounded-lg blur-sm opacity-80"
               />
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
                 <Lock className="w-6 h-6 text-muted-foreground drop-shadow-md" />
