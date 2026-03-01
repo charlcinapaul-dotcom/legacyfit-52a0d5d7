@@ -105,7 +105,7 @@ export function FreeWalkPassport({ unlockedMilestoneIds, onClose }: Props) {
                   "relative aspect-square border-2 rounded-xl overflow-hidden transition-all duration-300",
                   stamp.isUnlocked
                     ? "border-amber-500/50 shadow-lg shadow-amber-500/20"
-                    : "border-border/30"
+                    : "border-white/20"
                 )}
                 style={{ backgroundColor: "#ede0c4" }}
               >
