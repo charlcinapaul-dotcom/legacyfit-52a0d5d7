@@ -33,7 +33,14 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <ScrollToTop />
-        <Suspense fallback={<div className="min-h-screen" />}>
+        <Suspense fallback={
+          <div className="min-h-screen bg-background flex items-center justify-center">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-gradient-gold mb-2">LegacyFit</div>
+              <div className="text-muted-foreground text-sm">Loading...</div>
+            </div>
+          </div>
+        }>
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<Auth />} />
