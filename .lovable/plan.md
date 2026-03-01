@@ -1,53 +1,33 @@
 
-## Milestone Audio Narration During the Walk
+## Fix `currentStop` Find Logic in `ActiveWalkScreen.tsx`
 
-### What's happening now
-The `ActiveWalkScreen` shows a "Walking With [Queen]" banner that updates as the walker reaches each mile marker. The banner shows the queen's quote but there is no audio — the story is purely visual.
+### The Problem
 
-### What needs to be built
+Line 37 uses a forward `find()` that returns the **first** stop where `currentMiles <= stop.dist`. This means:
 
-When the walker reaches a new mile marker (i.e. the "current stop" changes), the app will automatically read aloud the queen's full story from `ROUTE_STOPS[stop].desc` using the browser's built-in **Web Speech API** (`window.speechSynthesis`). This requires no API key, no backend, and works on all modern mobile browsers.
+- At 0.0 miles → correctly returns stop 01 (Sojourner Truth at 0.5 mi) ✓
+- At 0.6 miles → incorrectly returns stop 02 (Ida B. Wells at 1.0 mi), skipping Sojourner Truth ✗
+- The walker appears to be "at" a stop they haven't reached yet
 
----
+The fix reverses the array and uses `>=` so the walker is placed at the **last stop they've actually passed**.
 
-### Behaviour spec
+### The Fix
 
-| Event | Audio action |
-|---|---|
-| Walk starts (0.0 mi) | Read the Sojourner Truth story (stop 01) |
-| Walker crosses a new mile marker | Stop current narration → read new queen's story |
-| Walk is paused | Pause the speech |
-| Walk is resumed | Resume the speech |
-| Walk ends (Finish) | Cancel all speech |
-| Tab/app goes to background | Speech continues (browser-native) |
+**Line 37 only** — one-line change:
 
-A small audio indicator (animated sound wave icon + "Now Narrating" label) will appear in the queen banner while speech is playing, so the user can see what's happening. A mute/unmute toggle button will also be provided in the controls bar.
+```typescript
+// Before (wrong — forward find, finds first stop ahead)
+const currentStop = ROUTE_STOPS.find((s) => currentMiles <= parseFloat(s.dist)) ?? ROUTE_STOPS[0];
 
----
+// After (correct — reverse find, finds last stop reached)
+const currentStop = [...ROUTE_STOPS].reverse().find(
+  (s) => currentMiles >= parseFloat(s.dist)
+) ?? ROUTE_STOPS[0];
+```
 
-### Technical approach
+### Downstream Impact
 
-**Use Web Speech API** (`window.speechSynthesis`) — no API key or backend needed. This is the correct choice for a free-tier, no-auth feature.
+Everything else (`currentStopIndex`, `nextStop`, `currentQueenFull`, narration, celebration overlay) derives from `currentStop`, so they all benefit from the corrected value automatically — no other changes needed.
 
-The narration text for each stop comes directly from `ROUTE_STOPS[i].desc` in `src/data/queens.ts`, which already contains the full story for each queen (e.g. _"Born into bondage, she escaped on foot and never stopped moving..."_).
-
-**New hook: `src/hooks/useQueenNarration.ts`**
-- Accepts `currentStopIndex: number`, `paused: boolean`, `muted: boolean`
-- Uses a `useEffect` that fires when `currentStopIndex` changes → cancels any current utterance → creates a new `SpeechSynthesisUtterance` with the stop's `desc` text → calls `speechSynthesis.speak()`
-- Pausing/resuming is handled via `speechSynthesis.pause()` / `speechSynthesis.resume()` in a separate `useEffect` watching `paused`
-- Returns `{ isSpeaking, muted, toggleMute }` 
-
-**Changes to `ActiveWalkScreen.tsx`**
-1. Accept and call the new `useQueenNarration` hook (or receive its state as props from `FreeWalkApp`)
-2. Show a subtle animated "Now Narrating" badge inside the queen banner when `isSpeaking` is true
-3. Add a mute/unmute button (speaker icon) next to the Pause/Finish controls
-
----
-
-### Files changed
-- `src/hooks/useQueenNarration.ts` — new hook
-- `src/components/free-walk/ActiveWalkScreen.tsx` — wire up narration, add mute toggle + "Now Narrating" indicator
-- `src/components/free-walk/FreeWalkApp.tsx` — pass `currentStopIndex` and cancel speech on finish/exit
-
-### No backend changes needed
-Web Speech API is entirely client-side.
+### File Changed
+- `src/components/free-walk/ActiveWalkScreen.tsx` — line 37 only
