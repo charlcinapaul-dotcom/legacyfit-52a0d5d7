@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ROUTE_STOPS } from "@/data/queens";
 import type { UnlockedStamp } from "@/hooks/useMileLogging";
-import { TITLE_TO_SLUG } from "@/hooks/useFreeWalkStampImages";
+
 
 export interface FreeWalkStampEntry extends UnlockedStamp {
   isUnlocked: boolean;
