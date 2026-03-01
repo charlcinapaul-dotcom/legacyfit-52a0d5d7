@@ -352,6 +352,10 @@ export function ActiveWalkScreen({
           from { width: 100%; }
           to   { width: 0%; }
         }
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
       `}</style>
     </div>
   );
