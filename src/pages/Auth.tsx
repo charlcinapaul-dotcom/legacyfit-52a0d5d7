@@ -97,7 +97,7 @@ const Auth = () => {
         }
       }
 
-      if (session) {
+      if (session && event !== 'PASSWORD_RECOVERY') {
         navigate("/dashboard");
       }
     });
