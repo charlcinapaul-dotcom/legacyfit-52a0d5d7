@@ -31,18 +31,10 @@ export function FreeWalkPassport({ unlockedMilestoneIds, onClose }: Props) {
   const progressPercent = totalCount > 0 ? (unlockedCount / totalCount) * 100 : 0;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto" style={{ backgroundColor: "#f0e6ce" }}>
-      {/* Corner registration marks */}
-      <span className="fixed top-3 left-3 text-amber-800/20 text-lg pointer-events-none select-none">○</span>
-      <span className="fixed top-3 right-3 text-amber-800/20 text-lg pointer-events-none select-none">○</span>
-      <span className="fixed bottom-3 left-3 text-amber-800/20 text-lg pointer-events-none select-none">○</span>
-      <span className="fixed bottom-3 right-3 text-amber-800/20 text-lg pointer-events-none select-none">○</span>
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-background">
 
       {/* Header */}
-      <div
-        className="sticky top-0 z-10 border-b border-amber-900/30"
-        style={{ backgroundColor: "#e8d9b8" }}
-      >
+      <div className="sticky top-0 z-10 border-b border-border bg-background">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between relative overflow-hidden">
           {/* Postal cancellation SVG decoration */}
           <svg
@@ -66,17 +58,17 @@ export function FreeWalkPassport({ unlockedMilestoneIds, onClose }: Props) {
           </svg>
 
           <div className="flex items-center gap-2.5 relative z-10">
-            <Book className="w-5 h-5 text-amber-800" />
+            <Book className="w-5 h-5 text-foreground" />
             <div>
-              <div className="font-sans font-bold text-amber-950 text-base leading-tight">
+              <div className="font-sans font-bold text-foreground text-base leading-tight">
                 Walk With Queens
               </div>
-              <Mono className="text-amber-700 text-[10px]">Queen Passport</Mono>
+              <Mono className="text-muted-foreground text-[10px]">Queen Passport</Mono>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center text-amber-900 hover:text-amber-950 transition-colors relative z-10"
+            className="w-8 h-8 flex items-center justify-center text-foreground hover:text-foreground/80 transition-colors relative z-10"
           >
             <X size={18} />
           </button>
@@ -85,18 +77,15 @@ export function FreeWalkPassport({ unlockedMilestoneIds, onClose }: Props) {
 
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Progress card */}
-        <div
-          className="border border-amber-800/30 p-5 mb-6"
-          style={{ backgroundColor: "rgba(224, 206, 170, 0.6)" }}
-        >
+        <div className="border border-border p-5 mb-6 bg-card">
           <div className="flex items-center justify-between mb-3">
-            <Mono className="text-amber-800">Stamps Collected</Mono>
-            <span className="font-sans text-2xl font-bold text-amber-900">
+            <Mono className="text-muted-foreground">Stamps Collected</Mono>
+            <span className="font-sans text-2xl font-bold text-foreground">
               {unlockedCount} / {totalCount}
             </span>
           </div>
-          <Progress value={progressPercent} className="h-2 bg-amber-800/20" />
-          <p className="text-xs text-amber-800/70 mt-2">
+          <Progress value={progressPercent} className="h-2" />
+          <p className="text-xs text-muted-foreground mt-2">
             {unlockedCount === 0
               ? "Walk the route to earn your first Queen stamp"
               : unlockedCount === totalCount
@@ -193,7 +182,7 @@ export function FreeWalkPassport({ unlockedMilestoneIds, onClose }: Props) {
         <div className="mt-8 text-center">
           <button
             onClick={onClose}
-            className="inline-flex items-center gap-2 border border-amber-800/40 text-amber-900 font-sans text-[12px] font-semibold tracking-[0.12em] uppercase px-6 py-3 hover:bg-amber-800/10 transition-colors"
+            className="inline-flex items-center gap-2 border border-border text-foreground font-sans text-[12px] font-semibold tracking-[0.12em] uppercase px-6 py-3 hover:bg-muted transition-colors"
           >
             Close Passport
           </button>
