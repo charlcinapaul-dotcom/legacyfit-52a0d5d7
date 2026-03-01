@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ROUTE_STOPS } from "@/data/queens";
 import type { UnlockedStamp } from "@/hooks/useMileLogging";
+import { TITLE_TO_SLUG } from "@/hooks/useFreeWalkStampImages";
 
 export interface FreeWalkStampEntry extends UnlockedStamp {
   isUnlocked: boolean;
@@ -13,7 +14,10 @@ export interface FreeWalkStampEntry extends UnlockedStamp {
  * Uses the same UnlockedStamp shape as the paid-challenge stamp system —
  * no new types needed.
  */
-export function useFreeWalkStamps(currentMiles: number) {
+export function useFreeWalkStamps(
+  currentMiles: number,
+  stampImages?: Map<string, string>
+) {
   const [pendingStamps, setPendingStamps] = useState<UnlockedStamp[]>([]);
   const [unlockedIds, setUnlockedIds] = useState<Set<string>>(new Set());
   const seenRef = useRef<Set<string>>(new Set());
@@ -25,6 +29,7 @@ export function useFreeWalkStamps(currentMiles: number) {
       const distNum = parseFloat(stop.dist);
       if (currentMiles >= distNum && !seenRef.current.has(stop.dist)) {
         seenRef.current.add(stop.dist);
+        const imageUrl = stampImages?.get(stop.title) ?? null;
         newStamps.push({
           milestoneId: stop.dist,
           title: stop.title,
@@ -32,7 +37,7 @@ export function useFreeWalkStamps(currentMiles: number) {
           stampCopy: stop.desc,
           milesRequired: distNum,
           locationName: stop.queenLabel,
-          stampImageUrl: null,
+          stampImageUrl: imageUrl,
           audioUrl: null,
         });
       }

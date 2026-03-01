@@ -4,6 +4,7 @@ import { Mono } from "./ui-primitives";
 import { FreeWalkHeader } from "./FreeWalkHeader";
 import { useQueenNarration } from "@/hooks/useQueenNarration";
 import { useFreeWalkStamps } from "@/hooks/useFreeWalkStamps";
+import { useFreeWalkStampImages } from "@/hooks/useFreeWalkStampImages";
 import { StampUnlockModal } from "@/components/StampUnlockModal";
 
 interface WalkStats {
@@ -83,7 +84,8 @@ export function ActiveWalkScreen({
     voiceURI,
   });
 
-  const { pendingStamps, clearPendingStamps, unlockedIds } = useFreeWalkStamps(currentMiles);
+  const { data: stampImages } = useFreeWalkStampImages();
+  const { pendingStamps, clearPendingStamps, unlockedIds } = useFreeWalkStamps(currentMiles, stampImages);
 
   // Bubble unlocked IDs up so CompleteScreen can show the passport
   useEffect(() => {
