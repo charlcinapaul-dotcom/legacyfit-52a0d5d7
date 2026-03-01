@@ -34,7 +34,7 @@ export function ActiveWalkScreen({
   const { clock, miles, pct, steps, calories, pace, paused } = stats;
   const currentMiles = parseFloat(miles);
 
-  const currentStop = ROUTE_STOPS.find((s) => currentMiles <= parseFloat(s.dist)) ?? ROUTE_STOPS[0];
+  const currentStop = [...ROUTE_STOPS].reverse().find((s) => currentMiles >= parseFloat(s.dist)) ?? ROUTE_STOPS[0];
   const currentStopIndex = ROUTE_STOPS.indexOf(currentStop);
   const nextStop = ROUTE_STOPS[currentStopIndex + 1] ?? null;
 
