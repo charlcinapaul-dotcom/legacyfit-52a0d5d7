@@ -189,7 +189,7 @@ const Challenges = () => {
                   Free
                 </span>
                 <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors pr-14">
-                  Free Walk Experience
+                  Entry Experience of LegacyFit
                 </h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Take a virtual 5-mile walk through 11 historical milestones. No account needed — just lace up and go.
