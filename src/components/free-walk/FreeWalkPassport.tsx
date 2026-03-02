@@ -77,15 +77,15 @@ export function FreeWalkPassport({ unlockedMilestoneIds, onClose }: Props) {
 
       <div className="max-w-2xl mx-auto px-4 py-6">
         {/* Progress card */}
-        <div className="mb-6 bg-gradient-to-r from-[#7A1E2C]/20 to-[#7A1E2C]/10 border border-[#7A1E2C]/40 rounded-xl p-5">
+        <div className="mb-6 bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border border-amber-500/30 rounded-xl p-5">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-[#C084FC] font-bold text-lg">Stamps Collected</span>
-            <span className="font-sans text-2xl font-bold text-[#C084FC]">
+            <span className="text-amber-400 font-bold text-lg">Stamps Collected</span>
+            <span className="font-sans text-2xl font-bold text-amber-400">
               {unlockedCount} / {totalCount}
             </span>
           </div>
-          <Progress value={progressPercent} className="h-3 bg-[#7A1E2C]/30" />
-          <p className="text-sm text-muted-foreground mt-2">
+          <Progress value={progressPercent} className="h-3 bg-amber-900/40" />
+          <p className="text-sm text-white/60 mt-2">
             {unlockedCount === 0
               ? "Walk the route to earn your first Queen stamp"
               : unlockedCount === totalCount
