@@ -58,7 +58,7 @@ const Landing = () => {
             </Link>
             <Link to="/free-walk">
               <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10 text-lg px-8 py-6">
-                Try Free Walk
+                Entry Experience of LegacyFit
               </Button>
             </Link>
             <Link to="/about">
