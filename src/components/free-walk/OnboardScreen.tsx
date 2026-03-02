@@ -76,6 +76,7 @@ export function OnboardScreen({ onNext, onBack }: Props) {
   };
 
   const bothFilled = fitnessValue !== null && selectedGoals.length > 0;
+  const [validationMsg, setValidationMsg] = useState("");
 
   // Progress: 10% on load, 50% when one section filled, 100% when both
   const fitnessFilled = fitnessValue !== null;
@@ -92,8 +93,24 @@ export function OnboardScreen({ onNext, onBack }: Props) {
     window.speechSynthesis.speak(u);
   };
 
+  // Clear validation when selections change
+  useEffect(() => {
+    if (validationMsg) setValidationMsg("");
+  }, [fitnessValue, selectedGoals.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const handleNext = () => {
-    if (!bothFilled) return;
+    if (!fitnessValue && selectedGoals.length === 0) {
+      setValidationMsg("Please select where you are now and what you're walking toward to continue.");
+      return;
+    }
+    if (!fitnessValue) {
+      setValidationMsg("Please select your current activity level to continue.");
+      return;
+    }
+    if (selectedGoals.length === 0) {
+      setValidationMsg("Please choose at least one goal to continue.");
+      return;
+    }
     window.speechSynthesis.cancel();
     onNext(name.trim() || "Walker", fitnessValue!, selectedGoals, selectedVoiceURI);
   };
@@ -265,18 +282,23 @@ export function OnboardScreen({ onNext, onBack }: Props) {
       </div>
 
       {/* CTAs */}
-      <div className="px-6 md:px-[clamp(24px,6vw,72px)] py-10 flex gap-3 flex-wrap items-center border-t border-border">
-        <BtnFill
-          onClick={handleNext}
-          className={cn(
-            "flex-1 justify-center transition-opacity duration-200",
-            !bothFilled && "opacity-40 cursor-not-allowed"
-          )}
-        >
-          <span>Meet Your Queens</span>
-          <ArrowRight />
-        </BtnFill>
-        <BtnOutline onClick={onBack}>← Back</BtnOutline>
+      <div className="px-6 md:px-[clamp(24px,6vw,72px)] py-10 flex flex-col gap-4 border-t border-border">
+        {validationMsg && (
+          <p className="text-primary text-[13px] font-medium text-center">{validationMsg}</p>
+        )}
+        <div className="flex gap-3 flex-wrap items-center">
+          <BtnFill
+            onClick={handleNext}
+            className={cn(
+              "flex-1 justify-center transition-opacity duration-200",
+              !bothFilled && "opacity-40"
+            )}
+          >
+            <span>Meet Your Queens</span>
+            <ArrowRight />
+          </BtnFill>
+          <BtnOutline onClick={onBack}>← Back</BtnOutline>
+        </div>
       </div>
     </div>
   );
