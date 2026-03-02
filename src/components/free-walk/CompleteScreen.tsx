@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Queen } from "@/data/queens";
 import { Mono, BtnFill, BtnOutline, ArrowRight } from "./ui-primitives";
@@ -31,6 +31,21 @@ export function CompleteScreen({
   const q = queen ?? { name: "Sojourner Truth", domain: "Resistance", quote: "", truth: "" };
   const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
   const [showPassport, setShowPassport] = useState(false);
+  const [reminderEmail, setReminderEmail] = useState("");
+  const [reminderState, setReminderState] = useState<"idle" | "submitting" | "done" | "error">("idle");
+  const emailInputRef = useRef<HTMLInputElement>(null);
+
+  const handleReminderSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reminderEmail.trim()) return;
+    setReminderState("submitting");
+    const { error } = await supabase.from("walk_reminders" as any).insert({
+      email: reminderEmail.trim(),
+      miles,
+      completed_at: new Date().toISOString(),
+    });
+    setReminderState(error ? "error" : "done");
+  };
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -112,6 +127,47 @@ export function CompleteScreen({
           <strong className="text-primary not-italic font-bold">{q.name}</strong> — who walked so
           you could too.
         </p>
+
+        {/* Walk Reminder */}
+        <div className="border border-white/[0.08] bg-white/[0.03] p-6 mb-7 text-left">
+          {reminderState === "done" ? (
+            <p className="text-sm text-primary font-sans font-medium leading-[1.7]">
+              You're on the list. See you on the road.
+            </p>
+          ) : (
+            <form onSubmit={handleReminderSubmit}>
+              <label
+                htmlFor="reminder-email"
+                className="block font-sans text-[13px] font-medium text-foreground mb-3"
+              >
+                Walk again tomorrow — we'll remind you
+              </label>
+              <div className="flex gap-2">
+                <input
+                  ref={emailInputRef}
+                  id="reminder-email"
+                  type="email"
+                  value={reminderEmail}
+                  onChange={(e) => setReminderEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="flex-1 bg-background border border-white/[0.12] text-foreground text-[13px] px-4 py-2.5 placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/60 transition-colors"
+                />
+                <button
+                  type="submit"
+                  disabled={reminderState === "submitting"}
+                  className="bg-primary text-primary-foreground font-sans text-[11px] font-semibold tracking-[0.12em] uppercase px-5 py-2.5 hover:bg-primary/90 transition-colors disabled:opacity-60 whitespace-nowrap"
+                >
+                  {reminderState === "submitting" ? "Saving…" : "Send my reminder"}
+                </button>
+              </div>
+              {reminderState === "error" && (
+                <p className="text-[11px] text-muted-foreground mt-2">
+                  Couldn't save — but you're all set to keep walking.
+                </p>
+              )}
+            </form>
+          )}
+        </div>
 
         {/* Auth upsell */}
         {isAuthed === false && (
