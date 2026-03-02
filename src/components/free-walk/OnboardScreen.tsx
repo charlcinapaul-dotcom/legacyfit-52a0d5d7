@@ -150,7 +150,7 @@ export function OnboardScreen({ onNext, onBack }: Props) {
             className={cn(
               "w-full bg-transparent border-b border-white/20 pb-3",
               "font-sans text-[22px] font-light text-foreground",
-              "placeholder:text-muted-foreground/40 outline-none",
+              "placeholder:text-white/60 outline-none",
               "focus:border-primary transition-colors duration-200"
             )}
           />
