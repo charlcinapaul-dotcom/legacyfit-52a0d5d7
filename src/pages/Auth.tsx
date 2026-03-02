@@ -20,6 +20,7 @@ const Auth = () => {
   const [searchParams] = useSearchParams();
   const defaultMode = searchParams.get("mode") === "signup" ? "signup" : "login";
   const referralCode = searchParams.get("ref") || "";
+  const redirectAfterAuth = searchParams.get("redirect") || "/dashboard";
 
   const [activeTab, setActiveTab] = useState(defaultMode);
   const [loading, setLoading] = useState(false);
@@ -33,7 +34,7 @@ const Auth = () => {
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate("/dashboard");
+        navigate(redirectAfterAuth);
       }
     };
     checkSession();
@@ -98,7 +99,7 @@ const Auth = () => {
       }
 
       if (session && event !== 'PASSWORD_RECOVERY') {
-        navigate("/dashboard");
+        navigate(redirectAfterAuth);
       }
     });
 
