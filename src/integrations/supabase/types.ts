@@ -779,6 +779,30 @@ export type Database = {
         }
         Relationships: []
       }
+      walk_reminders: {
+        Row: {
+          completed_at: string
+          created_at: string
+          email: string
+          id: string
+          miles: number
+        }
+        Insert: {
+          completed_at?: string
+          created_at?: string
+          email: string
+          id?: string
+          miles?: number
+        }
+        Update: {
+          completed_at?: string
+          created_at?: string
+          email?: string
+          id?: string
+          miles?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       leaderboard: {
