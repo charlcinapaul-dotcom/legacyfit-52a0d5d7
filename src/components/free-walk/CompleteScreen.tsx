@@ -169,6 +169,22 @@ export function CompleteScreen({
           )}
         </div>
 
+        {/* Soft account creation prompt */}
+        <div className="border border-primary/20 bg-primary/[0.05] p-6 mb-7 text-left">
+          <p className="font-sans text-[15px] font-semibold text-foreground mb-2">
+            Want to keep your miles?
+          </p>
+          <p className="text-muted-foreground text-[13px] leading-[1.7] mb-4">
+            Create a free account to earn passport stamps, save your walk history, and join the Legacy community.
+          </p>
+          <Link
+            to="/auth?mode=signup"
+            className="inline-flex items-center gap-2 border border-primary/40 text-primary font-sans text-[12px] font-semibold tracking-[0.12em] uppercase px-5 py-2.5 hover:bg-primary/10 transition-colors"
+          >
+            Create Free Account <ArrowRight size={12} />
+          </Link>
+        </div>
+
         {/* Auth upsell */}
         {isAuthed === false && (
           <div className="border border-primary bg-primary/[0.08] p-6 mb-7 text-left relative overflow-hidden">
