@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Queen, QUEENS, ROUTE_STOPS } from "@/data/queens";
 import { Mono } from "./ui-primitives";
 import { FreeWalkHeader } from "./FreeWalkHeader";
@@ -7,46 +7,45 @@ import { useFreeWalkStamps } from "@/hooks/useFreeWalkStamps";
 import { useFreeWalkStampImages } from "@/hooks/useFreeWalkStampImages";
 import { StampUnlockModal } from "@/components/StampUnlockModal";
 
-interface WalkStats {
-  clock: string;
-  miles: string;
-  pct: number;
-  steps: string;
-  calories: number;
-  pace: string;
-  paused: boolean;
-}
+const STEPS_PER_MILE = 2000;
 
 interface Props {
   queen: Queen | null;
   walkerName?: string;
-  stats: WalkStats;
   voiceURI?: string;
-  onTogglePause: () => void;
-  onFinish: () => void;
+  goalMiles: number;
+  onFinish: (miles: number) => void;
   onStampsUnlocked?: (ids: Set<string>) => void;
 }
 
 export function ActiveWalkScreen({
   queen,
   walkerName = "Walker",
-  stats,
   voiceURI = "",
-  onTogglePause,
+  goalMiles,
   onFinish,
   onStampsUnlocked,
 }: Props) {
-  const { clock, miles, pct, steps, calories, pace, paused } = stats;
-  const currentMiles = parseFloat(miles);
+  const [totalMiles, setTotalMiles] = useState(0);
+  const [totalSteps, setTotalSteps] = useState(0);
+  const [activeTab, setActiveTab] = useState<"miles" | "steps">("miles");
+  const [customMiles, setCustomMiles] = useState(1);
+  const [customSteps, setCustomSteps] = useState(500);
+  const [showCustom, setShowCustom] = useState(false);
+  const unlockedIdsRef = useRef<Set<string>>(new Set());
 
-  const currentStop = [...ROUTE_STOPS].reverse().find((s) => currentMiles >= parseFloat(s.dist)) ?? ROUTE_STOPS[0];
+  const pct = Math.min((totalMiles / goalMiles) * 100, 100);
+
+  const currentStop =
+    [...ROUTE_STOPS].reverse().find((s) => totalMiles >= parseFloat(s.dist)) ?? ROUTE_STOPS[0];
   const currentStopIndex = ROUTE_STOPS.indexOf(currentStop);
-  const nextStop = ROUTE_STOPS[currentStopIndex + 1] ?? null;
+  const nextStop =
+    ROUTE_STOPS.find((s) => parseFloat(s.dist) > totalMiles && parseFloat(s.dist) <= goalMiles) ?? null;
 
   const currentQueenFull = QUEENS.find((q) => q.name === currentStop.title) ?? null;
 
   // Milestone celebration overlay
-  const [celebrationStop, setCelebrationStop] = useState<typeof ROUTE_STOPS[0] | null>(null);
+  const [celebrationStop, setCelebrationStop] = useState<(typeof ROUTE_STOPS)[0] | null>(null);
   const [celebrationVisible, setCelebrationVisible] = useState(false);
   const [celebrationFading, setCelebrationFading] = useState(false);
   const seenStopsRef = useRef<Set<number>>(new Set());
@@ -54,7 +53,6 @@ export function ActiveWalkScreen({
   useEffect(() => {
     if (seenStopsRef.current.has(currentStopIndex)) return;
     seenStopsRef.current.add(currentStopIndex);
-    // Don't show overlay for the very first stop on walk start (index 0) — only on crossings
     if (currentStopIndex === 0 && seenStopsRef.current.size === 1) return;
 
     const stop = ROUTE_STOPS[currentStopIndex];
@@ -62,10 +60,7 @@ export function ActiveWalkScreen({
     setCelebrationFading(false);
     setCelebrationVisible(true);
 
-    // Haptic feedback: short-long-short pattern
-    if ("vibrate" in navigator) {
-      navigator.vibrate([80, 60, 180]);
-    }
+    if ("vibrate" in navigator) navigator.vibrate([80, 60, 180]);
 
     const fadeTimer = setTimeout(() => setCelebrationFading(true), 2500);
     const hideTimer = setTimeout(() => {
@@ -74,123 +69,152 @@ export function ActiveWalkScreen({
       setCelebrationFading(false);
     }, 3200);
 
-    return () => { clearTimeout(fadeTimer); clearTimeout(hideTimer); };
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(hideTimer);
+    };
   }, [currentStopIndex]);
 
   const { isSpeaking, muted, toggleMute } = useQueenNarration({
     currentStopIndex,
-    paused,
+    paused: false,
     active: true,
     voiceURI,
   });
 
   const { data: stampImages } = useFreeWalkStampImages();
-  const { pendingStamps, clearPendingStamps, unlockedIds } = useFreeWalkStamps(currentMiles, stampImages);
+  const { pendingStamps, clearPendingStamps, unlockedIds } = useFreeWalkStamps(totalMiles, stampImages);
 
-  // Bubble unlocked IDs up so CompleteScreen can show the passport
   useEffect(() => {
-    if (unlockedIds.size > 0) onStampsUnlocked?.(unlockedIds);
+    if (unlockedIds.size > 0) {
+      unlockedIdsRef.current = unlockedIds;
+      onStampsUnlocked?.(unlockedIds);
+    }
   }, [unlockedIds, onStampsUnlocked]);
+
+  const logMiles = useCallback(
+    (m: number) => {
+      setTotalMiles((prev) => {
+        const next = Math.min(parseFloat((prev + m).toFixed(2)), 99);
+        setTotalSteps((s) => s + Math.round(m * STEPS_PER_MILE));
+        return next;
+      });
+    },
+    []
+  );
+
+  const logSteps = useCallback((steps: number) => {
+    const miles = parseFloat((steps / STEPS_PER_MILE).toFixed(2));
+    setTotalSteps((prev) => prev + steps);
+    setTotalMiles((prev) => Math.min(parseFloat((prev + miles).toFixed(2)), 99));
+  }, []);
 
   const handleFinish = () => {
     window.speechSynthesis.cancel();
-    onFinish();
+    onFinish(totalMiles);
   };
+
+  const QUICK_MILES = [1, 2, 3, 5].filter((v) => v <= goalMiles);
+  const QUICK_STEPS = [500, 1000, 2000, 5000];
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative">
-
-      {/* ── Stamp Unlock Modal (reuses existing stamp system) ── */}
+      {/* Stamp Unlock Modal */}
       {pendingStamps.length > 0 && (
-        <StampUnlockModal
-          stamps={pendingStamps}
-          onClose={clearPendingStamps}
-        />
+        <StampUnlockModal stamps={pendingStamps} onClose={clearPendingStamps} />
       )}
 
-      {/* ── Milestone Celebration Overlay ── */}
-      {celebrationVisible && celebrationStop && (() => {
-        const queen = QUEENS.find((q) => q.name === celebrationStop.title);
-        return (
-          <div
-            className="fixed inset-0 z-50 flex flex-col items-center justify-center px-8 text-center"
-            style={{
-              background: "radial-gradient(ellipse at center, hsl(var(--primary)/0.18) 0%, hsl(var(--background)/0.97) 70%)",
-              opacity: celebrationFading ? 0 : 1,
-              transition: "opacity 0.7s ease-out",
-            }}
-          >
-            {/* Ambient ring */}
+      {/* Milestone Celebration Overlay */}
+      {celebrationVisible && celebrationStop &&
+        (() => {
+          const q = QUEENS.find((q) => q.name === celebrationStop.title);
+          return (
             <div
-              className="absolute w-[340px] h-[340px] rounded-full border border-primary/20"
-              style={{ animation: "milestoneRing 1.8s ease-out forwards" }}
-            />
-            <div
-              className="absolute w-[240px] h-[240px] rounded-full border border-primary/30"
-              style={{ animation: "milestoneRing 1.4s ease-out forwards" }}
-            />
-
-            {/* Mile number */}
-            <div
-              className="font-sans font-black text-primary leading-none mb-2"
+              className="fixed inset-0 z-50 flex flex-col items-center justify-center px-8 text-center"
               style={{
-                fontSize: "clamp(72px,18vw,120px)",
-                animation: "fade-in 0.4s ease-out",
-                textShadow: "0 0 60px hsl(var(--primary)/0.4)",
+                background:
+                  "radial-gradient(ellipse at center, hsl(var(--primary)/0.18) 0%, hsl(var(--background)/0.97) 70%)",
+                opacity: celebrationFading ? 0 : 1,
+                transition: "opacity 0.7s ease-out",
               }}
             >
-              {celebrationStop.dist}
-            </div>
-            <span
-              className="font-mono text-[10px] tracking-[0.28em] uppercase text-primary mb-6 block"
-              style={{ animation: "fade-in 0.5s ease-out" }}
-            >
-              Mile Mark Reached
-            </span>
-
-            {/* Queen name + domain */}
-            <div
-              className="mb-1 font-sans font-black text-foreground leading-tight"
-              style={{ fontSize: "clamp(24px,6vw,42px)", animation: "fade-in 0.6s ease-out" }}
-            >
-              {celebrationStop.title}
-            </div>
-            <span
-              className="font-mono text-[10px] tracking-[0.28em] uppercase text-primary/70 mb-8 block"
-              style={{ animation: "fade-in 0.65s ease-out" }}
-            >
-              {celebrationStop.queenLabel}
-            </span>
-
-            {/* Quote */}
-            {queen?.quote && (
-              <p
-                className="italic text-muted-foreground max-w-[420px] leading-[1.7]"
-                style={{ fontSize: "clamp(14px,2vw,18px)", animation: "fade-in 0.75s ease-out" }}
+              <div
+                className="absolute w-[340px] h-[340px] rounded-full border border-primary/20"
+                style={{ animation: "milestoneRing 1.8s ease-out forwards" }}
+              />
+              <div
+                className="absolute w-[240px] h-[240px] rounded-full border border-primary/30"
+                style={{ animation: "milestoneRing 1.4s ease-out forwards" }}
+              />
+              <div
+                className="font-sans font-black text-primary leading-none mb-2"
+                style={{
+                  fontSize: "clamp(72px,18vw,120px)",
+                  animation: "fade-in 0.4s ease-out",
+                  textShadow: "0 0 60px hsl(var(--primary)/0.4)",
+                }}
               >
-                {queen.quote}
-              </p>
-            )}
-
-            {/* Bottom bar */}
-            <div
-              className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary/30"
-              style={{ animation: "milestoneBar 3.2s linear forwards" }}
-            />
-          </div>
-        );
-      })()}
+                {celebrationStop.dist}
+              </div>
+              <span
+                className="font-mono text-[10px] tracking-[0.28em] uppercase text-primary mb-6 block"
+                style={{ animation: "fade-in 0.5s ease-out" }}
+              >
+                Mile Mark Reached
+              </span>
+              <div
+                className="mb-1 font-sans font-black text-foreground leading-tight"
+                style={{ fontSize: "clamp(24px,6vw,42px)", animation: "fade-in 0.6s ease-out" }}
+              >
+                {celebrationStop.title}
+              </div>
+              <span
+                className="font-mono text-[10px] tracking-[0.28em] uppercase text-primary/70 mb-8 block"
+                style={{ animation: "fade-in 0.65s ease-out" }}
+              >
+                {celebrationStop.queenLabel}
+              </span>
+              {q?.quote && (
+                <p
+                  className="italic text-muted-foreground max-w-[420px] leading-[1.7]"
+                  style={{ fontSize: "clamp(14px,2vw,18px)", animation: "fade-in 0.75s ease-out" }}
+                >
+                  {q.quote}
+                </p>
+              )}
+              <div
+                className="absolute bottom-0 left-0 right-0 h-[3px] bg-primary/30"
+                style={{ animation: "milestoneBar 3.2s linear forwards" }}
+              />
+            </div>
+          );
+        })()}
 
       <FreeWalkHeader />
-      {/* Top bar */}
-      <div className="flex justify-between items-center px-5 md:px-12 pt-2 pb-5">
+
+      {/* Status bar */}
+      <div className="flex justify-between items-center px-5 md:px-12 pt-2 pb-4">
         <div className="flex items-center gap-2">
-          <div
-            className="w-[7px] h-[7px] rounded-full bg-primary"
-            style={{ animation: "blink 1.6s ease-in-out infinite" }}
-          />
+          <div className="w-[7px] h-[7px] rounded-full bg-primary" />
           <Mono className="text-primary">Walk In Progress</Mono>
         </div>
+        {isSpeaking && (
+          <div className="flex items-center gap-1.5">
+            <div className="flex items-end gap-[2px] h-[12px]">
+              {[1, 2, 3, 2, 1].map((h, i) => (
+                <div
+                  key={i}
+                  className="w-[3px] bg-primary rounded-full"
+                  style={{
+                    height: `${h * 4}px`,
+                    animation: `soundBar 0.8s ease-in-out ${i * 0.12}s infinite alternate`,
+                  }}
+                />
+              ))}
+            </div>
+            <Mono className="text-primary text-[9px]">Narrating</Mono>
+          </div>
+        )}
         <Mono className="text-muted-foreground">LegacyFit</Mono>
       </div>
 
@@ -198,26 +222,7 @@ export function ActiveWalkScreen({
       <div className="mx-5 md:mx-12 mb-5 bg-card border-l-[3px] border-primary px-5 py-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            <div className="flex items-center gap-3 mb-1">
-              <Mono className="text-primary">Walking With</Mono>
-              {isSpeaking && (
-                <div className="flex items-center gap-1.5">
-                  <div className="flex items-end gap-[2px] h-[12px]">
-                    {[1, 2, 3, 2, 1].map((h, i) => (
-                      <div
-                        key={i}
-                        className="w-[3px] bg-primary rounded-full"
-                        style={{
-                          height: `${h * 4}px`,
-                          animation: `soundBar 0.8s ease-in-out ${i * 0.12}s infinite alternate`,
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <Mono className="text-primary text-[9px]">Now Narrating</Mono>
-                </div>
-              )}
-            </div>
+            <Mono className="text-primary mb-1">Walking With</Mono>
             <div className="font-sans text-[22px] font-bold text-foreground leading-tight mb-2">
               {currentStop.title}
             </div>
@@ -239,20 +244,17 @@ export function ActiveWalkScreen({
         </div>
       </div>
 
-      {/* Clock */}
-      <div className="text-center px-5 md:px-12 py-2">
-        <div
-          className="font-sans font-black text-foreground leading-none tracking-[-0.03em]"
-          style={{ fontSize: "clamp(64px,16vw,120px)" }}
-        >
-          {clock}
+      {/* Progress */}
+      <div className="px-5 md:px-12 pb-4">
+        <div className="flex justify-between mb-2">
+          <span className="font-sans text-[28px] font-black text-primary leading-none">
+            {totalMiles.toFixed(1)}
+          </span>
+          <span className="font-sans text-[15px] text-muted-foreground self-end pb-1">
+            / {goalMiles} mi goal
+          </span>
         </div>
-        <Mono className="text-muted-foreground mt-1">Elapsed Time</Mono>
-      </div>
-
-      {/* Progress bar */}
-      <div className="px-5 md:px-12 pb-2">
-        <div className="relative h-[3px] bg-white/[0.07] mb-2.5">
+        <div className="relative h-[3px] bg-white/[0.07] mb-2">
           <div
             className="absolute left-0 top-0 bottom-0 transition-all duration-500"
             style={{
@@ -260,33 +262,21 @@ export function ActiveWalkScreen({
               background: "linear-gradient(90deg, hsl(var(--primary)/0.7), hsl(var(--primary)))",
             }}
           >
-            <div
-              className="absolute right-[-4px] top-1/2 -translate-y-1/2 w-[9px] h-[9px] rounded-full bg-primary"
-              style={{ boxShadow: "0 0 10px hsl(var(--primary))" }}
-            />
+            {pct > 0 && (
+              <div
+                className="absolute right-[-4px] top-1/2 -translate-y-1/2 w-[9px] h-[9px] rounded-full bg-primary"
+                style={{ boxShadow: "0 0 10px hsl(var(--primary))" }}
+              />
+            )}
           </div>
         </div>
         <div className="flex justify-between">
           <Mono className="text-muted-foreground">0 mi</Mono>
-          <Mono className="text-muted-foreground">{miles} / 5.0 miles</Mono>
-          <Mono className="text-primary">5 mi</Mono>
+          <Mono className="text-muted-foreground">
+            {totalSteps.toLocaleString()} steps
+          </Mono>
+          <Mono className="text-primary">{goalMiles} mi</Mono>
         </div>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-0.5 mx-5 md:mx-12 my-5 bg-white/[0.04]">
-        {[
-          { val: pace, key: "Pace / mi" },
-          { val: steps, key: "Steps" },
-          { val: String(calories), key: "Calories" },
-        ].map((s) => (
-          <div key={s.key} className="bg-card py-[18px] px-3.5 text-center">
-            <span className="font-sans text-[28px] font-bold text-primary block leading-none">
-              {s.val}
-            </span>
-            <Mono className="text-muted-foreground block mt-1.5">{s.key}</Mono>
-          </div>
-        ))}
       </div>
 
       {/* Coming up next */}
@@ -296,37 +286,117 @@ export function ActiveWalkScreen({
           <div>
             <Mono className="text-primary mb-0.5">Coming Up Next</Mono>
             <div className="text-foreground font-sans text-[15px]">
-              {nextStop.title} — {nextStop.dist} mi ahead
+              {nextStop.title} — at {nextStop.dist} mi
             </div>
           </div>
         </div>
       )}
 
+      {/* Logger card */}
+      <div className="mx-5 md:mx-12 mb-6 bg-card border border-border p-5">
+        {/* Tabs */}
+        <div className="flex mb-5 border-b border-border">
+          {(["miles", "steps"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => { setActiveTab(tab); setShowCustom(false); }}
+              className={`flex-1 pb-3 font-sans text-[13px] font-semibold tracking-[0.08em] uppercase transition-colors duration-200 ${
+                activeTab === tab
+                  ? "text-primary border-b-2 border-primary"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Log {tab}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === "miles" && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-4 gap-2">
+              {QUICK_MILES.map((m) => (
+                <button
+                  key={m}
+                  onClick={() => logMiles(m)}
+                  className="h-12 text-lg font-bold border border-primary/30 bg-primary/[0.08] text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  +{m}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowCustom((v) => !v)}
+              className="w-full text-[11px] tracking-[0.12em] uppercase text-muted-foreground hover:text-primary transition-colors py-1"
+            >
+              {showCustom ? "Hide custom" : "Custom amount..."}
+            </button>
+            {showCustom && (
+              <div className="flex gap-2 pt-1">
+                <input
+                  type="number"
+                  value={customMiles}
+                  onChange={(e) => setCustomMiles(Math.max(0.1, parseFloat(e.target.value) || 0.1))}
+                  min={0.1}
+                  step={0.1}
+                  className="flex-1 bg-transparent border border-border rounded px-3 py-2 text-foreground text-sm outline-none focus:border-primary"
+                />
+                <button
+                  onClick={() => { logMiles(customMiles); setShowCustom(false); }}
+                  className="px-5 bg-primary text-primary-foreground font-sans text-[12px] font-semibold tracking-[0.1em] uppercase hover:bg-primary/90 transition-colors"
+                >
+                  Log
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "steps" && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-4 gap-2">
+              {QUICK_STEPS.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => logSteps(s)}
+                  className="h-12 text-sm font-bold border border-primary/30 bg-primary/[0.08] text-primary hover:bg-primary hover:text-primary-foreground transition-colors"
+                >
+                  +{s >= 1000 ? `${s / 1000}k` : s}
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setShowCustom((v) => !v)}
+              className="w-full text-[11px] tracking-[0.12em] uppercase text-muted-foreground hover:text-primary transition-colors py-1"
+            >
+              {showCustom ? "Hide custom" : "Custom amount..."}
+            </button>
+            {showCustom && (
+              <div className="flex gap-2 pt-1">
+                <input
+                  type="number"
+                  value={customSteps}
+                  onChange={(e) => setCustomSteps(Math.max(1, parseInt(e.target.value) || 1))}
+                  min={1}
+                  step={100}
+                  className="flex-1 bg-transparent border border-border rounded px-3 py-2 text-foreground text-sm outline-none focus:border-primary"
+                />
+                <button
+                  onClick={() => { logSteps(customSteps); setShowCustom(false); }}
+                  className="px-5 bg-primary text-primary-foreground font-sans text-[12px] font-semibold tracking-[0.1em] uppercase hover:bg-primary/90 transition-colors"
+                >
+                  Log
+                </button>
+              </div>
+            )}
+            <Mono className="text-muted-foreground text-[10px]">
+              {STEPS_PER_MILE.toLocaleString()} steps ≈ 1 mile
+            </Mono>
+          </div>
+        )}
+      </div>
+
       {/* Controls */}
       <div className="flex gap-2.5 px-5 md:px-12 pb-10 mt-auto">
-        <button
-          onClick={onTogglePause}
-          className="flex-1 flex items-center justify-center gap-2.5 bg-primary/[0.12] border border-primary/30 text-primary font-sans text-[12px] font-semibold tracking-[0.15em] uppercase py-[18px] cursor-pointer transition-all duration-200 hover:bg-primary/20"
-        >
-          {paused ? (
-            <>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M4 2l8 5-8 5V2z" fill="currentColor" />
-              </svg>
-              Resume
-            </>
-          ) : (
-            <>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <rect x="3" y="2" width="3" height="10" fill="currentColor" />
-                <rect x="8" y="2" width="3" height="10" fill="currentColor" />
-              </svg>
-              Pause
-            </>
-          )}
-        </button>
-
-        {/* Mute toggle */}
         <button
           onClick={toggleMute}
           title={muted ? "Unmute narration" : "Mute narration"}
@@ -349,17 +419,13 @@ export function ActiveWalkScreen({
 
         <button
           onClick={handleFinish}
-          className="flex items-center justify-center bg-transparent border border-white/[0.08] text-muted-foreground font-sans text-[12px] font-normal tracking-[0.15em] uppercase px-6 py-[18px] cursor-pointer transition-all duration-200 hover:border-primary/50 hover:text-primary"
+          className="flex-1 flex items-center justify-center bg-transparent border border-white/[0.08] text-muted-foreground font-sans text-[12px] font-normal tracking-[0.15em] uppercase px-6 py-[18px] cursor-pointer transition-all duration-200 hover:border-primary/50 hover:text-primary"
         >
           Finish Walk
         </button>
       </div>
 
       <style>{`
-        @keyframes blink {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.3; }
-        }
         @keyframes soundBar {
           from { transform: scaleY(0.4); }
           to { transform: scaleY(1.4); }

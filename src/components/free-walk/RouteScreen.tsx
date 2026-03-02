@@ -2,13 +2,24 @@ import React from "react";
 import { ROUTE_STOPS } from "@/data/queens";
 import { Mono, BtnFill, BtnOutline, ArrowRight } from "./ui-primitives";
 import { FreeWalkHeader } from "./FreeWalkHeader";
+import { cn } from "@/lib/utils";
+
+const GOAL_OPTIONS = [
+  { label: "1 mi", value: 1 },
+  { label: "3 mi", value: 3 },
+  { label: "5 mi", value: 5 },
+];
 
 interface Props {
+  goalMiles: number;
+  onGoalChange: (miles: number) => void;
   onBegin: () => void;
   onBack: () => void;
 }
 
-export function RouteScreen({ onBegin, onBack }: Props) {
+export function RouteScreen({ goalMiles, onGoalChange, onBegin, onBack }: Props) {
+  const visibleStops = ROUTE_STOPS.filter((s) => parseFloat(s.dist) <= goalMiles);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <FreeWalkHeader />
@@ -21,24 +32,60 @@ export function RouteScreen({ onBegin, onBack }: Props) {
           style={{ fontSize: "clamp(42px,8vw,90px)" }}
         >
           Walk With
-          <em className="block not-italic font-light text-primary">
-            Queens.
-          </em>
+          <em className="block not-italic font-light text-primary">Queens.</em>
         </h1>
+
+        {/* Goal distance selector */}
+        <div className="mt-8">
+          <Mono className="text-muted-foreground mb-3">Choose Your Distance Goal</Mono>
+          <div className="flex flex-wrap gap-2">
+            {GOAL_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => onGoalChange(opt.value)}
+                className={cn(
+                  "border px-6 py-3 font-sans text-[15px] font-bold transition-all duration-200",
+                  goalMiles === opt.value
+                    ? "border-primary bg-primary/[0.10] text-primary"
+                    : "border-white/[0.12] bg-white/[0.02] text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+
+            {/* Custom input */}
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={0.5}
+                max={26.2}
+                step={0.5}
+                placeholder="Custom"
+                value={
+                  GOAL_OPTIONS.some((o) => o.value === goalMiles) ? "" : goalMiles
+                }
+                onChange={(e) => {
+                  const v = parseFloat(e.target.value);
+                  if (!isNaN(v) && v > 0) onGoalChange(v);
+                }}
+                className="w-24 bg-transparent border border-white/[0.12] px-3 py-3 font-sans text-[15px] text-foreground placeholder:text-muted-foreground/40 outline-none focus:border-primary transition-colors"
+              />
+              <Mono className="text-muted-foreground">mi</Mono>
+            </div>
+          </div>
+        </div>
 
         <div className="flex flex-wrap gap-4 mt-6">
           {[
-            ["11", "WOMEN"],
-            ["5", "MILES"],
-            ["~90", "MINUTES"],
+            [String(visibleStops.length), "QUEENS"],
+            [String(goalMiles), "MILES"],
           ].map(([val, key]) => (
             <div
               key={key}
               className="border border-white/[0.12] px-5 py-3 flex flex-col items-center min-w-[80px]"
             >
-              <span className="font-sans text-[28px] font-bold text-primary leading-none">
-                {val}
-              </span>
+              <span className="font-sans text-[28px] font-bold text-primary leading-none">{val}</span>
               <Mono className="text-muted-foreground mt-1">{key}</Mono>
             </div>
           ))}
@@ -47,7 +94,7 @@ export function RouteScreen({ onBegin, onBack }: Props) {
 
       {/* Queen stops — timeline */}
       <div className="px-6 md:px-[clamp(24px,6vw,72px)] flex-1 relative">
-        {ROUTE_STOPS.map((stop, i) => (
+        {visibleStops.map((stop, i) => (
           <div
             key={stop.num}
             className="grid grid-cols-[64px_20px_1fr] gap-x-4 items-start py-8 border-b border-white/[0.04] last:border-b-0"
@@ -65,7 +112,10 @@ export function RouteScreen({ onBegin, onBack }: Props) {
               <div
                 className="w-3 h-3 rounded-full border-2 flex-shrink-0"
                 style={{
-                  borderColor: i === ROUTE_STOPS.length - 1 ? "hsl(var(--primary))" : "hsl(var(--primary)/0.7)",
+                  borderColor:
+                    i === visibleStops.length - 1
+                      ? "hsl(var(--primary))"
+                      : "hsl(var(--primary)/0.7)",
                 }}
               />
             </div>

@@ -1,12 +1,10 @@
 import React, { useState, useCallback, useRef } from "react";
-import { useWalkTimer } from "@/hooks/useWalkTimer";
 import { SplashScreen } from "./SplashScreen";
 import { OnboardScreen } from "./OnboardScreen";
 import { ConfirmScreen } from "./ConfirmScreen";
 import { RouteScreen } from "./RouteScreen";
 import { ActiveWalkScreen } from "./ActiveWalkScreen";
 import { CompleteScreen } from "./CompleteScreen";
-import { StillFeature } from "./still/StillFeature";
 
 type Screen = "splash" | "onboard" | "confirm" | "route" | "walk" | "complete" | "still";
 
@@ -16,36 +14,21 @@ export function FreeWalkApp() {
   const [fitnessLevel, setFitnessLevel] = useState("starting");
   const [goals, setGoals] = useState<string[]>([]);
   const [voiceURI, setVoiceURI] = useState<string>("");
-  const [finalTime, setFinalTime] = useState("—");
-  const [finalCal, setFinalCal] = useState(0);
-  const [unlockedStampIds, setUnlockedStampIds] = useState<Set<string>>(new Set());
+  const [goalMiles, setGoalMiles] = useState(5);
+  const [finalMiles, setFinalMiles] = useState(0);
   const unlockedRef = useRef<Set<string>>(new Set());
 
-  const timer = useWalkTimer();
+  const goTo = useCallback((s: Screen) => {
+    setScreen(s);
+    window.scrollTo(0, 0);
+  }, []);
 
-  const goTo = useCallback(
-    (s: Screen) => {
-      if (s !== "walk") timer.stop();
-      setScreen(s);
-      window.scrollTo(0, 0);
-    },
-    [timer]
-  );
-
-  const handleStartWalk = useCallback(() => {
-    timer.start();
-    goTo("walk");
-  }, [timer, goTo]);
-
-  const handleFinishWalk = useCallback(() => {
-    const m = String(Math.floor(timer.seconds / 60)).padStart(2, "0");
-    const s = String(timer.seconds % 60).padStart(2, "0");
-    setFinalTime(`${m}:${s}`);
-    setFinalCal(Math.floor(timer.seconds * 0.13));
-    timer.stop();
+  const handleFinishWalk = useCallback((miles: number) => {
+    setFinalMiles(miles);
+    window.speechSynthesis.cancel();
     setScreen("complete");
     window.scrollTo(0, 0);
-  }, [timer]);
+  }, []);
 
   return (
     <div className="font-sans antialiased relative">
@@ -81,7 +64,9 @@ export function FreeWalkApp() {
 
       {screen === "route" && (
         <RouteScreen
-          onBegin={handleStartWalk}
+          goalMiles={goalMiles}
+          onGoalChange={setGoalMiles}
+          onBegin={() => goTo("walk")}
           onBack={() => goTo("onboard")}
         />
       )}
@@ -91,16 +76,7 @@ export function FreeWalkApp() {
           queen={null}
           walkerName={walkerName}
           voiceURI={voiceURI}
-          stats={{
-            clock: timer.clock,
-            miles: timer.miles,
-            pct: timer.pct,
-            steps: timer.steps,
-            calories: timer.calories,
-            pace: timer.pace,
-            paused: timer.paused,
-          }}
-          onTogglePause={timer.togglePause}
+          goalMiles={goalMiles}
           onFinish={handleFinishWalk}
           onStampsUnlocked={(ids) => {
             unlockedRef.current = ids;
@@ -112,8 +88,7 @@ export function FreeWalkApp() {
         <CompleteScreen
           queen={null}
           walkerName={walkerName}
-          time={finalTime}
-          calories={finalCal}
+          miles={finalMiles}
           unlockedStampIds={unlockedRef.current}
           onRestart={() => goTo("splash")}
           onWalkAnother={() => goTo("route")}
@@ -121,16 +96,7 @@ export function FreeWalkApp() {
         />
       )}
 
-      {/* Still feature — hidden until re-enabled (STILL_FEATURE_ENABLED: false)
-      {screen === "still" && (
-        <StillFeature
-          queen={null}
-          walkTime={finalTime}
-          walkCalories={finalCal}
-          onExit={() => goTo("splash")}
-        />
-      )}
-      */}
+      {/* Still feature — hidden until re-enabled (STILL_FEATURE_ENABLED: false) */}
     </div>
   );
 }
