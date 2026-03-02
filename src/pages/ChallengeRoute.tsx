@@ -352,13 +352,12 @@ const ChallengeRoute = () => {
             <h3 className="text-lg font-semibold text-foreground mb-6">Virtual Route</h3>
             
             <div className="relative">
+              {/* Track line scoped strictly to the milestone list */}
               <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border" />
-              
               <div 
                 className={cn("absolute left-6 top-0 w-0.5 transition-all duration-1000", colors.routeLine)}
                 style={{ height: `${progressPercent}%` }}
               />
-
               <div className="space-y-8">
                 {challenge.milestones.map((milestone, index) => {
                   const isUnlocked = userProgress.milesLogged >= milestone.miles;
