@@ -212,7 +212,8 @@ export function CompleteScreen({
             </div>
           </button>
 
-          {/* Still CTA */}
+        {/* Still CTA — hidden until feature is re-enabled */}
+          {/* STILL_FEATURE_ENABLED: false
           <button
             onClick={onEnterStill}
             className="w-full flex items-center justify-between px-6 py-5 border border-primary/40 bg-primary/[0.08] hover:bg-primary/[0.14] transition-colors duration-200 group"
@@ -230,6 +231,7 @@ export function CompleteScreen({
               <ArrowRight size={14} />
             </div>
           </button>
+          */}
 
           <BtnOutline onClick={onWalkAnother} className="w-full justify-center">
             Walk Another Queen →

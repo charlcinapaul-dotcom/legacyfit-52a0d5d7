@@ -121,6 +121,7 @@ export function FreeWalkApp() {
         />
       )}
 
+      {/* Still feature — hidden until re-enabled (STILL_FEATURE_ENABLED: false)
       {screen === "still" && (
         <StillFeature
           queen={null}
@@ -129,6 +130,7 @@ export function FreeWalkApp() {
           onExit={() => goTo("splash")}
         />
       )}
+      */}
     </div>
   );
 }
