@@ -20,7 +20,7 @@ const digitalFeatures = [
   "Digital Passport Storage",
   "Progress Tracking",
   "Completion Recognition",
-  "$3 Donated to Breast Cancer Support",
+  "A portion is donated to Breast Cancer Support",
 ];
 
 const boardingPassExtras = [
@@ -219,8 +219,10 @@ export const ChallengePricing = ({
         <h5 className="text-sm font-semibold text-foreground tracking-wide uppercase">Donation Transparency</h5>
         <p className="text-xs text-muted-foreground leading-relaxed">
           LegacyFit is committed to supporting breast cancer awareness and support initiatives. For every registration,{" "}
-          <span className="font-medium text-foreground">$3 is reserved for breast cancer support initiatives</span>.
-          Donations are distributed periodically based on total participation and impact initiatives selected by
+          <span className="font-medium text-foreground">
+            A portion is reserved for breast cancer support initiatives
+          </span>
+          . Donations are distributed periodically based on total participation and impact initiatives selected by
           LegacyFit.
         </p>
         <p className="text-xs text-muted-foreground italic">
