@@ -20,7 +20,7 @@ const digitalFeatures = [
   "Digital Passport Storage",
   "Progress Tracking",
   "Completion Recognition",
-  "$5 Donated to Breast Cancer Support",
+  "$3 Donated to Breast Cancer Support",
 ];
 
 const boardingPassExtras = [
