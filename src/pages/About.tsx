@@ -80,8 +80,8 @@ const About = () => (
           <div className="flex items-start gap-3 bg-card border border-border rounded-xl p-6 mt-6">
             <Ribbon className="w-6 h-6 text-pink-400 shrink-0 mt-1" />
             <p className="text-muted-foreground">
-              Part of this platform is built in recognition of breast cancer awareness — because resilience deserves to
-              be remembered. Every challenge carries meaning. Every mile carries purpose.
+              Part of this platform is built in recognition of breast cancer awareness because resilience deserves to be
+              remembered. Every challenge carries meaning. Every mile carries purpose.
             </p>
           </div>
         </div>
