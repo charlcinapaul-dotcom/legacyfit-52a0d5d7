@@ -6,6 +6,18 @@ const About = () => (
     {/* Hero */}
     <section className="py-20 px-4">
       <div className="container mx-auto max-w-3xl">
+        {/* Founder Photo */}
+        <div className="flex flex-col items-center mb-12">
+          <div className="rounded-2xl overflow-hidden border-2 border-primary shadow-gold" style={{ width: 400, height: 500 }}>
+            <img
+              src="https://mpnhugdjsechtkugnjqz.supabase.co/storage/v1/object/public/Images/MyFounderPic.png"
+              alt="Charlcina Paul – Founder of LegacyFit"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <p className="mt-4 text-lg font-semibold text-gradient-gold tracking-wide">Charlcina Paul</p>
+        </div>
+
         <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-8">
           Why I Built <span className="text-gradient-gold">LegacyFit</span>
         </h1>
