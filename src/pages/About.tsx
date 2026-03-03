@@ -11,14 +11,31 @@ const About = () => (
         </h1>
 
         <div className="space-y-6 text-lg text-muted-foreground leading-relaxed">
-          <p>I'm 53 years old.</p>
           <p>
-            I've maintained my weight loss. I've rebuilt my strength.
-            And I know what it feels like to believe it might be too late.
+            There came a point in my life — after the weight, after the loss, after the years of putting everyone else first — when I had to decide whether my best was behind me or still ahead.
           </p>
-          <p>LegacyFit was born from a simple truth:</p>
+          <p>
+            I chose ahead. LegacyFit is what came from that choice.
+          </p>
+          <p>But this app was born from two truths, not one.</p>
+          <p>
+            The first is personal. Movement saved me. Walking — simple, unglamorous, one foot in front of the other — gave me back my body, my energy, and my belief in what was still possible. I built LegacyFit for every woman who has stood where I stood and wondered if her time had passed. It hasn't. It never does.
+          </p>
+          <p>The second truth is bigger than me.</p>
+          <p>
+            Our schools do not teach women's history. Not really. We get a paragraph, a footnote, a single name in a chapter built around someone else. Sojourner Truth walked out of slavery and sued for her son's freedom — but most of us only know her name, not her story. Wilma Rudolph was told at four years old she would never walk and became the fastest woman on earth. Katherine Johnson computed the orbital trajectories that sent men to the moon by hand, with precision that made the astronauts refuse to launch without her confirmation. Her name stayed hidden for decades.
+          </p>
+          <p>
+            These women deserved more than a footnote. They deserved to be walked with.
+          </p>
+          <p>
+            So I built something that puts their stories in your ears while you put miles under your feet. Every milestone you reach unlocks a woman whose life proves what endurance, courage, and refusal look like in practice. Not as inspiration porn. Not as a history lesson. As a companion for the road you're already on.
+          </p>
+          <p>
+            LegacyFit is what happens when movement meets meaning. When the miles you walk carry the weight of women who walked harder ones before you.
+          </p>
           <blockquote className="border-l-4 border-primary pl-6 py-2 text-foreground italic text-xl">
-            Seasoned. Strong. Still moving. And just getting started.
+            Seasoned. Strong. Still moving. And finally, learning who walked this earth before us.
           </blockquote>
         </div>
       </div>
