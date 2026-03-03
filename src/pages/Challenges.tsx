@@ -160,23 +160,6 @@ const Challenges = () => {
         </section>
       ) : (
         <>
-          {/* One-challenge limit banner */}
-          {activeChallenge && (
-            <section className="px-4 pb-8">
-              <div className="container mx-auto max-w-5xl">
-                <Alert className="border-primary/30 bg-primary/5">
-                  <AlertCircle className="h-4 w-4 text-primary" />
-                  <AlertDescription className="text-sm">
-                    <strong>Beta limit:</strong> You're currently enrolled in <strong>{activeChallenge.title}</strong>. 
-                    During the beta, each participant may only have one active challenge at a time.{" "}
-                    <Link to={`/challenge/${activeChallenge.slug}`} className="underline font-medium text-primary hover:text-primary/80">
-                      Go to your challenge →
-                    </Link>
-                  </AlertDescription>
-                </Alert>
-              </div>
-            </section>
-          )}
           {/* Free Walk */}
           <section className="pb-10 px-4">
             <div className="container mx-auto max-w-5xl">

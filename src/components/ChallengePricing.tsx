@@ -1,12 +1,9 @@
 import { useState } from "react";
-import { Check, AlertCircle, Loader2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { RewardCodeRedemption } from "@/components/RewardCodeRedemption";
-import { BetaCodeRedemption } from "@/components/BetaCodeRedemption";
-import { useActiveChallenge } from "@/hooks/useActiveChallenge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -70,11 +67,8 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
 
 export const ChallengePricing = ({ challengeName, challengeId, challengeSlug, editionColor = "gold" }: ChallengePricingProps) => {
   const accent = getAccentClasses(editionColor);
-  const { data: activeChallenge } = useActiveChallenge();
   const navigate = useNavigate();
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
-
-  const hasOtherActiveChallenge = activeChallenge && challengeId && activeChallenge.challengeId !== challengeId;
 
   const handleCheckout = async (tier: "digital" | "boarding_pass") => {
     if (!challengeId) return;
@@ -125,21 +119,6 @@ export const ChallengePricing = ({ challengeName, challengeId, challengeSlug, ed
         </p>
       </div>
 
-      {/* One-challenge limit banner */}
-      {hasOtherActiveChallenge && (
-        <Alert className="max-w-3xl mx-auto border-primary/30 bg-primary/5">
-          <AlertCircle className="h-4 w-4 text-primary" />
-          <AlertDescription className="text-sm">
-            <strong>Beta limit:</strong> You're currently enrolled in <strong>{activeChallenge.title}</strong>. 
-            During the beta, each participant may only have one active challenge at a time. 
-            Complete your current challenge to unlock a new one.{" "}
-            <Link to={`/challenge/${activeChallenge.slug}`} className="underline font-medium text-primary hover:text-primary/80">
-              Go to your challenge →
-            </Link>
-          </AlertDescription>
-        </Alert>
-      )}
-
       {/* Pricing Tiers */}
       <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto w-full pt-3">
         {/* Tier 1 — Digital Journey */}
@@ -162,12 +141,12 @@ export const ChallengePricing = ({ challengeName, challengeId, challengeSlug, ed
             size="lg"
             variant="outline"
             className={cn("w-full text-base", accent.secondaryBtn)}
-            disabled={!!hasOtherActiveChallenge || loadingTier === "digital"}
+            disabled={loadingTier === "digital"}
             onClick={() => handleCheckout("digital")}
           >
             {loadingTier === "digital" ? (
               <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing...</>
-            ) : hasOtherActiveChallenge ? "Challenge Limit Reached" : "Start Digital Journey"}
+            ) : "Start Digital Journey"}
           </Button>
         </div>
 
@@ -198,23 +177,19 @@ export const ChallengePricing = ({ challengeName, challengeId, challengeSlug, ed
           <Button
             size="lg"
             className={cn("w-full text-base whitespace-normal h-auto py-3", accent.primaryBtn)}
-            disabled={!!hasOtherActiveChallenge || loadingTier === "boarding_pass"}
+            disabled={loadingTier === "boarding_pass"}
             onClick={() => handleCheckout("boarding_pass")}
           >
             {loadingTier === "boarding_pass" ? (
               <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing...</>
-            ) : hasOtherActiveChallenge ? "Challenge Limit Reached" : "Upgrade to Boarding Pass Experience"}
+            ) : "Upgrade to Boarding Pass Experience"}
           </Button>
         </div>
       </div>
 
-      {/* Beta Code Redemption */}
-      {challengeId && !hasOtherActiveChallenge && (
-        <div className="max-w-md mx-auto space-y-2">
-          <BetaCodeRedemption
-            challengeId={challengeId}
-            editionColor={editionColor}
-          />
+      {/* Reward Code Redemption */}
+      {challengeId && (
+        <div className="max-w-md mx-auto">
           <RewardCodeRedemption
             challengeId={challengeId}
             editionColor={editionColor}
