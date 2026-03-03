@@ -219,7 +219,7 @@ export const ChallengePricing = ({
         <h5 className="text-sm font-semibold text-foreground tracking-wide uppercase">Donation Transparency</h5>
         <p className="text-xs text-muted-foreground leading-relaxed">
           LegacyFit is committed to supporting breast cancer awareness and support initiatives. For every registration,{" "}
-          <span className="font-medium text-foreground">$5 is reserved for breast cancer support initiatives</span>.
+          <span className="font-medium text-foreground">$3 is reserved for breast cancer support initiatives</span>.
           Donations are distributed periodically based on total participation and impact initiatives selected by
           LegacyFit.
         </p>
