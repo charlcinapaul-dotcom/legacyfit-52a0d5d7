@@ -147,6 +147,15 @@ const Challenges = () => {
         </div>
       </section>
 
+      {/* Coming Soon Banner */}
+      <section className="pb-6 px-4">
+        <div className="container mx-auto max-w-5xl">
+          <div className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-muted-foreground text-center">
+            Explorer and Legacy passes coming soon — unlock multiple challenges at one price. New editions added monthly.
+          </div>
+        </div>
+      </section>
+
       {loading ? (
         <section className="pb-16 px-4">
           <div className="container mx-auto max-w-5xl text-muted-foreground">Loading challenges...</div>
