@@ -44,7 +44,8 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
       };
     case "pride":
       return {
-        heading: "bg-gradient-to-r from-red-400 via-yellow-400 via-green-400 via-blue-400 to-purple-400 bg-clip-text text-transparent",
+        heading:
+          "bg-gradient-to-r from-red-400 via-yellow-400 via-green-400 via-blue-400 to-purple-400 bg-clip-text text-transparent",
         badge: "bg-purple-500/10 text-purple-400 border-purple-500/20",
         check: "text-purple-400",
         primaryBtn: "bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 text-white hover:opacity-90",
@@ -65,7 +66,12 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
   }
 };
 
-export const ChallengePricing = ({ challengeName, challengeId, challengeSlug, editionColor = "gold" }: ChallengePricingProps) => {
+export const ChallengePricing = ({
+  challengeName,
+  challengeId,
+  challengeSlug,
+  editionColor = "gold",
+}: ChallengePricingProps) => {
   const accent = getAccentClasses(editionColor);
   const navigate = useNavigate();
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
@@ -74,7 +80,9 @@ export const ChallengePricing = ({ challengeName, challengeId, challengeSlug, ed
     if (!challengeId) return;
 
     // Check if user is logged in
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       toast({
         title: "Sign in required",
@@ -111,11 +119,10 @@ export const ChallengePricing = ({ challengeName, challengeId, challengeSlug, ed
     <div className="space-y-8 w-full max-w-full overflow-hidden">
       {/* Section Header */}
       <div className="text-center">
-        <h3 className={cn("text-2xl md:text-3xl font-bold mb-3", accent.heading)}>
-          Choose Your Legacy Journey
-        </h3>
+        <h3 className={cn("text-2xl md:text-3xl font-bold mb-3", accent.heading)}>Choose Your Legacy Journey</h3>
         <p className="text-muted-foreground max-w-2xl mx-auto text-sm md:text-base">
-          Every 30-Day LegacyFit Challenge includes guided milestones, digital collectibles, and a contribution toward breast cancer support.
+          Every 30-Day LegacyFit Challenge includes guided milestones, digital collectibles, and a contribution toward
+          breast cancer support.
         </p>
       </div>
 
@@ -125,7 +132,7 @@ export const ChallengePricing = ({ challengeName, challengeId, challengeSlug, ed
         <div className="relative rounded-xl border border-border bg-card p-4 sm:p-6 flex flex-col min-w-0">
           <h4 className="text-lg font-semibold text-foreground mb-1">Digital Journey</h4>
           <div className="flex items-baseline gap-1 mb-4">
-            <span className={cn("text-3xl font-bold", accent.heading)}>$29</span>
+            <span className={cn("text-3xl font-bold", accent.heading)}>$12.99</span>
           </div>
 
           <ul className="space-y-3 mb-8 flex-1">
@@ -145,14 +152,25 @@ export const ChallengePricing = ({ challengeName, challengeId, challengeSlug, ed
             onClick={() => handleCheckout("digital")}
           >
             {loadingTier === "digital" ? (
-              <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing...</>
-            ) : "Start Digital Journey"}
+              <>
+                <Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing...
+              </>
+            ) : (
+              "Start Digital Journey"
+            )}
           </Button>
         </div>
 
         {/* Tier 2 — Boarding Pass */}
-        <div className={cn("relative rounded-xl border-2 bg-card p-4 sm:p-6 flex flex-col min-w-0", accent.ring, "ring-2")}>
-          <span className={cn("absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-semibold text-white", accent.popular)}>
+        <div
+          className={cn("relative rounded-xl border-2 bg-card p-4 sm:p-6 flex flex-col min-w-0", accent.ring, "ring-2")}
+        >
+          <span
+            className={cn(
+              "absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-semibold text-white",
+              accent.popular,
+            )}
+          >
             Most Popular
           </span>
 
@@ -161,9 +179,7 @@ export const ChallengePricing = ({ challengeName, challengeId, challengeSlug, ed
             <span className={cn("text-3xl font-bold", accent.heading)}>$39</span>
           </div>
 
-          <p className="text-xs text-muted-foreground mb-4">
-            Everything in Digital Journey, plus:
-          </p>
+          <p className="text-xs text-muted-foreground mb-4">Everything in Digital Journey, plus:</p>
 
           <ul className="space-y-3 mb-8 flex-1">
             {boardingPassExtras.map((f) => (
@@ -181,8 +197,12 @@ export const ChallengePricing = ({ challengeName, challengeId, challengeSlug, ed
             onClick={() => handleCheckout("boarding_pass")}
           >
             {loadingTier === "boarding_pass" ? (
-              <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing...</>
-            ) : "Upgrade to Boarding Pass Experience"}
+              <>
+                <Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing...
+              </>
+            ) : (
+              "Upgrade to Boarding Pass Experience"
+            )}
           </Button>
         </div>
       </div>
@@ -190,10 +210,7 @@ export const ChallengePricing = ({ challengeName, challengeId, challengeSlug, ed
       {/* Reward Code Redemption */}
       {challengeId && (
         <div className="max-w-md mx-auto">
-          <RewardCodeRedemption
-            challengeId={challengeId}
-            editionColor={editionColor}
-          />
+          <RewardCodeRedemption challengeId={challengeId} editionColor={editionColor} />
         </div>
       )}
 
@@ -201,9 +218,10 @@ export const ChallengePricing = ({ challengeName, challengeId, challengeSlug, ed
       <div className="max-w-2xl mx-auto text-center space-y-2 pt-4 border-t border-border">
         <h5 className="text-sm font-semibold text-foreground tracking-wide uppercase">Donation Transparency</h5>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          LegacyFit is committed to supporting breast cancer awareness and support initiatives.
-          For every registration, <span className="font-medium text-foreground">$5 is reserved for breast cancer support initiatives</span>.
-          Donations are distributed periodically based on total participation and impact initiatives selected by LegacyFit.
+          LegacyFit is committed to supporting breast cancer awareness and support initiatives. For every registration,{" "}
+          <span className="font-medium text-foreground">$5 is reserved for breast cancer support initiatives</span>.
+          Donations are distributed periodically based on total participation and impact initiatives selected by
+          LegacyFit.
         </p>
         <p className="text-xs text-muted-foreground italic">
           Our mission is movement with meaning — and every challenge contributes to something bigger.
