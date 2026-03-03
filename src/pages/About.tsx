@@ -10,7 +10,7 @@ const About = () => (
         <div className="flex flex-col items-center mb-12">
           <div
             className="rounded-2xl overflow-hidden border-2 border-primary shadow-gold"
-            style={{ width: 300, height: 375 }}
+            style={{ width: 260, height: 320 }}
           >
             <img
               src="https://mpnhugdjsechtkugnjqz.supabase.co/storage/v1/object/public/Images/MyFounderPic.png"
