@@ -8,7 +8,10 @@ const About = () => (
       <div className="container mx-auto max-w-3xl">
         {/* Founder Photo */}
         <div className="flex flex-col items-center mb-12">
-          <div className="rounded-2xl overflow-hidden border-2 border-primary shadow-gold" style={{ width: 400, height: 500 }}>
+          <div
+            className="rounded-2xl overflow-hidden border-2 border-primary shadow-gold"
+            style={{ width: 320, height: 400 }}
+          >
             <img
               src="https://mpnhugdjsechtkugnjqz.supabase.co/storage/v1/object/public/Images/MyFounderPic.png"
               alt="Charlcina Paul – Founder of LegacyFit"
