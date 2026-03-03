@@ -71,8 +71,8 @@ const About = () => (
           <h2 className="text-2xl md:text-3xl font-bold text-foreground">The Turning Point</h2>
         </div>
         <div className="space-y-5 text-lg text-muted-foreground leading-relaxed">
-          <p>I didn't create LegacyFit to compete with fitness apps.</p>
-          <p>I created it because I wanted women 45 and older to see what's possible.</p>
+          <p>I created LegacyFit with one woman in mind and she looks a lot like you.</p>
+          <p>I wanted women 45 and older to see what's possible.</p>
           <p>To see that walking matters. That consistency matters. That showing up three days a week matters.</p>
           <p>You don't have to run marathons. You don't have to lift the heaviest weights.</p>
           <p className="text-foreground font-medium">You just have to move.</p>
