@@ -176,7 +176,7 @@ export const ChallengePricing = ({
 
           <h4 className="text-lg font-semibold text-foreground mb-1 mt-1">Legacy Boarding Pass Experience</h4>
           <div className="flex items-baseline gap-1 mb-4">
-            <span className={cn("text-3xl font-bold", accent.heading)}>$39</span>
+            <span className={cn("text-3xl font-bold", accent.heading)}>$29</span>
           </div>
 
           <p className="text-xs text-muted-foreground mb-4">Everything in Digital Journey, plus:</p>
