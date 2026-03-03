@@ -1,52 +1,51 @@
+## Remove Beta Access from the Platform
 
-## What Is Actually Happening
+This removes all beta-specific messaging, the `BetaCodeRedemption` component. The `RewardCodeRedemption` (referral reward codes) is **kept** — it's a separate, permanent feature.
 
-The 11 stamp images (Sojourner Truth, Ida Wells, Eleanor Roosevelt, etc.) are **local PNG files** stored in `src/assets/stamps/free-walk/`. These PNGs contain the purple, green, orange, and teal colors you see — the colors are baked into the image files themselves, not CSS.
+### Files to change
 
-No amount of CSS changes will fix this. The PNG files must be **regenerated** with only burgundy red and navy blue ink.
+**1. `src/components/ChallengePricing.tsx**`
 
-## The Fix: Regenerate All 11 Stamp PNGs
+- Remove the `BetaCodeRedemption` import
+- Remove the `hasOtherActiveChallenge` variable and its Alert banner ("Beta limit: You're currently enrolled in...")
+- Remove the `<BetaCodeRedemption>` component from the JSX
+- Remove the disabled state on the checkout buttons that referenced `hasOtherActiveChallenge`
+- Keep `RewardCodeRedemption` untouched
 
-Each of the 11 stamp PNG files will be regenerated using the Lovable AI image model with a strict color-locked prompt:
+**2. `src/pages/Challenges.tsx**`
 
-- **Only** burgundy red (`#7A1E2C`) and/or navy blue (`#1E3A5F`) ink
-- Parchment/cream background (`#F5EDD8`)
-- Vintage passport stamp aesthetic
-- Same queen names and labels as current
+- Remove the "Beta limit" Alert banner that shows when a user has an active challenge (lines ~163–179)
+- Keep everything else (challenge listing, free walk card, locked states)
 
-The stamps will vary between:
-- Some stamps in **burgundy red only**
-- Some in **navy blue only**
-- Some in a **combination of both**
+**3. `src/components/BetaCodeRedemption.tsx**`
 
-## Files Changed
+- Delete this file entirely — it's only used in `ChallengePricing.tsx` and serves no purpose post-launch
 
-- `src/assets/stamps/free-walk/sojourner-truth.png` — regenerated
-- `src/assets/stamps/free-walk/ida-wells.png` — regenerated
-- `src/assets/stamps/free-walk/eleanor-roosevelt.png` — regenerated
-- `src/assets/stamps/free-walk/wilma-rudolph.png` — regenerated
-- `src/assets/stamps/free-walk/fannie-lou-hamer.png` — regenerated
-- `src/assets/stamps/free-walk/maya-angelou.png` — regenerated
-- `src/assets/stamps/free-walk/katherine-johnson.png` — regenerated
-- `src/assets/stamps/free-walk/ruth-bader-ginsburg.png` — regenerated
-- `src/assets/stamps/free-walk/malala-yousafzai.png` — regenerated
-- `src/assets/stamps/free-walk/toni-morrison.png` — regenerated
-- `src/assets/stamps/free-walk/jane-goodall.png` — regenerated
+### What is NOT changed
 
-No changes to any component code, layouts, or logic — only the 11 PNG image files are replaced.
+- `RewardCodeRedemption` component — referral reward codes remain
+- `redeem-beta-code` edge function — left in place (harmless, not exposed in UI)
+- `useActiveChallenge` hook — still used elsewhere for dashboard/progress display
+- Challenge lock visuals for non-enrolled challenges — only the "beta limit" banner and beta code entry are removed
+- One challenge at a time restriction
+- All other platform files
 
-## Color Assignment Plan
+### Technical summary
 
-| Queen | Ink Color |
-|---|---|
-| Sojourner Truth | Burgundy red |
-| Ida B. Wells | Navy blue |
-| Eleanor Roosevelt | Burgundy red + Navy blue combined |
-| Wilma Rudolph | Navy blue |
-| Fannie Lou Hamer | Burgundy red |
-| Maya Angelou | Burgundy red + Navy blue combined |
-| Katherine Johnson | Navy blue |
-| Ruth Bader Ginsburg | Burgundy red + Navy blue combined |
-| Malala Yousafzai | Navy blue |
-| Toni Morrison | Burgundy red |
-| Jane Goodall | Burgundy red + Navy blue combined |
+```text
+ChallengePricing.tsx
+  - Remove: import BetaCodeRedemption
+  - Remove: hasOtherActiveChallenge derived variable
+  - Remove: Alert banner block (lines ~122–139)
+  - Remove: disabled={!!hasOtherActiveChallenge} from both buttons
+  - Remove: "Challenge Limit Reached" button label conditionals
+  - Remove: <BetaCodeRedemption> JSX block
+  - Keep:   <RewardCodeRedemption> untouched
+
+Challenges.tsx
+  - Remove: the <section> containing the Alert with "Beta limit" text
+  - Keep:   everything else
+
+BetaCodeRedemption.tsx
+  - Delete file
+```
