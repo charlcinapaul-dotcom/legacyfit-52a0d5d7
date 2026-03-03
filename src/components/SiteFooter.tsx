@@ -8,7 +8,7 @@ export const SiteFooter = () => (
         {/* Brand */}
         <div>
           <div className="mb-4">
-            <img src={legacyFitLogo} alt="LegacyFit" className="h-14 md:h-[72px] w-auto" width="209" height="56" />
+            <img src={legacyFitLogo} alt="LegacyFit" className="h-16 md:h-24 w-auto" />
           </div>
           <p className="text-sm text-muted-foreground">
             Movement for women who refuse to slow down.
