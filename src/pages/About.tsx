@@ -50,7 +50,7 @@ const About = () => (
           <p>
             So I built something that puts their stories in your ears while you put miles under your feet. Every
             milestone you reach unlocks a woman whose life proves what endurance, courage, and refusal look like in
-            practice. Not as inspiration porn. Not as a history lesson. As a companion for the road you're already on.
+            practice. Not as a history lesson. As a companion for the road you're already on.
           </p>
           <p>
             LegacyFit is what happens when movement meets meaning. When the miles you walk carry the weight of women who
@@ -113,7 +113,7 @@ const About = () => (
         <div className="space-y-5 text-lg text-muted-foreground leading-relaxed">
           <p className="text-foreground font-medium text-xl">Because we are not done.</p>
           <p>We are rebuilding. We are rediscovering. We are redefining strength.</p>
-          <p>LegacyFit is not about shrinking yourself.</p>
+          <p>LegacyFit is about honoring your growth.</p>
           <p className="text-foreground font-medium">It's about expanding your story.</p>
         </div>
       </div>
