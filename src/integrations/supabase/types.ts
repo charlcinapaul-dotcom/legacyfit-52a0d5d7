@@ -815,6 +815,24 @@ export type Database = {
           total_miles: number | null
           user_id: string | null
         }
+        Insert: {
+          avatar_url?: string | null
+          bib_number?: string | null
+          challenges_completed?: never
+          display_name?: string | null
+          id?: string | null
+          total_miles?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bib_number?: string | null
+          challenges_completed?: never
+          display_name?: string | null
+          id?: string | null
+          total_miles?: number | null
+          user_id?: string | null
+        }
         Relationships: []
       }
     }
