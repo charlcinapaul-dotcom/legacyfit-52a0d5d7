@@ -9,7 +9,7 @@ const corsHeaders = {
 };
 
 const PRICE_IDS: Record<string, string> = {
-  digital: "price_1T3Tyh3JzkAB6gcFca85bIEg",
+  digital: "price_1T7L5c3JzkAB6gcFg4PpYJmg",
   boarding_pass: "price_1T3TzA3JzkAB6gcFIwvIjrLi",
 };
 
