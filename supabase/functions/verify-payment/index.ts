@@ -18,18 +18,7 @@ serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
   );
 
-  const supabaseClient = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-  );
-
   try {
-    const authHeader = req.headers.get("Authorization")!;
-    const token = authHeader.replace("Bearer ", "");
-    const { data: authData } = await supabaseClient.auth.getUser(token);
-    const user = authData.user;
-    if (!user) throw new Error("User not authenticated");
-
     const { sessionId } = await req.json();
     if (!sessionId) throw new Error("Missing sessionId");
 
@@ -48,7 +37,7 @@ serve(async (req) => {
     const challengeId = session.metadata?.challenge_id;
     const userId = session.metadata?.user_id;
 
-    if (!challengeId || userId !== user.id) {
+    if (!challengeId || !userId) {
       throw new Error("Invalid session metadata");
     }
 
@@ -87,8 +76,8 @@ serve(async (req) => {
         });
     }
 
-    // Record payment
-    await supabaseAdmin.from("payments").insert({
+    // Record payment (ignore duplicate errors)
+    const { error: paymentError } = await supabaseAdmin.from("payments").insert({
       user_id: userId,
       challenge_id: challengeId,
       amount_cents: session.amount_total || 2900,
@@ -96,6 +85,10 @@ serve(async (req) => {
       stripe_payment_id: session.payment_intent as string,
       stripe_checkout_session_id: sessionId,
     });
+
+    if (paymentError) {
+      console.warn("Payment record insert warning:", paymentError.message);
+    }
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
