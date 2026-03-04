@@ -1,51 +1,36 @@
-## Remove Beta Access from the Platform
 
-This removes all beta-specific messaging, the `BetaCodeRedemption` component. The `RewardCodeRedemption` (referral reward codes) is **kept** — it's a separate, permanent feature.
+## What's Wrong
 
-### Files to change
+**Table:** `user_challenges`  
+**Key columns:** `is_completed` (boolean), `miles_logged`, `challenge_id`
 
-**1. `src/components/ChallengePricing.tsx**`
+The `useActiveChallenge` hook fetches the user's most recent challenge record but **never reads `is_completed`**. So when a challenge is finished, the hook still returns it as an active challenge, and the lock condition in `Challenges.tsx` fires for every other card.
 
-- Remove the `BetaCodeRedemption` import
-- Remove the `hasOtherActiveChallenge` variable and its Alert banner ("Beta limit: You're currently enrolled in...")
-- Remove the `<BetaCodeRedemption>` component from the JSX
-- Remove the disabled state on the checkout buttons that referenced `hasOtherActiveChallenge`
-- Keep `RewardCodeRedemption` untouched
-
-**2. `src/pages/Challenges.tsx**`
-
-- Remove the "Beta limit" Alert banner that shows when a user has an active challenge (lines ~163–179)
-- Keep everything else (challenge listing, free walk card, locked states)
-
-**3. `src/components/BetaCodeRedemption.tsx**`
-
-- Delete this file entirely — it's only used in `ChallengePricing.tsx` and serves no purpose post-launch
-
-### What is NOT changed
-
-- `RewardCodeRedemption` component — referral reward codes remain
-- `redeem-beta-code` edge function — left in place (harmless, not exposed in UI)
-- `useActiveChallenge` hook — still used elsewhere for dashboard/progress display
-- Challenge lock visuals for non-enrolled challenges — only the "beta limit" banner and beta code entry are removed
-- One challenge at a time restriction
-- All other platform files
-
-### Technical summary
-
-```text
-ChallengePricing.tsx
-  - Remove: import BetaCodeRedemption
-  - Remove: hasOtherActiveChallenge derived variable
-  - Remove: Alert banner block (lines ~122–139)
-  - Remove: disabled={!!hasOtherActiveChallenge} from both buttons
-  - Remove: "Challenge Limit Reached" button label conditionals
-  - Remove: <BetaCodeRedemption> JSX block
-  - Keep:   <RewardCodeRedemption> untouched
-
-Challenges.tsx
-  - Remove: the <section> containing the Alert with "Beta limit" text
-  - Keep:   everything else
-
-BetaCodeRedemption.tsx
-  - Delete file
+```ts
+// Current broken logic (Challenges.tsx line 66):
+const isLocked = !!activeChallenge && !isCurrentChallenge;
+// Locks everything whenever ANY challenge exists — completed or not
 ```
+
+---
+
+## Fix — Two Files Only
+
+### File 1: `src/hooks/useActiveChallenge.ts`
+- Add `is_completed` to the Supabase select query
+- Add `isCompleted: boolean` to the `ActiveChallenge` interface
+- Map it in the returned object
+
+### File 2: `src/pages/Challenges.tsx` — both `ChallengeCard` and `WomensHistoryCard`
+Change the lock condition in both components from:
+```ts
+const isLocked = !!activeChallenge && !isCurrentChallenge;
+```
+to:
+```ts
+const isLocked = !!activeChallenge && !activeChallenge.isCompleted && !isCurrentChallenge;
+```
+
+This means other challenges only show as locked when the user has an **in-progress** (not completed) active challenge. Once `is_completed = true` in `user_challenges`, all challenge cards become selectable again.
+
+**No schema changes, no migrations, no UI changes.**
