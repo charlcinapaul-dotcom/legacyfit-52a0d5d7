@@ -10,7 +10,7 @@ const corsHeaders = {
 
 const PRICE_IDS: Record<string, string> = {
   digital: "price_1T7L5c3JzkAB6gcFg4PpYJmg",
-  boarding_pass: "price_1T3TzA3JzkAB6gcFIwvIjrLi",
+  boarding_pass: "price_1T7LUF3JzkAB6gcF8AGmuWcr",
 };
 
 serve(async (req) => {
