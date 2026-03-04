@@ -9,6 +9,7 @@ export interface ActiveChallenge {
   title: string;
   totalMiles: number;
   imageUrl: string | null;
+  isCompleted: boolean;
 }
 
 export function useActiveChallenge() {
@@ -24,6 +25,7 @@ export function useActiveChallenge() {
           id,
           miles_logged,
           challenge_id,
+          is_completed,
           challenge:challenges (
             id,
             title,
@@ -56,6 +58,7 @@ export function useActiveChallenge() {
         id: data.id,
         challengeId: data.challenge_id,
         milesLogged: data.miles_logged || 0,
+        isCompleted: data.is_completed ?? false,
         slug: challenge.slug,
         title: challenge.title,
         totalMiles: challenge.total_miles,
