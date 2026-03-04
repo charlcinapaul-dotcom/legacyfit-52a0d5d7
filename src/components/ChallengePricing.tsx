@@ -77,7 +77,14 @@ export const ChallengePricing = ({
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
 
   const handleCheckout = async (tier: "digital" | "boarding_pass") => {
-    if (!challengeId) return;
+    if (!challengeId) {
+      toast({
+        title: "Challenge not found",
+        description: "Unable to start checkout — challenge ID is missing.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Check if user is logged in
     const {
@@ -99,8 +106,12 @@ export const ChallengePricing = ({
         body: { challengeId, tier, slug: challengeSlug },
       });
 
-      if (error || !data?.url) {
-        throw new Error(error?.message || "Failed to create checkout session");
+      if (error) {
+        throw new Error(error.message || "Failed to create checkout session");
+      }
+
+      if (!data?.url) {
+        throw new Error("No checkout URL returned. Please try again.");
       }
 
       window.open(data.url, "_blank");
