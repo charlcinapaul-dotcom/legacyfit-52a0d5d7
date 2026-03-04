@@ -63,7 +63,7 @@ const Challenges = () => {
 
   const ChallengeCard = ({ c }: { c: Challenge }) => {
     const isCurrentChallenge = activeChallenge?.challengeId === c.id;
-    const isLocked = !!activeChallenge && !isCurrentChallenge;
+    const isLocked = !!activeChallenge && !activeChallenge.isCompleted && !isCurrentChallenge;
 
     const Wrapper = isLocked ? "div" : Link;
     const wrapperProps = isLocked
@@ -96,7 +96,7 @@ const Challenges = () => {
 
   const WomensHistoryCard = ({ c }: { c: Challenge }) => {
     const isCurrentChallenge = activeChallenge?.challengeId === c.id;
-    const isLocked = !!activeChallenge && !isCurrentChallenge;
+    const isLocked = !!activeChallenge && !activeChallenge.isCompleted && !isCurrentChallenge;
 
     const Wrapper = isLocked ? "div" : Link;
     const wrapperProps = isLocked
