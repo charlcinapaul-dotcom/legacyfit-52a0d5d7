@@ -337,15 +337,17 @@ const ChallengeRoute = () => {
             </div>
           </div>
 
-          {/* Pricing Section */}
-          <div className="bg-card rounded-xl border border-border p-6 md:p-8 mb-8">
-            <ChallengePricing
-              challengeName={challenge.name}
-              challengeId={challenge.id}
-              challengeSlug={slug}
-              editionColor={getPricingEditionColor(data?.challenge?.edition || "")}
-            />
-          </div>
+          {/* Pricing Section — only shown to unenrolled users */}
+          {!enrollment?.isEnrolled && (
+            <div className="bg-card rounded-xl border border-border p-6 md:p-8 mb-8">
+              <ChallengePricing
+                challengeName={challenge.name}
+                challengeId={challenge.id}
+                challengeSlug={slug}
+                editionColor={getPricingEditionColor(data?.challenge?.edition || "")}
+              />
+            </div>
+          )}
 
           {/* Virtual Route Visualization */}
           <div className="bg-card rounded-xl border border-border p-6">
