@@ -1,36 +1,25 @@
 
-## What's Wrong
+## Root Cause
 
-**Table:** `user_challenges`  
-**Key columns:** `is_completed` (boolean), `miles_logged`, `challenge_id`
+The STRIPE_SECRET_KEY in Supabase Secrets is still a live key (sk_live_...). The Stripe dashboard "Test mode" toggle only switches what you *see* in the dashboard UI — it does NOT change what secret key the edge function uses.
 
-The `useActiveChallenge` hook fetches the user's most recent challenge record but **never reads `is_completed`**. So when a challenge is finished, the hook still returns it as an active challenge, and the lock condition in `Challenges.tsx` fires for every other card.
+The edge function logs show the function is booting and running fine, confirming the issue is purely the wrong secret key value.
 
-```ts
-// Current broken logic (Challenges.tsx line 66):
-const isLocked = !!activeChallenge && !isCurrentChallenge;
-// Locks everything whenever ANY challenge exists — completed or not
-```
+No code changes are needed. The fix is to update the STRIPE_SECRET_KEY value to the test key (sk_test_...) via the Lovable Stripe connector tool.
 
----
+## Fix Plan
 
-## Fix — Two Files Only
+1. Use the `stripe--update_stripe_secret_key` tool to update the stored STRIPE_SECRET_KEY to the test secret key (`sk_test_51Sw5yS3JzkAB6gcF...` — visible in the Stripe dashboard under Developers > API Keys in test mode)
+2. Redeploy both `create-checkout` and `verify-payment` edge functions so they pick up the new key value
+3. No frontend or code changes required
 
-### File 1: `src/hooks/useActiveChallenge.ts`
-- Add `is_completed` to the Supabase select query
-- Add `isCompleted: boolean` to the `ActiveChallenge` interface
-- Map it in the returned object
+## Answer to User's Question
 
-### File 2: `src/pages/Challenges.tsx` — both `ChallengeCard` and `WomensHistoryCard`
-Change the lock condition in both components from:
-```ts
-const isLocked = !!activeChallenge && !isCurrentChallenge;
-```
-to:
-```ts
-const isLocked = !!activeChallenge && !activeChallenge.isCompleted && !isCurrentChallenge;
-```
+No — Lovable does NOT need to be unpublished to test payments. The preview URL and the published URL both call the same edge functions with the same secrets. The fix is entirely on the secret key value.
 
-This means other challenges only show as locked when the user has an **in-progress** (not completed) active challenge. Once `is_completed = true` in `user_challenges`, all challenge cards become selectable again.
+## To Proceed
 
-**No schema changes, no migrations, no UI changes.**
+I need the user to share their **test secret key** (`sk_test_...`) from the Stripe dashboard:
+- Stripe Dashboard → toggle to "Test mode" → Developers → API keys → Secret key → Reveal
+
+Or I can use the `stripe--update_stripe_secret_key` tool directly if it accepts the key automatically.
