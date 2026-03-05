@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, Loader2, AlertCircle } from "lucide-react";
+// supabase client still used below for challenge slug lookup
 import { Button } from "@/components/ui/button";
 
 const PaymentSuccess = () => {
@@ -19,11 +20,14 @@ const PaymentSuccess = () => {
       }
 
       try {
-        const { data, error } = await supabase.functions.invoke("verify-payment", {
-          body: { sessionId },
+        const res = await fetch("https://mpnhugdjsechtkugnjqz.supabase.co/functions/v1/verify-payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId }),
         });
+        const data = await res.json();
 
-        if (error || !data?.success) {
+        if (!res.ok || !data?.success) {
           setStatus("error");
           return;
         }
