@@ -26,6 +26,8 @@ const PaymentSuccess = () => {
             "Content-Type": "application/json",
             apikey:
               "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0ZmV4aGRuY2FqY2NkcHZxdWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyMjgzMjYsImV4cCI6MjA4NDgwNDMyNn0.BkrHTBUX2VgCaJbsNjA-emw4lYrJ4a6Xo8avCDqurx4",
+            Authorization:
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0ZmV4aGRuY2FqY2NkcHZxdWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyMjgzMjYsImV4cCI6MjA4NDgwNDMyNn0.BkrHTBUX2VgCaJbsNjA-emw4lYrJ4a6Xo8avCDqurx4",
           },
           body: JSON.stringify({ sessionId }),
         });
