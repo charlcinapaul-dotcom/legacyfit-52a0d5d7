@@ -114,7 +114,7 @@ export const ChallengePricing = ({
         throw new Error("No checkout URL returned. Please try again.");
       }
 
-      window.open(data.url, "_blank");
+      window.location.href = data.url;
     } catch (err: any) {
       toast({
         title: "Checkout error",
