@@ -20,11 +20,12 @@ const PaymentSuccess = () => {
       }
 
       try {
-        const res = await fetch("https://utfexhdncajccdpvquky.supabase.co/functions/v1/verify-payment", {
+        const res = await fetch("https://mpnhugdjsechtkugnqjz.supabase.co/functions/v1/verify-payment", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0ZmV4aGRuY2FqY2NkcHZxdWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyMjgzMjYsImV4cCI6MjA4NDgwNDMyNn0.BkrHTBUX2VgCaJbsNjA-emw4lYrJ4a6Xo8avCDqurx4",
+            apikey:
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0ZmV4aGRuY2FqY2NkcHZxdWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyMjgzMjYsImV4cCI6MjA4NDgwNDMyNn0.BkrHTBUX2VgCaJbsNjA-emw4lYrJ4a6Xo8avCDqurx4",
           },
           body: JSON.stringify({ sessionId }),
         });
@@ -75,11 +76,15 @@ const PaymentSuccess = () => {
             <div className="flex flex-col gap-3">
               {challengeSlug && (
                 <Link to={`/challenge/${challengeSlug}`}>
-                  <Button size="lg" className="w-full">Go to Your Challenge</Button>
+                  <Button size="lg" className="w-full">
+                    Go to Your Challenge
+                  </Button>
                 </Link>
               )}
               <Link to="/dashboard">
-                <Button size="lg" variant="outline" className="w-full">View Dashboard</Button>
+                <Button size="lg" variant="outline" className="w-full">
+                  View Dashboard
+                </Button>
               </Link>
             </div>
           </>
@@ -91,10 +96,15 @@ const PaymentSuccess = () => {
             <h1 className="text-2xl font-bold text-foreground">Something went wrong</h1>
             <p className="text-muted-foreground">
               We couldn't verify your payment. If you were charged, please{" "}
-              <Link to="/contact" className="text-primary hover:underline">contact support</Link>.
+              <Link to="/contact" className="text-primary hover:underline">
+                contact support
+              </Link>
+              .
             </p>
             <Link to="/challenges">
-              <Button size="lg" variant="outline">Back to Challenges</Button>
+              <Button size="lg" variant="outline">
+                Back to Challenges
+              </Button>
             </Link>
           </>
         )}
