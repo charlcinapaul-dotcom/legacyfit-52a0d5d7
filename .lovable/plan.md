@@ -1,25 +1,28 @@
 
 ## Root Cause
 
-The STRIPE_SECRET_KEY in Supabase Secrets is still a live key (sk_live_...). The Stripe dashboard "Test mode" toggle only switches what you *see* in the dashboard UI — it does NOT change what secret key the edge function uses.
+The `create-checkout` edge function is working correctly and returning a valid Stripe URL every time. The network logs confirm `200` responses with valid `checkout.stripe.com` URLs.
 
-The edge function logs show the function is booting and running fine, confirming the issue is purely the wrong secret key value.
+The bug is in `ChallengePricing.tsx` line 117:
+```ts
+window.open(data.url, "_blank");  // ← BLOCKED by popup blocker
+```
 
-No code changes are needed. The fix is to update the STRIPE_SECRET_KEY value to the test key (sk_test_...) via the Lovable Stripe connector tool.
+`window.open()` to a new tab is blocked by browsers when called after an `await` inside an async function, because the browser no longer considers it a direct user gesture. The user's click event context is lost during the async `supabase.functions.invoke()` call.
 
-## Fix Plan
+## Fix
 
-1. Use the `stripe--update_stripe_secret_key` tool to update the stored STRIPE_SECRET_KEY to the test secret key (`sk_test_51Sw5yS3JzkAB6gcF...` — visible in the Stripe dashboard under Developers > API Keys in test mode)
-2. Redeploy both `create-checkout` and `verify-payment` edge functions so they pick up the new key value
-3. No frontend or code changes required
+Change line 117 in `src/components/ChallengePricing.tsx`:
+```ts
+// FROM:
+window.open(data.url, "_blank");
 
-## Answer to User's Question
+// TO:
+window.location.href = data.url;
+```
 
-No — Lovable does NOT need to be unpublished to test payments. The preview URL and the published URL both call the same edge functions with the same secrets. The fix is entirely on the secret key value.
+This navigates the current tab to Stripe Checkout, which always works regardless of popup blockers. After payment, Stripe redirects back to `/payment-success?session_id=...` as configured in the edge function.
 
-## To Proceed
+## Files to Change
 
-I need the user to share their **test secret key** (`sk_test_...`) from the Stripe dashboard:
-- Stripe Dashboard → toggle to "Test mode" → Developers → API keys → Secret key → Reveal
-
-Or I can use the `stripe--update_stripe_secret_key` tool directly if it accepts the key automatically.
+- `src/components/ChallengePricing.tsx` — line 117 only
