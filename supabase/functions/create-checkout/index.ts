@@ -24,14 +24,31 @@ serve(async (req) => {
   );
 
   try {
-    const authHeader = req.headers.get("Authorization")!;
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Missing authorization header" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
     const token = authHeader.replace("Bearer ", "");
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
-    if (!user?.email) throw new Error("User not authenticated");
+    if (!user?.email) {
+      return new Response(JSON.stringify({ error: "User not authenticated" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
 
     const { challengeId, tier, slug } = await req.json();
-    if (!challengeId) throw new Error("Missing challengeId");
+    if (!challengeId) {
+      return new Response(JSON.stringify({ error: "Missing challengeId" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 400,
+      });
+    }
 
     const priceId = PRICE_IDS[tier] || PRICE_IDS.digital;
 
@@ -68,7 +85,7 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("Checkout error:", error);
-    return new Response(JSON.stringify({ error: "An unexpected error occurred. Please try again." }), {
+    return new Response(JSON.stringify({ error: error.message || "An unexpected error occurred. Please try again." }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
