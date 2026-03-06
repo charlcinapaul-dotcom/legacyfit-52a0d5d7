@@ -25,9 +25,9 @@ const PaymentSuccess = () => {
           headers: {
             "Content-Type": "application/json",
             apikey:
-              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0ZmV4aGRuY2FqY2NkcHZxdWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyMjgzMjYsImV4cCI6MjA4NDgwNDMyNn0.BkrHTBUX2VgCaJbsNjA-emw4lYrJ4a6Xo8avCDqurx4",
+              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wbmh1Z2Rqc2VjaHRrdWduanF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0NjQzNTEsImV4cCI6MjA4NzA0MDM1MX0.FfpndJLq1MMHPx88ypdCgYQxuFTBAeECM3VkEL48GjU",
             Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV0ZmV4aGRuY2FqY2NkcHZxdWt5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkyMjgzMjYsImV4cCI6MjA4NDgwNDMyNn0.BkrHTBUX2VgCaJbsNjA-emw4lYrJ4a6Xo8avCDqurx4",
+              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wbmh1Z2Rqc2VjaHRrdWduanF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0NjQzNTEsImV4cCI6MjA4NzA0MDM1MX0.FfpndJLq1MMHPx88ypdCgYQxuFTBAeECM3VkEL48GjU",
           },
           body: JSON.stringify({ sessionId }),
         });
