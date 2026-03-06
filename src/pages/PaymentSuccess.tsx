@@ -20,7 +20,7 @@ const PaymentSuccess = () => {
       }
 
       try {
-        const res = await fetch("https://mpnhugdjsechtkugnqjz.supabase.co/functions/v1/verify-payment", {
+        const res = await fetch("https://mpnhugdjsechtkugnjqz.supabase.co/functions/v1/verify-payment", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
