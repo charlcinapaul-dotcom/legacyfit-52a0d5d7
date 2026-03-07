@@ -81,9 +81,68 @@ const ChallengeRoute = () => {
   const { data, isLoading, error } = useChallengeBySlug(slug);
   const challengeId = data?.challenge?.id;
   const { data: enrollment } = useEnrollmentStatus(challengeId);
+  const { toast } = useToast();
 
   // Audio hook for milestone narration
   const { playMilestoneAudio, toggleMute, replay, muted, isPlaying, currentAudioUrl } = useMilestoneAudio();
+
+  // Admin: pre-generate audio state
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+  const [audioGenProgress, setAudioGenProgress] = useState<{ generated: number; remaining: number } | null>(null);
+
+  // Check if current user is admin
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle()
+        .then(({ data }) => setIsAdmin(!!data));
+    });
+  }, []);
+
+  // Pre-generate audio for all milestones missing audio_url (batch loop)
+  const handlePreGenerateAudio = useCallback(async () => {
+    setIsGeneratingAudio(true);
+    setAudioGenProgress(null);
+    let totalGenerated = 0;
+
+    try {
+      // Loop in batches of 5 until remaining === 0
+      while (true) {
+        const { data: result, error } = await supabase.functions.invoke(
+          "generate-all-milestone-audio",
+          { body: { limit: 5 } }
+        );
+
+        if (error) throw error;
+
+        const generated: number = result?.generated ?? 0;
+        const remaining: number = result?.remaining ?? 0;
+        totalGenerated += generated;
+        setAudioGenProgress({ generated: totalGenerated, remaining });
+
+        if (remaining <= 0 || generated === 0) break;
+
+        // Small pause between batches to avoid hammering the API
+        await new Promise((r) => setTimeout(r, 500));
+      }
+
+      toast({
+        title: "Audio pre-generation complete",
+        description: `Generated ${totalGenerated} audio file${totalGenerated !== 1 ? "s" : ""}. All milestones are ready.`,
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      toast({ title: "Audio generation failed", description: msg, variant: "destructive" });
+    } finally {
+      setIsGeneratingAudio(false);
+    }
+  }, [toast]);
 
   // Transform database data to component format
   const challenge = useMemo(() => {
