@@ -1,12 +1,11 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { ArrowLeft, Book, Map } from "lucide-react";
+import { ArrowLeft, Book, MapPin, Lock, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PassportStamp } from "@/components/PassportStamp";
-import { PassportCheckpointMap } from "@/components/PassportCheckpointMap";
 import { MileLogger } from "@/components/MileLogger";
 import { EnrollmentBadge } from "@/components/EnrollmentBadge";
 import { usePassportStamps, type StampWithMilestone } from "@/hooks/usePassportStamps";
