@@ -1,9 +1,9 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
-import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar, Volume2, VolumeX, RotateCcw } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar, Volume2, VolumeX, RotateCcw, Wand2, Loader2 } from "lucide-react";
 import { useMilestoneAudio } from "@/hooks/useMilestoneAudio";
 import { cn } from "@/lib/utils";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
@@ -17,6 +17,8 @@ import { GroupChallenge } from "@/components/GroupChallenge";
 import { useChallengeBySlug } from "@/hooks/useChallengeBySlug";
 import { useEnrollmentStatus } from "@/hooks/useEnrollmentStatus";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 // Color styling helper for challenge themes
 const getColorStyles = (color: string) => {
