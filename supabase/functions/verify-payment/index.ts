@@ -13,10 +13,31 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const supabaseAdmin = createClient(
-    Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-  );
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  const supabaseServiceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+
+  // Authenticate the caller
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 401,
+    });
+  }
+
+  const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const { data: { user }, error: userError } = await userClient.auth.getUser();
+  if (userError || !user) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 401,
+    });
+  }
+
+  const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
 
   try {
     const { sessionId } = await req.json();
@@ -39,6 +60,14 @@ serve(async (req) => {
 
     if (!challengeId || !userId) {
       throw new Error("Invalid session metadata");
+    }
+
+    // Verify the authenticated user matches the session owner
+    if (userId !== user.id) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403,
+      });
     }
 
     // Check if enrollment already exists
