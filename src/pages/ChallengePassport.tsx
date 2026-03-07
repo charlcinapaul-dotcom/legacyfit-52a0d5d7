@@ -122,42 +122,73 @@ export default function ChallengePassport() {
               Journey Stamps
             </TabsTrigger>
             <TabsTrigger value="checkpoint" className="flex items-center gap-2">
-              <Map className="w-4 h-4" />
+              <MapPin className="w-4 h-4" />
               Passport Checkpoint
             </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="stamps">
-            {stamps.length === 0 ? (
-              <Card className="text-center py-12">
-                <CardContent>
-                  <Book className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">No stamps available yet.</p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {stamps.map((stamp) => (
-                  <PassportStamp
-                    key={stamp.id}
-                    stamp={stamp}
-                    onClick={() => setSelectedStamp(stamp)}
-                  />
-                ))}
-              </div>
-            )}
-          </TabsContent>
-
+...
           <TabsContent value="checkpoint">
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Track your journey across the map. Unlocked milestones appear in gold, 
-                with route lines connecting your progress.
-              </p>
-              <PassportCheckpointMap
-                stamps={stamps}
-                onMilestoneClick={setSelectedStamp}
-              />
+            <div className="space-y-3">
+              {stamps.length === 0 ? (
+                <Card className="text-center py-12">
+                  <CardContent>
+                    <MapPin className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">No milestones available yet.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                stamps.map((stamp, index) => {
+                  const mapsUrl =
+                    stamp.latitude && stamp.longitude
+                      ? `https://www.google.com/maps/search/?api=1&query=${stamp.latitude},${stamp.longitude}`
+                      : null;
+
+                  return (
+                    <Card
+                      key={stamp.id}
+                      className={`border transition-colors ${
+                        stamp.isUnlocked
+                          ? "border-amber-500/40 bg-amber-900/10"
+                          : "border-border bg-card opacity-70"
+                      }`}
+                    >
+                      <CardContent className="p-4 flex items-center justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-amber-500/80 uppercase tracking-wide mb-0.5">
+                            Milestone {index + 1}
+                          </p>
+                          <h4 className="font-bold text-foreground truncate">
+                            {stamp.stamp_title || stamp.title}
+                          </h4>
+                          {stamp.location_name && (
+                            <p className="text-sm text-muted-foreground mt-0.5 truncate">
+                              📍 {stamp.location_name}
+                            </p>
+                          )}
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {stamp.stamp_mileage_display || `${stamp.miles_required} miles`}
+                          </p>
+                        </div>
+                        <div className="flex-shrink-0">
+                          {stamp.isUnlocked && mapsUrl ? (
+                            <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
+                              <Button size="sm" variant="outline" className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10 gap-1.5">
+                                <ExternalLink className="w-3.5 h-3.5" />
+                                View on Map
+                              </Button>
+                            </a>
+                          ) : (
+                            <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
+                              <Lock className="w-3.5 h-3.5" />
+                              <span>Reach {stamp.miles_required} mi</span>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  );
+                })
+              )}
             </div>
           </TabsContent>
         </Tabs>
