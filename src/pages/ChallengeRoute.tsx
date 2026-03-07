@@ -1,9 +1,10 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
-import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar, Volume2, VolumeX, RotateCcw } from "lucide-react";
+import { useMilestoneAudio } from "@/hooks/useMilestoneAudio";
 import { cn } from "@/lib/utils";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
 import { LegacyGuide } from "@/components/LegacyGuide";
@@ -78,6 +79,10 @@ const ChallengeRoute = () => {
   const { data, isLoading, error } = useChallengeBySlug(slug);
   const challengeId = data?.challenge?.id;
   const { data: enrollment } = useEnrollmentStatus(challengeId);
+
+  // Audio hook for milestone narration
+  const { playMilestoneAudio, toggleMute, replay, muted, isPlaying, currentAudioUrl } = useMilestoneAudio();
+
   // Transform database data to component format
   const challenge = useMemo(() => {
     if (!data) return null;
@@ -95,6 +100,8 @@ const ChallengeRoute = () => {
       color: getEditionColor(dbChallenge.edition),
       milestones: dbMilestones.map((m, index) => ({
         id: index + 1,
+        dbId: m.id,           // real UUID for audio generation
+        audioUrl: m.audio_url ?? null,
         name: m.stamp_title || m.title,
         miles: Number(m.miles_required),
         location: m.location_name || "",
@@ -125,6 +132,25 @@ const ChallengeRoute = () => {
     daysRemaining: customDays,
     startedAt: "",
   };
+
+  // Track the most recently unlocked milestone index to auto-play its audio once
+  const prevUnlockedCountRef = useRef<number>(0);
+  const unlockedMilestonesCount = challenge
+    ? challenge.milestones.filter(m => userProgress.milesLogged >= m.miles).length
+    : 0;
+
+  useEffect(() => {
+    if (!challenge) return;
+    const prev = prevUnlockedCountRef.current;
+    if (unlockedMilestonesCount > prev) {
+      // The newly unlocked milestone is at index (unlockedMilestonesCount - 1)
+      const newlyUnlocked = challenge.milestones[unlockedMilestonesCount - 1];
+      if (newlyUnlocked) {
+        playMilestoneAudio(newlyUnlocked.dbId, newlyUnlocked.audioUrl);
+      }
+    }
+    prevUnlockedCountRef.current = unlockedMilestonesCount;
+  }, [unlockedMilestonesCount, challenge, playMilestoneAudio]);
 
   // Loading state
   if (isLoading) {
@@ -349,7 +375,20 @@ const ChallengeRoute = () => {
 
           {/* Virtual Route Visualization */}
           <div className="bg-card rounded-xl border border-border p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-6">Virtual Route</h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-foreground">Virtual Route</h3>
+              {/* Global mute toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleMute}
+                className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                title={muted ? "Unmute narration" : "Mute narration"}
+              >
+                {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                {muted ? "Muted" : "Audio on"}
+              </Button>
+            </div>
             
             <div className="relative">
               {/* Track line scoped strictly to the milestone list */}
@@ -362,6 +401,7 @@ const ChallengeRoute = () => {
                 {challenge.milestones.map((milestone, index) => {
                   const isUnlocked = userProgress.milesLogged >= milestone.miles;
                   const isNext = !isUnlocked && (index === 0 || userProgress.milesLogged >= challenge.milestones[index - 1].miles);
+                  const isLastUnlocked = isUnlocked && index === unlockedMilestonesCount - 1;
                   
                   return (
                     <div key={milestone.id} className="relative flex items-start gap-6">
@@ -401,6 +441,22 @@ const ChallengeRoute = () => {
                           <p className="text-sm text-muted-foreground">
                             {milestone.description}
                           </p>
+                        )}
+                        {/* Audio controls — only shown on the most recently unlocked milestone */}
+                        {isLastUnlocked && (milestone.audioUrl || milestone.description) && (
+                          <div className="flex items-center gap-2 mt-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => replay()}
+                              disabled={!currentAudioUrl}
+                              className={cn("gap-1.5 text-xs", colors.text)}
+                              title="Replay narration"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                              {isPlaying ? "Playing…" : "Replay"}
+                            </Button>
+                          </div>
                         )}
                         {isUnlocked && (milestone.latitude || milestone.location) && (
                           <a
