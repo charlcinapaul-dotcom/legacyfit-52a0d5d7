@@ -1,9 +1,9 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
-import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar, Volume2, VolumeX, RotateCcw } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar, Volume2, VolumeX, RotateCcw, Wand2, Loader2 } from "lucide-react";
 import { useMilestoneAudio } from "@/hooks/useMilestoneAudio";
 import { cn } from "@/lib/utils";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
@@ -17,6 +17,8 @@ import { GroupChallenge } from "@/components/GroupChallenge";
 import { useChallengeBySlug } from "@/hooks/useChallengeBySlug";
 import { useEnrollmentStatus } from "@/hooks/useEnrollmentStatus";
 import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 // Color styling helper for challenge themes
 const getColorStyles = (color: string) => {
@@ -79,9 +81,68 @@ const ChallengeRoute = () => {
   const { data, isLoading, error } = useChallengeBySlug(slug);
   const challengeId = data?.challenge?.id;
   const { data: enrollment } = useEnrollmentStatus(challengeId);
+  const { toast } = useToast();
 
   // Audio hook for milestone narration
   const { playMilestoneAudio, toggleMute, replay, muted, isPlaying, currentAudioUrl } = useMilestoneAudio();
+
+  // Admin: pre-generate audio state
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
+  const [audioGenProgress, setAudioGenProgress] = useState<{ generated: number; remaining: number } | null>(null);
+
+  // Check if current user is admin
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return;
+      supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .maybeSingle()
+        .then(({ data }) => setIsAdmin(!!data));
+    });
+  }, []);
+
+  // Pre-generate audio for all milestones missing audio_url (batch loop)
+  const handlePreGenerateAudio = useCallback(async () => {
+    setIsGeneratingAudio(true);
+    setAudioGenProgress(null);
+    let totalGenerated = 0;
+
+    try {
+      // Loop in batches of 5 until remaining === 0
+      while (true) {
+        const { data: result, error } = await supabase.functions.invoke(
+          "generate-all-milestone-audio",
+          { body: { limit: 5 } }
+        );
+
+        if (error) throw error;
+
+        const generated: number = result?.generated ?? 0;
+        const remaining: number = result?.remaining ?? 0;
+        totalGenerated += generated;
+        setAudioGenProgress({ generated: totalGenerated, remaining });
+
+        if (remaining <= 0 || generated === 0) break;
+
+        // Small pause between batches to avoid hammering the API
+        await new Promise((r) => setTimeout(r, 500));
+      }
+
+      toast({
+        title: "Audio pre-generation complete",
+        description: `Generated ${totalGenerated} audio file${totalGenerated !== 1 ? "s" : ""}. All milestones are ready.`,
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      toast({ title: "Audio generation failed", description: msg, variant: "destructive" });
+    } finally {
+      setIsGeneratingAudio(false);
+    }
+  }, [toast]);
 
   // Transform database data to component format
   const challenge = useMemo(() => {
@@ -375,19 +436,43 @@ const ChallengeRoute = () => {
 
           {/* Virtual Route Visualization */}
           <div className="bg-card rounded-xl border border-border p-6">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
               <h3 className="text-lg font-semibold text-foreground">Virtual Route</h3>
-              {/* Global mute toggle */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleMute}
-                className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-                title={muted ? "Unmute narration" : "Mute narration"}
-              >
-                {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                {muted ? "Muted" : "Audio on"}
-              </Button>
+              <div className="flex items-center gap-2">
+                {/* Admin: pre-generate audio for all milestones */}
+                {isAdmin && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePreGenerateAudio}
+                    disabled={isGeneratingAudio}
+                    className="gap-1.5 text-xs"
+                    title="Pre-generate ElevenLabs audio for all milestones without audio"
+                  >
+                    {isGeneratingAudio ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Wand2 className="w-3.5 h-3.5" />
+                    )}
+                    {isGeneratingAudio
+                      ? audioGenProgress
+                        ? `Generated ${audioGenProgress.generated}, ${audioGenProgress.remaining} left…`
+                        : "Starting…"
+                      : "Pre-generate Audio"}
+                  </Button>
+                )}
+                {/* Global mute toggle */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleMute}
+                  className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                  title={muted ? "Unmute narration" : "Mute narration"}
+                >
+                  {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                  {muted ? "Muted" : "Audio on"}
+                </Button>
+              </div>
             </div>
             
             <div className="relative">
