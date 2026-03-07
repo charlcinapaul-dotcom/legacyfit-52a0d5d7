@@ -100,6 +100,8 @@ const ChallengeRoute = () => {
         location: m.location_name || "",
         description: m.stamp_copy || m.description || "",
         stampImageUrl: m.stamp_image_url,
+        latitude: m.latitude,
+        longitude: m.longitude,
       })),
     };
   }, [data]);
@@ -403,6 +405,27 @@ const ChallengeRoute = () => {
                           <p className="text-sm text-muted-foreground">
                             {milestone.description}
                           </p>
+                        )}
+                        {isUnlocked && (milestone.latitude || milestone.location) && (
+                          <a
+                            href={
+                              milestone.latitude && milestone.longitude
+                                ? `https://www.google.com/maps/search/?api=1&query=${milestone.latitude},${milestone.longitude}`
+                                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(milestone.location)}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mt-2 inline-flex"
+                          >
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className={cn("gap-1.5 text-xs", colors.text)}
+                            >
+                              <MapPin className="w-3 h-3" />
+                              View on Map
+                            </Button>
+                          </a>
                         )}
                       </div>
                     </div>
