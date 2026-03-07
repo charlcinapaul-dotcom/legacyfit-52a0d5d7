@@ -436,19 +436,43 @@ const ChallengeRoute = () => {
 
           {/* Virtual Route Visualization */}
           <div className="bg-card rounded-xl border border-border p-6">
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
               <h3 className="text-lg font-semibold text-foreground">Virtual Route</h3>
-              {/* Global mute toggle */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleMute}
-                className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-                title={muted ? "Unmute narration" : "Mute narration"}
-              >
-                {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-                {muted ? "Muted" : "Audio on"}
-              </Button>
+              <div className="flex items-center gap-2">
+                {/* Admin: pre-generate audio for all milestones */}
+                {isAdmin && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handlePreGenerateAudio}
+                    disabled={isGeneratingAudio}
+                    className="gap-1.5 text-xs"
+                    title="Pre-generate ElevenLabs audio for all milestones without audio"
+                  >
+                    {isGeneratingAudio ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Wand2 className="w-3.5 h-3.5" />
+                    )}
+                    {isGeneratingAudio
+                      ? audioGenProgress
+                        ? `Generated ${audioGenProgress.generated}, ${audioGenProgress.remaining} left…`
+                        : "Starting…"
+                      : "Pre-generate Audio"}
+                  </Button>
+                )}
+                {/* Global mute toggle */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={toggleMute}
+                  className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                  title={muted ? "Unmute narration" : "Mute narration"}
+                >
+                  {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                  {muted ? "Muted" : "Audio on"}
+                </Button>
+              </div>
             </div>
             
             <div className="relative">
