@@ -375,7 +375,20 @@ const ChallengeRoute = () => {
 
           {/* Virtual Route Visualization */}
           <div className="bg-card rounded-xl border border-border p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-6">Virtual Route</h3>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-semibold text-foreground">Virtual Route</h3>
+              {/* Global mute toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleMute}
+                className="gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+                title={muted ? "Unmute narration" : "Mute narration"}
+              >
+                {muted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                {muted ? "Muted" : "Audio on"}
+              </Button>
+            </div>
             
             <div className="relative">
               {/* Track line scoped strictly to the milestone list */}
@@ -388,6 +401,7 @@ const ChallengeRoute = () => {
                 {challenge.milestones.map((milestone, index) => {
                   const isUnlocked = userProgress.milesLogged >= milestone.miles;
                   const isNext = !isUnlocked && (index === 0 || userProgress.milesLogged >= challenge.milestones[index - 1].miles);
+                  const isLastUnlocked = isUnlocked && index === unlockedMilestonesCount - 1;
                   
                   return (
                     <div key={milestone.id} className="relative flex items-start gap-6">
@@ -427,6 +441,22 @@ const ChallengeRoute = () => {
                           <p className="text-sm text-muted-foreground">
                             {milestone.description}
                           </p>
+                        )}
+                        {/* Audio controls — only shown on the most recently unlocked milestone */}
+                        {isLastUnlocked && (milestone.audioUrl || milestone.description) && (
+                          <div className="flex items-center gap-2 mt-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => replay()}
+                              disabled={!currentAudioUrl}
+                              className={cn("gap-1.5 text-xs", colors.text)}
+                              title="Replay narration"
+                            >
+                              <RotateCcw className="w-3 h-3" />
+                              {isPlaying ? "Playing…" : "Replay"}
+                            </Button>
+                          </div>
                         )}
                         {isUnlocked && (milestone.latitude || milestone.location) && (
                           <a
