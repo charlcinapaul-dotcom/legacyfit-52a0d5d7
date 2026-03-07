@@ -100,6 +100,8 @@ const ChallengeRoute = () => {
         location: m.location_name || "",
         description: m.stamp_copy || m.description || "",
         stampImageUrl: m.stamp_image_url,
+        latitude: m.latitude,
+        longitude: m.longitude,
       })),
     };
   }, [data]);
