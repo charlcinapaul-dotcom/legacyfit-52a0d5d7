@@ -19,6 +19,7 @@ export interface MilestoneData {
   stamp_copy: string | null;
   stamp_mileage_display: string | null;
   stamp_image_url: string | null;
+  audio_url: string | null;
   miles_required: number;
   location_name: string | null;
   description: string | null;
