@@ -79,6 +79,10 @@ const ChallengeRoute = () => {
   const { data, isLoading, error } = useChallengeBySlug(slug);
   const challengeId = data?.challenge?.id;
   const { data: enrollment } = useEnrollmentStatus(challengeId);
+
+  // Audio hook for milestone narration
+  const { playMilestoneAudio, toggleMute, replay, muted, isPlaying, currentAudioUrl } = useMilestoneAudio();
+
   // Transform database data to component format
   const challenge = useMemo(() => {
     if (!data) return null;
@@ -96,6 +100,8 @@ const ChallengeRoute = () => {
       color: getEditionColor(dbChallenge.edition),
       milestones: dbMilestones.map((m, index) => ({
         id: index + 1,
+        dbId: m.id,           // real UUID for audio generation
+        audioUrl: m.audio_url ?? null,
         name: m.stamp_title || m.title,
         miles: Number(m.miles_required),
         location: m.location_name || "",
@@ -126,6 +132,25 @@ const ChallengeRoute = () => {
     daysRemaining: customDays,
     startedAt: "",
   };
+
+  // Track the most recently unlocked milestone index to auto-play its audio once
+  const prevUnlockedCountRef = useRef<number>(0);
+  const unlockedMilestonesCount = challenge
+    ? challenge.milestones.filter(m => userProgress.milesLogged >= m.miles).length
+    : 0;
+
+  useEffect(() => {
+    if (!challenge) return;
+    const prev = prevUnlockedCountRef.current;
+    if (unlockedMilestonesCount > prev) {
+      // The newly unlocked milestone is at index (unlockedMilestonesCount - 1)
+      const newlyUnlocked = challenge.milestones[unlockedMilestonesCount - 1];
+      if (newlyUnlocked) {
+        playMilestoneAudio(newlyUnlocked.dbId, newlyUnlocked.audioUrl);
+      }
+    }
+    prevUnlockedCountRef.current = unlockedMilestonesCount;
+  }, [unlockedMilestonesCount, challenge, playMilestoneAudio]);
 
   // Loading state
   if (isLoading) {
