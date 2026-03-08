@@ -70,12 +70,16 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
   }
 };
 
-/** Extract just the woman's first name or full name from the challenge title */
+/** Extract the woman's name from a challenge title like "Ruth Bader Ginsburg Equality Journey".
+ *  Strips trailing descriptive words so only the proper name remains. */
 function extractWomanName(challengeName: string): string {
-  // Challenge titles are like "Ruth Bader Ginsburg Equality Journey"
-  // We want "Ruth Bader Ginsburg" — drop trailing "Journey" / "Walk" / "Challenge" etc.
+  // Drop any trailing non-name words — action/theme/descriptor words that follow the name.
+  // e.g. "Ruth Bader Ginsburg Equality Journey" → "Ruth Bader Ginsburg"
   return challengeName
-    .replace(/\s+(journey|walk|challenge|legacy|trail|mile|run)s?$/i, "")
+    .replace(
+      /\s+(equality|freedom|courage|legacy|justice|peace|hope|pride|strength|trail|walk|run|journey|challenge|mile)s?(\s+.*)?$/i,
+      "",
+    )
     .trim();
 }
 
