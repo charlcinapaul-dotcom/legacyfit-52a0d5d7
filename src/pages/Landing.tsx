@@ -69,6 +69,14 @@ const Landing = () => {
               </Button>
             </Link>
           </div>
+          <div className="flex justify-center mt-4">
+            <Link
+              to="/challenges"
+              className="text-sm bg-black text-primary px-4 py-2 rounded-lg hover:text-primary/80 transition-colors"
+            >
+              ✓ Start your free 1 mile Legacy Passport
+            </Link>
+          </div>
         </div>
       </section>
 
