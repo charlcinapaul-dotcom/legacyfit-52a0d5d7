@@ -624,6 +624,7 @@ const ChallengeRoute = () => {
                   challengeSlug={slug}
                   challengeName={challenge.name}
                   challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
+                  onMaybeLater={() => setShowReEngagementBanner(true)}
                 />
               </TabsContent>
               <TabsContent value="steps">
