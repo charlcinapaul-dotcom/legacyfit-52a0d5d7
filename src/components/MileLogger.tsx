@@ -333,7 +333,10 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
       {/* Stamp unlock modal */}
       <StampUnlockModal
         stamps={newlyUnlockedStamps}
-        onClose={clearUnlockedStamps}
+        onClose={() => {
+          clearUnlockedStamps();
+          setStampModalDismissed(true);
+        }}
         challengeSlug={challengeSlug}
         isEnrolled={enrollment?.isEnrolled ?? true}
         onContinueToPurchase={(stamp) => {
