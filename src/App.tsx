@@ -23,6 +23,7 @@ const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const FreeWalk = lazy(() => import("./pages/FreeWalk"));
+const AdminValidate = lazy(() => import("./pages/AdminValidate"));
 
 const queryClient = new QueryClient();
 
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/free-walk" element={<FreeWalk />} />
+            <Route path="/admin/validate" element={<AdminValidate />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
