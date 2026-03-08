@@ -676,6 +676,21 @@ const ChallengeRoute = () => {
           days: customDays,
         }}
       />
+
+      {/* Mobile sticky Log Miles FAB */}
+      <button
+        onClick={() => logMilesSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+        className={cn(
+          "fixed bottom-6 left-1/2 -translate-x-1/2 z-40 md:hidden",
+          "flex items-center gap-2 px-6 py-3 rounded-full shadow-lg",
+          "text-sm font-semibold text-primary-foreground",
+          colors.button
+        )}
+        aria-label="Log miles"
+      >
+        <Footprints className="w-4 h-4" />
+        Log Miles
+      </button>
     </div>
   );
 };
