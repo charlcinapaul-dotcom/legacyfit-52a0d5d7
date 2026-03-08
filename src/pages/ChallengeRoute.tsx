@@ -3,7 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
-import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar, Volume2, VolumeX, RotateCcw, Wand2, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar, Volume2, VolumeX, RotateCcw, Wand2, Loader2, Sparkles, X } from "lucide-react";
+
 import { useMilestoneAudio } from "@/hooks/useMilestoneAudio";
 import { cn } from "@/lib/utils";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
