@@ -148,7 +148,7 @@ serve(async (req: Request): Promise<Response> => {
         const mileageBanner = `${milestone.miles_required} MILES`;
         const bottomArcText = milestone.stamp_copy || milestone.title;
 
-        const prompt = `A single vintage passport stamp — circular shape, white background.
+        const prompt = `A single vintage passport stamp — circular shape, aged parchment paper background (#F5EDD8 warm cream).
 
 Outer ring: double concentric border (thin inner rule, thicker outer rule).
 Between the rings: wheat or laurel wreath decorating the top arc; small serif capital text reading "${bottomArcText}" curved along the bottom arc; "LEGACYFIT" credit text centered at the very bottom edge of the outer ring.
@@ -157,7 +157,7 @@ Center field: bold serif all-caps name "${displayName}" as the dominant text; on
 Ink color: deep navy blue OR burgundy red — single ink color, aged appearance.
 Distressed look: uneven ink coverage, slight bleed, worn edges — rubber-stamped feel.
 No photographic elements — pure illustrative stamp graphic only.
-Square canvas, stamp centered on a white background.`;
+Square canvas on aged parchment paper (#F5EDD8 warm cream). The entire canvas must use the warm cream/tan parchment texture — no white, no grey, no transparent areas. Style must match vintage hand-crafted passport stamp artwork.`;
 
         const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
