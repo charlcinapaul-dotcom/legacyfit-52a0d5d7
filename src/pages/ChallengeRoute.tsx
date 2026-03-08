@@ -83,6 +83,7 @@ const ChallengeRoute = () => {
   const challengeId = data?.challenge?.id;
   const { data: enrollment } = useEnrollmentStatus(challengeId);
   const { toast } = useToast();
+  const [showReEngagementBanner, setShowReEngagementBanner] = useState(false);
 
   // Audio hook for milestone narration
   const { playMilestoneAudio, toggleMute, replay, muted, isPlaying, currentAudioUrl } = useMilestoneAudio();
