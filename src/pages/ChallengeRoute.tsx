@@ -84,6 +84,7 @@ const ChallengeRoute = () => {
   const { data: enrollment } = useEnrollmentStatus(challengeId);
   const { toast } = useToast();
   const [showReEngagementBanner, setShowReEngagementBanner] = useState(false);
+  const logMilesSectionRef = useRef<HTMLDivElement>(null);
 
   // Auto-dismiss banner the moment enrollment is confirmed
   useEffect(() => {
