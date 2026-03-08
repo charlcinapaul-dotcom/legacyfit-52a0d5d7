@@ -146,7 +146,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Link to="/auth">
+          <Link to={`/auth?redirect=${encodeURIComponent(challengeSlug ? `/challenge/${challengeSlug}` : '/challenges')}`}>
             <Button className="w-full h-12 text-base font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
               Start Your Free 1 Mile Legacy Passport
             </Button>
@@ -182,9 +182,11 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
               Your payment is being processed. You'll be able to log miles once payment is confirmed.
             </p>
           ) : (
-            <Button className="w-full h-12 text-base font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-              Start Your Free 1 Mile Legacy Passport
-            </Button>
+            <Link to={`/auth?redirect=${encodeURIComponent(challengeSlug ? `/challenge/${challengeSlug}` : '/challenges')}`}>
+              <Button className="w-full h-12 text-base font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                Start Your Free 1 Mile Legacy Passport
+              </Button>
+            </Link>
           )}
         </CardContent>
       </Card>
