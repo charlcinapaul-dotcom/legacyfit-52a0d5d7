@@ -23,18 +23,26 @@ interface MileLoggerProps {
   challengeSlug?: string;
   challengeName?: string;
   totalMilestones?: number;
+  challengeEditionColor?: "gold" | "burgundy" | "pride";
   onChallengeCompleted?: (data: { name: string; miles: number; imageUrl: string | null }) => void;
 }
 
 const QUICK_MILES = [1, 3, 5, 7];
 
-export function MileLogger({ challengeId, challengeSlug, challengeName, totalMilestones = 6, onChallengeCompleted }: MileLoggerProps) {
+export function MileLogger({ challengeId, challengeSlug, challengeName, totalMilestones = 6, challengeEditionColor = "gold", onChallengeCompleted }: MileLoggerProps) {
   const [miles, setMiles] = useState<number>(1);
   const [notes, setNotes] = useState("");
   const [showCustom, setShowCustom] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [pendingMiles, setPendingMiles] = useState<number | null>(null);
   const [pendingNotes, setPendingNotes] = useState<string>("");
+
+  // First-mile gate modal state
+  const [gateModal, setGateModal] = useState<{
+    open: boolean;
+    screen: "share" | "purchase";
+    stamp: UnlockedStamp | null;
+  }>({ open: false, screen: "purchase", stamp: null });
 
   const {
     totalMiles,
