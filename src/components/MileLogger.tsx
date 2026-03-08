@@ -154,23 +154,26 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
     );
   }
 
-  // Not enrolled (paid)
-  if (!enrollment?.isEnrolled) {
+  // Not enrolled (paid) — but allow free first-mile preview (totalMiles === 0)
+  const hasPendingPayment = enrollment?.status === "pending";
+  const isFirstMileFreeWindow = !enrollment?.isEnrolled && !hasPendingPayment && totalMiles === 0;
+
+  if (!enrollment?.isEnrolled && !isFirstMileFreeWindow) {
     return (
       <Card className="border-border">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
             <ShieldAlert className="w-5 h-5 text-muted-foreground" />
-            Enrollment Required
+            {hasPendingPayment ? "Payment Processing" : "Enrollment Required"}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground text-sm">
-            {enrollment?.status === "pending"
+            {hasPendingPayment
               ? "Your payment is being processed. You'll be able to log miles once payment is confirmed."
-              : "You need to enroll in this challenge before you can log miles."}
+              : "You need to enroll in this challenge before you can log more miles."}
           </p>
-          {enrollment?.status !== "pending" && (
+          {!hasPendingPayment && (
             <Link to={`/challenge/${challengeSlug || ""}`}>
               <Button className="w-full">
                 Join This Challenge
