@@ -110,6 +110,25 @@ Every challenge MUST support the free first-mile preview. This requires:
 4. The MileLogger button renders as **"Start Your Free 1 Mile Legacy Passport"** for unenrolled users with 0 miles logged.
 5. After the free mile, unenrolled users are gated and shown the `ChallengePricing` upgrade flow.
 
+### Log Miles Section Display Logic (`src/components/MileLogger.tsx`)
+
+The Log Miles card uses this exact rendering priority — **never deviate from this order**:
+
+| State | What is shown |
+|---|---|
+| Loading (auth or enrollment check in progress) | Spinner only |
+| **Not signed in** | Large gold "Start Your Free 1 Mile Legacy Passport" button — links to `/auth` |
+| **Signed in, not enrolled, 0 miles logged** (free-mile window) | Full logger with single large gold "Start Your Free 1 Mile Legacy Passport" button that logs 1 mile |
+| **Signed in, not enrolled, ≥ 1 mile logged** (past free window) | Large gold "Start Your Free 1 Mile Legacy Passport" button (no logging inputs) |
+| **Signed in, payment pending** | "Your payment is being processed" message (no logging inputs) |
+| **Signed in and enrolled (paid)** | Full mile logger: quick-add buttons (+1, +3, +5, +7), custom entry form, daily limit display |
+
+**Rules:**
+- The text "Sign In to Log Miles" or "Enrollment Required" must **never** appear anywhere in MileLogger.
+- The gold CTA button must always use `bg-primary text-primary-foreground` — never hardcoded colors.
+- The regular logging interface (quick buttons + custom form) is shown **only** after `enrollment.isEnrolled === true`.
+- A latch (`wasInFreeWindowRef`) keeps the logger visible during the free-mile flow until `StampUnlockModal` is dismissed, preventing premature flip to the unenrolled state.
+
 ---
 
 ## 9. Activation Checklist
