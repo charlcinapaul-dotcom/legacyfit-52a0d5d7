@@ -13,6 +13,7 @@ import {
   LogOut,
   ClipboardList,
   ImagePlus,
+  Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -90,7 +91,9 @@ function groupEntries(summary: Record<string, boolean>) {
 // ── component ────────────────────────────────────────────────────────────────
 
 interface ImageGenResult {
-  slug: string;
+  slug?: string;
+  milestoneId?: string;
+  title?: string;
   success: boolean;
   url?: string;
   error?: string;
@@ -108,6 +111,8 @@ export default function AdminValidate() {
   >([]);
   const [imageGenLoading, setImageGenLoading] = useState(false);
   const [imageGenResults, setImageGenResults] = useState<ImageGenResult[] | null>(null);
+  const [stampGenLoading, setStampGenLoading] = useState(false);
+  const [stampGenResults, setStampGenResults] = useState<ImageGenResult[] | null>(null);
 
   // ── auth gate ──────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -206,6 +211,41 @@ export default function AdminValidate() {
     }
   };
 
+  // ── generate passport stamps ───────────────────────────────────────────────
+  const generateStamps = async () => {
+    setStampGenLoading(true);
+    setStampGenResults(null);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const url = `https://${projectId}.supabase.co/functions/v1/generate-all-stamps`;
+
+      toast.info("Stamp generation started — this may take several minutes…");
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ limit: 10 }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        toast.error(json.error ?? "Stamp generation failed.");
+        return;
+      }
+      setStampGenResults(json.results ?? []);
+      const successCount = (json.results ?? []).filter((r: ImageGenResult) => r.success).length;
+      toast.success(`Done! ${successCount} stamp(s) generated.`);
+    } catch {
+      toast.error("Failed to reach stamp generation function.");
+    } finally {
+      setStampGenLoading(false);
+    }
+  };
 
   if (authChecking) {
     return (
@@ -568,6 +608,80 @@ export default function AdminValidate() {
                           className="text-xs text-primary underline underline-offset-2 truncate max-w-[180px]"
                         >
                           View image
+                        </a>
+                      ) : r.error ? (
+                        <span className="text-xs text-destructive truncate max-w-[220px]">{r.error}</span>
+                      ) : null}
+                      <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm font-semibold ${
+                        r.success ? "bg-green-500/15 text-green-500" : "bg-destructive/15 text-destructive"
+                      }`}>
+                        {r.success ? "OK" : "FAIL"}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        {/* ── Generate Passport Stamps ──────────────────────────────────── */}
+        <div className="mt-12 pt-8 border-t border-border">
+          <div className="flex items-center gap-2 mb-2">
+            <Award className="w-5 h-5 text-primary" />
+            <h2 className="text-xl font-bold text-foreground">Generate Passport Stamps</h2>
+          </div>
+          <p className="text-muted-foreground text-sm leading-relaxed mb-1">
+            Generates AI vintage circular passport stamps for all 13 Black Pioneers challenge milestones
+            that are currently missing one. Each stamp features a double outer ring, wheat/laurel wreath,
+            bold name, location subtitle, mileage banner, and worn vintage ink look.
+          </p>
+          <p className="text-muted-foreground text-xs mb-5">
+            Runs in batches of 10 — click multiple times to complete all 78 milestones.
+            Already-stamped milestones are skipped automatically.
+          </p>
+
+          <Button
+            onClick={generateStamps}
+            disabled={stampGenLoading}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+          >
+            {stampGenLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Award className="w-4 h-4" />
+            )}
+            {stampGenLoading ? "Generating stamps…" : "Generate Missing Stamps (batch of 10)"}
+          </Button>
+
+          {stampGenResults && (
+            <div className="mt-6 bg-card border border-border rounded-lg overflow-hidden">
+              <div className="px-4 py-3 bg-secondary/40 border-b border-border flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">
+                  Results — {stampGenResults.filter((r) => r.success).length}/{stampGenResults.length} successful
+                </span>
+              </div>
+              <ul className="divide-y divide-border">
+                {stampGenResults.map((r) => (
+                  <li key={r.slug ?? r.milestoneId} className="px-4 py-3 flex items-center justify-between gap-3 text-sm">
+                    <div className="flex items-center gap-2.5">
+                      {r.success ? (
+                        <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-destructive flex-shrink-0" />
+                      )}
+                      <span className="text-foreground">{r.title ?? r.slug}</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {r.success && r.url ? (
+                        <a
+                          href={r.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary underline underline-offset-2 truncate max-w-[180px]"
+                        >
+                          View stamp
                         </a>
                       ) : r.error ? (
                         <span className="text-xs text-destructive truncate max-w-[220px]">{r.error}</span>
