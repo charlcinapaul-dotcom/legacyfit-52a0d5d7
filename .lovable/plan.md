@@ -1,28 +1,29 @@
 
-## Root Cause
+## What This Is
 
-The `create-checkout` edge function is working correctly and returning a valid Stripe URL every time. The network logs confirm `200` responses with valid `checkout.stripe.com` URLs.
+The "Free Walk Activity" section on the Dashboard (`src/pages/Dashboard.tsx`) reads Free Walk history from `localStorage` and displays a list of past Free Walk sessions — visible to any logged-in user. It also includes a "Walk Again" button that links to `/free-walk`.
 
-The bug is in `ChallengePricing.tsx` line 117:
-```ts
-window.open(data.url, "_blank");  // ← BLOCKED by popup blocker
-```
+This violates the rule that all Free Walk data must remain hidden.
 
-`window.open()` to a new tab is blocked by browsers when called after an `await` inside an async function, because the browser no longer considers it a direct user gesture. The user's click event context is lost during the async `supabase.functions.invoke()` call.
+## Everything to Remove
 
-## Fix
+**State + constants (lines 24–32, 70):**
+- `FREE_WALK_HISTORY_KEY` constant
+- `FREE_WALK_PENDING_KEY` constant
+- `FreeWalkEntry` interface
+- `freeWalkHistory` state variable
 
-Change line 117 in `src/components/ChallengePricing.tsx`:
-```ts
-// FROM:
-window.open(data.url, "_blank");
+**Logic (lines 78–153):**
+- `useEffect` that loads free walk history from `localStorage` (lines 78–84)
+- `savePendingFreeWalk` function (lines 125–153) — syncs pending free walk data to user profile on login
+- The `savePendingFreeWalk(session.user.id)` call inside the auth state listener (line 102)
 
-// TO:
-window.location.href = data.url;
-```
+**UI section (lines 506–549):**
+- The entire "Free Walk Activity" JSX block — the section heading, "Walk Again" button, and the mapped list of walk entries
 
-This navigates the current tab to Stripe Checkout, which always works regardless of popup blockers. After payment, Stripe redirects back to `/payment-success?session_id=...` as configured in the edge function.
+**Unused imports (line 21):**
+- `PersonStanding` icon (only used in the Free Walk Activity section)
+- `Timer`, `Flame` icons (only used in the Free Walk Activity section)
 
-## Files to Change
-
-- `src/components/ChallengePricing.tsx` — line 117 only
+## What Stays Untouched
+Everything else — challenges, stats, BIB, referral card, certificate modal, mile loggers — remains exactly as-is.
