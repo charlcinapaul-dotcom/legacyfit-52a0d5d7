@@ -6,9 +6,12 @@ import { Label } from "@/components/ui/label";
 import { Footprints, Loader2, ArrowRight } from "lucide-react";
 import { stepsToMiles, STEPS_PER_MILE } from "@/lib/health-sync";
 import { useMileLogging } from "@/hooks/useMileLogging";
+import type { UnlockedStamp } from "@/hooks/useMileLogging";
+import { useEnrollmentStatus } from "@/hooks/useEnrollmentStatus";
 import { useDailyMilesLogged } from "@/hooks/useDailyMilesLogged";
 import { useRateLimitCountdown } from "@/hooks/useRateLimitCountdown";
 import { StampUnlockModal } from "./StampUnlockModal";
+import { FirstMileGateModal } from "./FirstMileGateModal";
 import { MileLogConfirmDialog } from "./MileLogConfirmDialog";
 import { RateLimitBanner } from "./RateLimitBanner";
 
@@ -16,13 +19,21 @@ interface StepLoggerProps {
   challengeId: string;
   challengeSlug?: string;
   challengeName?: string;
+  challengeEditionColor?: "gold" | "burgundy" | "pride";
 }
 
 const QUICK_STEPS = [1000, 2000, 5000, 10000];
 
-export function StepLogger({ challengeId, challengeSlug, challengeName }: StepLoggerProps) {
+export function StepLogger({ challengeId, challengeSlug, challengeName, challengeEditionColor = "gold" }: StepLoggerProps) {
   const [steps, setSteps] = useState<string>("");
   const [pendingSteps, setPendingSteps] = useState<number | null>(null);
+
+  // First-mile gate modal state
+  const [gateModal, setGateModal] = useState<{
+    open: boolean;
+    screen: "share" | "purchase";
+    stamp: UnlockedStamp | null;
+  }>({ open: false, screen: "purchase", stamp: null });
 
   const {
     logMiles,
