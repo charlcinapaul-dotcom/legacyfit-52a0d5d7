@@ -42,6 +42,7 @@ export function StepLogger({ challengeId, challengeSlug, challengeName, challeng
     clearUnlockedStamps,
   } = useMileLogging(challengeId);
 
+  const { data: enrollment } = useEnrollmentStatus(challengeId);
   const { dailyRemaining, maxSingleEntry, refetch: refetchDaily } = useDailyMilesLogged(challengeId);
   const { isRateLimited, formatCountdown, triggerRateLimit } = useRateLimitCountdown(challengeId);
 
