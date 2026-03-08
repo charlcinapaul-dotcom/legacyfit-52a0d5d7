@@ -93,7 +93,8 @@ Logic lives in `src/pages/Challenges.tsx`.
 
 | Condition | Displayed in |
 |---|---|
-| `slug !== "pride"` AND `is_active = true` | **Women's History Edition** section |
+| `edition === "Women's History"` AND `is_active = true` | **Women's History Edition** section |
+| `edition === "First Black Pioneers"` AND `is_active = true` | **First Black Pioneers Edition** section |
 | `slug === "pride"` AND `is_active = true` | **Pride Edition** section |
 | `is_active = false` | **Past Editions** (grayed out) |
 
