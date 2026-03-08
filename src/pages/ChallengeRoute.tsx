@@ -459,6 +459,7 @@ const ChallengeRoute = () => {
                 challengeId={challenge.id}
                 challengeSlug={slug}
                 editionColor={getPricingEditionColor(data?.challenge?.edition || "")}
+                onMaybeLater={() => setShowReEngagementBanner(true)}
               />
             </div>
           )}
