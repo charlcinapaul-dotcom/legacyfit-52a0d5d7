@@ -133,39 +133,7 @@ export default function AdminValidate() {
   const [readiness, setReadiness] = useState<ReadinessRow[]>([]);
   const [readinessLoading, setReadinessLoading] = useState(false);
 
-  // ── auth gate ──────────────────────────────────────────────────────────────
-  useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) {
-        navigate("/auth");
-        return;
-      }
-      const { data } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .eq("role", "admin")
-        .maybeSingle();
-      if (!data) {
-        toast.error("Admin access required.");
-        navigate("/dashboard");
-        return;
-      }
-      setIsAdmin(true);
-      setAuthChecking(false);
-
-      // Load all challenges for the picker
-      const { data: ch } = await supabase
-        .from("challenges")
-        .select("id, title, slug, is_active")
-        .order("created_at", { ascending: false });
-      setChallenges((ch as typeof challenges) ?? []);
-
-      // Load readiness dashboard data
-      loadReadiness();
-    });
-  }, [navigate]);
-
+  // ── readiness loader ───────────────────────────────────────────────────────
   const loadReadiness = async () => {
     setReadinessLoading(true);
     const { data: chs } = await supabase
@@ -176,13 +144,10 @@ export default function AdminValidate() {
 
     if (!chs) { setReadinessLoading(false); return; }
 
-    const { data: milestones } = await supabase
-      .from("milestones")
-      .select("id, challenge_id, historical_event, audio_url");
-
-    const { data: stampImages } = await supabase
-      .from("passport_stamp_images")
-      .select("id, milestone_id");
+    const [{ data: milestones }, { data: stampImages }] = await Promise.all([
+      supabase.from("milestones").select("id, challenge_id, historical_event, audio_url"),
+      supabase.from("passport_stamp_images").select("id, milestone_id"),
+    ]);
 
     const stampMilestoneIds = new Set((stampImages ?? []).map((s) => s.milestone_id));
 
@@ -204,6 +169,36 @@ export default function AdminValidate() {
     setReadiness(rows);
     setReadinessLoading(false);
   };
+
+  // ── auth gate ──────────────────────────────────────────────────────────────
+  useEffect(() => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) {
+        navigate("/auth");
+        return;
+      }
+      const { data } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .eq("role", "admin")
+        .maybeSingle();
+      if (!data) {
+        toast.error("Admin access required.");
+        navigate("/dashboard");
+        return;
+      }
+      setIsAdmin(true);
+      setAuthChecking(false);
+
+      // Load all challenges for the picker + readiness data in parallel
+      const [{ data: ch }] = await Promise.all([
+        supabase.from("challenges").select("id, title, slug, is_active").order("created_at", { ascending: false }),
+        loadReadiness(),
+      ]);
+      setChallenges((ch as typeof challenges) ?? []);
+    });
+  }, [navigate]);
 
   // ── run validation ─────────────────────────────────────────────────────────
   const runValidation = async () => {
