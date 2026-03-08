@@ -16,20 +16,7 @@ import {
   Loader2,
   ChevronRight,
   Trophy,
-  Timer,
-  Flame,
-  PersonStanding
 } from "lucide-react";
-
-const FREE_WALK_HISTORY_KEY = "legacyfit_free_walk_history";
-const FREE_WALK_PENDING_KEY = "legacyfit_pending_free_walk";
-
-interface FreeWalkEntry {
-  miles: number;
-  time: string;
-  calories: number;
-  completedAt: string;
-}
 import type { User, Session } from "@supabase/supabase-js";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
 import { MileLogger } from "@/components/MileLogger";
@@ -67,7 +54,6 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userChallenges, setUserChallenges] = useState<UserChallenge[]>([]);
   const [loading, setLoading] = useState(true);
-  const [freeWalkHistory, setFreeWalkHistory] = useState<FreeWalkEntry[]>([]);
   const [milestoneCount, setMilestoneCount] = useState(0);
   const [stampCount, setStampCount] = useState(0);
   const [certOpen, setCertOpen] = useState(false);
@@ -75,13 +61,6 @@ const Dashboard = () => {
   const [certGenerating, setCertGenerating] = useState(false);
   const { data: activeChallenge } = useActiveChallenge();
 
-  // Load free walk history from localStorage
-  useEffect(() => {
-    const raw = localStorage.getItem(FREE_WALK_HISTORY_KEY);
-    if (raw) {
-      try { setFreeWalkHistory(JSON.parse(raw)); } catch { /* ignore */ }
-    }
-  }, []);
 
   useEffect(() => {
     // Set up auth state listener first
@@ -99,7 +78,6 @@ const Dashboard = () => {
           fetchProfile(session.user.id);
           fetchUserChallenges(session.user.id);
           fetchCounts(session.user.id);
-          savePendingFreeWalk(session.user.id);
         }, 0);
       }
     });
@@ -120,37 +98,6 @@ const Dashboard = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
-
-  // Save a pending free walk result if the user just signed up / logged in from CompleteScreen
-  const savePendingFreeWalk = async (userId: string) => {
-    const raw = localStorage.getItem(FREE_WALK_PENDING_KEY);
-    if (!raw) return;
-    try {
-      const { miles, time, calories } = JSON.parse(raw) as { miles: number; time: string; calories: number };
-      // Increment total_miles on the profile
-      const { data: prof } = await supabase
-        .from("profiles")
-        .select("total_miles")
-        .eq("user_id", userId)
-        .single();
-      const current = prof?.total_miles ?? 0;
-      await supabase
-        .from("profiles")
-        .update({ total_miles: current + miles })
-        .eq("user_id", userId);
-      // Save to history
-      const histRaw = localStorage.getItem(FREE_WALK_HISTORY_KEY);
-      const hist: FreeWalkEntry[] = histRaw ? JSON.parse(histRaw) : [];
-      const entry: FreeWalkEntry = { miles, time, calories, completedAt: new Date().toISOString() };
-      const updated = [entry, ...hist].slice(0, 10);
-      localStorage.setItem(FREE_WALK_HISTORY_KEY, JSON.stringify(updated));
-      setFreeWalkHistory(updated);
-      localStorage.removeItem(FREE_WALK_PENDING_KEY);
-      toast.success(`🏅 Free walk saved! +${miles} miles added to your profile.`);
-    } catch (e) {
-      console.error("Failed to save free walk:", e);
-    }
-  };
 
   const fetchProfile = async (userId: string) => {
     try {
@@ -503,50 +450,6 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Free Walk Activity */}
-        {freeWalkHistory.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-foreground">Free Walk Activity</h2>
-              <Button variant="ghost" className="text-primary text-sm" onClick={() => navigate("/free-walk")}>
-                Walk Again
-              </Button>
-            </div>
-            <div className="grid gap-3">
-              {freeWalkHistory.map((entry, i) => (
-                <Card key={i} className="bg-card border-border">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <PersonStanding className="w-5 h-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-foreground text-sm">Free Walk — Walk With Queens</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(entry.completedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-4 text-right flex-shrink-0">
-                        <div className="flex items-center gap-1.5 text-primary">
-                          <MapPin className="w-3.5 h-3.5" />
-                          <span className="text-sm font-bold">{entry.miles} mi</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
-                          <Timer className="w-3.5 h-3.5" />
-                          <span className="text-sm">{entry.time}</span>
-                        </div>
-                        <div className="hidden sm:flex items-center gap-1.5 text-muted-foreground">
-                          <Flame className="w-3.5 h-3.5" />
-                          <span className="text-sm">{entry.calories} cal</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Digital BIB */}
         {profile?.bib_number && (
