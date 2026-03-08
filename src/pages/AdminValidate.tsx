@@ -160,8 +160,50 @@ export default function AdminValidate() {
         .select("id, title, slug, is_active")
         .order("created_at", { ascending: false });
       setChallenges((ch as typeof challenges) ?? []);
+
+      // Load readiness dashboard data
+      loadReadiness();
     });
   }, [navigate]);
+
+  const loadReadiness = async () => {
+    setReadinessLoading(true);
+    const { data: chs } = await supabase
+      .from("challenges")
+      .select("id, title, slug, edition, is_active")
+      .order("edition")
+      .order("title");
+
+    if (!chs) { setReadinessLoading(false); return; }
+
+    const { data: milestones } = await supabase
+      .from("milestones")
+      .select("id, challenge_id, historical_event, audio_url");
+
+    const { data: stampImages } = await supabase
+      .from("passport_stamp_images")
+      .select("id, milestone_id");
+
+    const stampMilestoneIds = new Set((stampImages ?? []).map((s) => s.milestone_id));
+
+    const rows: ReadinessRow[] = chs.map((c) => {
+      const ms = (milestones ?? []).filter((m) => m.challenge_id === c.id);
+      return {
+        id: c.id,
+        title: c.title,
+        slug: c.slug,
+        edition: c.edition,
+        is_active: c.is_active,
+        milestone_count: ms.length,
+        has_historical_event_count: ms.filter((m) => m.historical_event).length,
+        has_audio_count: ms.filter((m) => m.audio_url).length,
+        has_stamp_image_count: ms.filter((m) => stampMilestoneIds.has(m.id)).length,
+      };
+    });
+
+    setReadiness(rows);
+    setReadinessLoading(false);
+  };
 
   // ── run validation ─────────────────────────────────────────────────────────
   const runValidation = async () => {
