@@ -649,33 +649,6 @@ const ChallengeRoute = () => {
             />
           </div>
 
-          {/* Log Miles / Steps Section */}
-          <div className="mt-8">
-            <Tabs defaultValue="miles" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="miles">Log Miles</TabsTrigger>
-                <TabsTrigger value="steps">Log Steps</TabsTrigger>
-              </TabsList>
-              <TabsContent value="miles">
-                <MileLogger 
-                  challengeId={challenge.id} 
-                  challengeSlug={slug}
-                  challengeName={challenge.name}
-                  challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
-                  onMaybeLater={() => setShowReEngagementBanner(true)}
-                />
-              </TabsContent>
-              <TabsContent value="steps">
-                <StepLogger
-                  challengeId={challenge.id}
-                  challengeSlug={slug}
-                  challengeName={challenge.name}
-                  challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
-                />
-              </TabsContent>
-            </Tabs>
-          </div>
-
           {/* Action Buttons */}
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to={`/challenge/${slug}/passport`}>
