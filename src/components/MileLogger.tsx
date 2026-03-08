@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,11 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [pendingMiles, setPendingMiles] = useState<number | null>(null);
   const [pendingNotes, setPendingNotes] = useState<string>("");
+
+  // Latch: once the user was in the free-mile window, stay showing the logger
+  // until the stamp modal is dismissed (prevents flipping to "Enrollment Required")
+  const wasInFreeWindowRef = useRef(false);
+  const [stampModalDismissed, setStampModalDismissed] = useState(false);
 
   // First-mile gate modal state
   const [gateModal, setGateModal] = useState<{
