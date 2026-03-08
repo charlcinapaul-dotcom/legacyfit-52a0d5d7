@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,11 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [pendingMiles, setPendingMiles] = useState<number | null>(null);
   const [pendingNotes, setPendingNotes] = useState<string>("");
+
+  // Latch: once the user was in the free-mile window, stay showing the logger
+  // until the stamp modal is dismissed (prevents flipping to "Enrollment Required")
+  const wasInFreeWindowRef = useRef(false);
+  const [stampModalDismissed, setStampModalDismissed] = useState(false);
 
   // First-mile gate modal state
   const [gateModal, setGateModal] = useState<{
@@ -156,7 +161,14 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
 
   // Not enrolled (paid) — but allow free first-mile preview (totalMiles === 0)
   const hasPendingPayment = enrollment?.status === "pending";
-  const isFirstMileFreeWindow = !enrollment?.isEnrolled && !hasPendingPayment && totalMiles === 0;
+  const isFirstMileFreeWindowNow = !enrollment?.isEnrolled && !hasPendingPayment && totalMiles === 0;
+
+  // Latch: if we were in free-window when the user clicked log, stay in logger
+  // view until the stamp modal is fully dismissed (prevents premature flip to "Enrollment Required")
+  if (isFirstMileFreeWindowNow) {
+    wasInFreeWindowRef.current = true;
+  }
+  const isFirstMileFreeWindow = isFirstMileFreeWindowNow || (wasInFreeWindowRef.current && !stampModalDismissed);
 
   if (!enrollment?.isEnrolled && !isFirstMileFreeWindow) {
     return (
@@ -321,7 +333,10 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
       {/* Stamp unlock modal */}
       <StampUnlockModal
         stamps={newlyUnlockedStamps}
-        onClose={clearUnlockedStamps}
+        onClose={() => {
+          clearUnlockedStamps();
+          setStampModalDismissed(true);
+        }}
         challengeSlug={challengeSlug}
         isEnrolled={enrollment?.isEnrolled ?? true}
         onContinueToPurchase={(stamp) => {
