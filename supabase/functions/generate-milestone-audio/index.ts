@@ -31,7 +31,7 @@ serve(async (req: Request): Promise<Response> => {
     // Fetch milestone
     const { data: milestone, error: fetchError } = await supabase
       .from("milestones")
-      .select("id, title, stamp_copy, audio_url, challenge_id")
+      .select("id, title, historical_event, audio_url, challenge_id")
       .eq("id", milestoneId)
       .single();
 
@@ -46,7 +46,7 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const textToSpeak = milestone.stamp_copy || milestone.title;
+    const textToSpeak = milestone.historical_event || milestone.title;
     if (!textToSpeak) {
       throw new Error("No text available for TTS");
     }

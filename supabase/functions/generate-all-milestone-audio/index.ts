@@ -62,7 +62,7 @@ serve(async (req: Request): Promise<Response> => {
     // Fetch milestones without audio
     const { data: milestones, error } = await supabase
       .from("milestones")
-      .select("id, title, stamp_copy, challenge_id")
+      .select("id, title, historical_event, challenge_id")
       .is("audio_url", null)
       .order("challenge_id")
       .order("order_index")
@@ -90,7 +90,7 @@ serve(async (req: Request): Promise<Response> => {
 
     for (const milestone of milestones) {
       try {
-        const textToSpeak = milestone.stamp_copy || milestone.title;
+        const textToSpeak = milestone.historical_event || milestone.title;
         if (!textToSpeak) {
           results.push({ id: milestone.id, title: milestone.title, success: false, error: "No text" });
           continue;
