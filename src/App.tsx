@@ -59,6 +59,7 @@ const App = () => (
             <Route path="/contact" element={<Contact />} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/free-walk" element={<FreeWalk />} />
+            <Route path="/admin/validate" element={<AdminValidate />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
