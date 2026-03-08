@@ -206,11 +206,6 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
             <Footprints className="w-5 h-5 text-primary" />
             Log Miles
           </CardTitle>
-          {isFirstMileFreeWindow && (
-            <div className="mt-1 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary font-medium">
-              🎯 Try your first mile free — log 1 mile to unlock a preview stamp, then choose your journey.
-            </div>
-          )}
           {!isFirstMileFreeWindow && (
             <>
               <p className="text-sm text-muted-foreground">
@@ -229,11 +224,11 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
             {(isFirstMileFreeWindow ? [1] : QUICK_MILES).map((quickMiles) => (
               <Button
                 key={quickMiles}
-                variant="outline"
+                variant={isFirstMileFreeWindow ? "default" : "outline"}
                 size="sm"
                 onClick={() => handleQuickLog(quickMiles)}
                 disabled={isLogging || isRateLimited || quickMiles > dailyRemaining}
-                className="h-12 text-lg font-bold hover:bg-primary hover:text-primary-foreground transition-colors"
+                className={isFirstMileFreeWindow ? "h-12 text-base font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors" : "h-12 text-lg font-bold hover:bg-primary hover:text-primary-foreground transition-colors"}
               >
                 {isLogging ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
