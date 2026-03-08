@@ -23,6 +23,7 @@ const Contact = lazy(() => import("./pages/Contact"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const FreeWalk = lazy(() => import("./pages/FreeWalk"));
+const AdminValidate = lazy(() => import("./pages/AdminValidate"));
 
 const queryClient = new QueryClient();
 
