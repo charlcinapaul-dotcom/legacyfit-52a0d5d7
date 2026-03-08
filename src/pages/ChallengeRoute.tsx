@@ -368,6 +368,33 @@ const ChallengeRoute = () => {
             </div>
           </div>
 
+          {/* Log Miles / Steps Section */}
+          <div className="mt-8">
+            <Tabs defaultValue="miles" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="miles">Log Miles</TabsTrigger>
+                <TabsTrigger value="steps">Log Steps</TabsTrigger>
+              </TabsList>
+              <TabsContent value="miles">
+                <MileLogger 
+                  challengeId={challenge.id} 
+                  challengeSlug={slug}
+                  challengeName={challenge.name}
+                  challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
+                  onMaybeLater={() => setShowReEngagementBanner(true)}
+                />
+              </TabsContent>
+              <TabsContent value="steps">
+                <StepLogger
+                  challengeId={challenge.id}
+                  challengeSlug={slug}
+                  challengeName={challenge.name}
+                  challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
+                />
+              </TabsContent>
+            </Tabs>
+          </div>
+
           {/* Re-engagement banner — shown after user taps "Maybe Later" on purchase screen */}
           {showReEngagementBanner && !enrollment?.isEnrolled && (
             <div className="relative flex items-start gap-3 bg-primary/10 border border-primary/25 rounded-xl px-4 py-3 mb-8 text-sm">
@@ -620,33 +647,6 @@ const ChallengeRoute = () => {
               variant="compact" 
               showLivingPersonNote={slug === "malala"}
             />
-          </div>
-
-          {/* Log Miles / Steps Section */}
-          <div className="mt-8">
-            <Tabs defaultValue="miles" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="miles">Log Miles</TabsTrigger>
-                <TabsTrigger value="steps">Log Steps</TabsTrigger>
-              </TabsList>
-              <TabsContent value="miles">
-                <MileLogger 
-                  challengeId={challenge.id} 
-                  challengeSlug={slug}
-                  challengeName={challenge.name}
-                  challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
-                  onMaybeLater={() => setShowReEngagementBanner(true)}
-                />
-              </TabsContent>
-              <TabsContent value="steps">
-                <StepLogger
-                  challengeId={challenge.id}
-                  challengeSlug={slug}
-                  challengeName={challenge.name}
-                  challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
-                />
-              </TabsContent>
-            </Tabs>
           </div>
 
           {/* Action Buttons */}

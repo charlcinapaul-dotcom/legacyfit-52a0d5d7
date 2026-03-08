@@ -238,7 +238,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
                 {isLogging ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  isFirstMileFreeWindow ? "Log 1 Free Mile" : `+${quickMiles}`
+                  isFirstMileFreeWindow ? "Start Your Free 1 Mile Legacy Passport" : `+${quickMiles}`
                 )}
               </Button>
             ))}
