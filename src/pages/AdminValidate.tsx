@@ -12,6 +12,7 @@ import {
   Footprints,
   LogOut,
   ClipboardList,
+  ImagePlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
