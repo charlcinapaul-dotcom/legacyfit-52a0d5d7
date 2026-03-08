@@ -57,10 +57,10 @@ const Challenges = () => {
 
   // Section groupings
   const womensHistory = active.filter(
-    (c) => c.slug !== "pride" && !c.edition.toLowerCase().includes("first black pioneers")
+    (c) => c.slug !== "pride" && !c.edition.toLowerCase().includes("first steps: black pioneers")
   );
   const pride = active.filter((c) => c.slug === "pride");
-  const pioneers = active.filter((c) => c.edition.toLowerCase().includes("first black pioneers"));
+  const pioneers = active.filter((c) => c.edition.toLowerCase().includes("first steps: black pioneers"));
 
   // ── Card components ──────────────────────────────────────────────
 
@@ -242,7 +242,7 @@ const Challenges = () => {
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     backgroundClip: "text",
-                  }}>First Black Pioneers Edition</span>
+                  }}>First Steps: Black Pioneers Edition</span>
                 </h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   {pioneers.map((c) => (
