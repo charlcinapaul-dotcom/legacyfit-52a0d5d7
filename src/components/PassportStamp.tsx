@@ -26,7 +26,7 @@ export function PassportStamp({ stamp, onClick }: PassportStampProps) {
         <>
           {/* Unlocked stamp */}
           {stamp.stamp_image_url ? (
-            <div className="relative w-full h-full flex items-center justify-center">
+              <div className="relative w-full h-full flex items-center justify-center bg-[#F5EDD8] rounded-lg">
               <img
                 src={stamp.stamp_image_url}
                 alt={displayTitle}
