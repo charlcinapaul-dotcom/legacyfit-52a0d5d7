@@ -54,7 +54,6 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [userChallenges, setUserChallenges] = useState<UserChallenge[]>([]);
   const [loading, setLoading] = useState(true);
-  const [freeWalkHistory, setFreeWalkHistory] = useState<FreeWalkEntry[]>([]);
   const [milestoneCount, setMilestoneCount] = useState(0);
   const [stampCount, setStampCount] = useState(0);
   const [certOpen, setCertOpen] = useState(false);
