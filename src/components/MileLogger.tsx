@@ -7,10 +7,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Footprints, Loader2, LogIn, ShieldAlert } from "lucide-react";
 import { useMileLogging } from "@/hooks/useMileLogging";
+import type { UnlockedStamp } from "@/hooks/useMileLogging";
 import { useEnrollmentStatus } from "@/hooks/useEnrollmentStatus";
 import { useDailyMilesLogged } from "@/hooks/useDailyMilesLogged";
 import { useRateLimitCountdown } from "@/hooks/useRateLimitCountdown";
 import { StampUnlockModal } from "./StampUnlockModal";
+import { FirstMileGateModal } from "./FirstMileGateModal";
 import { MileLogConfirmDialog } from "./MileLogConfirmDialog";
 import { RateLimitBanner } from "./RateLimitBanner";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,18 +23,26 @@ interface MileLoggerProps {
   challengeSlug?: string;
   challengeName?: string;
   totalMilestones?: number;
+  challengeEditionColor?: "gold" | "burgundy" | "pride";
   onChallengeCompleted?: (data: { name: string; miles: number; imageUrl: string | null }) => void;
 }
 
 const QUICK_MILES = [1, 3, 5, 7];
 
-export function MileLogger({ challengeId, challengeSlug, challengeName, totalMilestones = 6, onChallengeCompleted }: MileLoggerProps) {
+export function MileLogger({ challengeId, challengeSlug, challengeName, totalMilestones = 6, challengeEditionColor = "gold", onChallengeCompleted }: MileLoggerProps) {
   const [miles, setMiles] = useState<number>(1);
   const [notes, setNotes] = useState("");
   const [showCustom, setShowCustom] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [pendingMiles, setPendingMiles] = useState<number | null>(null);
   const [pendingNotes, setPendingNotes] = useState<string>("");
+
+  // First-mile gate modal state
+  const [gateModal, setGateModal] = useState<{
+    open: boolean;
+    screen: "share" | "purchase";
+    stamp: UnlockedStamp | null;
+  }>({ open: false, screen: "purchase", stamp: null });
 
   const {
     totalMiles,
@@ -298,6 +308,28 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
         stamps={newlyUnlockedStamps}
         onClose={clearUnlockedStamps}
         challengeSlug={challengeSlug}
+        isEnrolled={enrollment?.isEnrolled ?? true}
+        onContinueToPurchase={(stamp) => {
+          clearUnlockedStamps();
+          setGateModal({ open: true, screen: "purchase", stamp });
+        }}
+        onShareAchievement={(stamp) => {
+          clearUnlockedStamps();
+          setGateModal({ open: true, screen: "share", stamp });
+        }}
+      />
+
+      {/* First-mile gate modal (Share → Purchase flow) */}
+      <FirstMileGateModal
+        open={gateModal.open}
+        initialScreen={gateModal.screen}
+        challengeName={challengeName || ""}
+        challengeId={challengeId}
+        challengeSlug={challengeSlug}
+        editionColor={challengeEditionColor}
+        stampTitle={gateModal.stamp?.stampTitle}
+        milesRequired={gateModal.stamp?.milesRequired}
+        onClose={() => setGateModal((prev) => ({ ...prev, open: false }))}
       />
     </>
   );

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { MapPin, Share2, Volume2, VolumeX } from "lucide-react";
+import { MapPin, Share2, Volume2, VolumeX, ArrowRight } from "lucide-react";
 import type { UnlockedStamp } from "@/hooks/useMileLogging";
 
 interface StampUnlockModalProps {
@@ -10,6 +10,12 @@ interface StampUnlockModalProps {
   challengeSlug?: string;
   /** 0-based order index of the first newly unlocked milestone within the challenge */
   milestoneStartIndex?: number;
+  /** Whether the user has already paid for this challenge */
+  isEnrolled?: boolean;
+  /** Called when user taps "Continue Challenge" on the first-mile stamp (unenrolled path) */
+  onContinueToPurchase?: (stamp: UnlockedStamp) => void;
+  /** Called when user taps "Share Achievement" on the first-mile stamp (unenrolled path) */
+  onShareAchievement?: (stamp: UnlockedStamp) => void;
 }
 
 export function StampUnlockModal({
@@ -17,6 +23,9 @@ export function StampUnlockModal({
   onClose,
   challengeSlug,
   milestoneStartIndex = 0,
+  isEnrolled = true,
+  onContinueToPurchase,
+  onShareAchievement,
 }: StampUnlockModalProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -214,23 +223,61 @@ export function StampUnlockModal({
           )}
 
           {/* Actions */}
-          <div className="flex gap-3 w-full">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleShare}
-              className="flex-1 border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
-            </Button>
-            <Button
-              onClick={handleNext}
-              className="flex-1 bg-amber-500 text-amber-950 hover:bg-amber-400"
-            >
-              {hasMore ? `Next (${stamps.length - currentIndex - 1} more)` : "Continue"}
-            </Button>
-          </div>
+          {(() => {
+            // First-mile gate: only on last stamp of this batch when user is unenrolled
+            const isFirstMileGate =
+              !isEnrolled &&
+              !hasMore &&
+              currentStamp.milesRequired === 1;
+
+            if (isFirstMileGate) {
+              return (
+                <div className="flex flex-col gap-3 w-full pt-2">
+                  <Button
+                    onClick={() => {
+                      if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ""; }
+                      onContinueToPurchase?.(currentStamp);
+                    }}
+                    className="w-full bg-amber-500 text-amber-950 hover:bg-amber-400 font-semibold"
+                  >
+                    <ArrowRight className="w-4 h-4 mr-2" />
+                    Continue Challenge
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ""; }
+                      onShareAchievement?.(currentStamp);
+                    }}
+                    className="w-full border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
+                  >
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Share Achievement
+                  </Button>
+                </div>
+              );
+            }
+
+            return (
+              <div className="flex gap-3 w-full">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleShare}
+                  className="flex-1 border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
+                >
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Share
+                </Button>
+                <Button
+                  onClick={handleNext}
+                  className="flex-1 bg-amber-500 text-amber-950 hover:bg-amber-400"
+                >
+                  {hasMore ? `Next (${stamps.length - currentIndex - 1} more)` : "Continue"}
+                </Button>
+              </div>
+            );
+          })()}
 
           {/* Progress indicator */}
           {stamps.length > 1 && (
