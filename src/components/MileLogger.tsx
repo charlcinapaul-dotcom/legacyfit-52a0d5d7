@@ -308,6 +308,28 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
         stamps={newlyUnlockedStamps}
         onClose={clearUnlockedStamps}
         challengeSlug={challengeSlug}
+        isEnrolled={enrollment?.isEnrolled ?? true}
+        onContinueToPurchase={(stamp) => {
+          clearUnlockedStamps();
+          setGateModal({ open: true, screen: "purchase", stamp });
+        }}
+        onShareAchievement={(stamp) => {
+          clearUnlockedStamps();
+          setGateModal({ open: true, screen: "share", stamp });
+        }}
+      />
+
+      {/* First-mile gate modal (Share → Purchase flow) */}
+      <FirstMileGateModal
+        open={gateModal.open}
+        initialScreen={gateModal.screen}
+        challengeName={challengeName || ""}
+        challengeId={challengeId}
+        challengeSlug={challengeSlug}
+        editionColor={challengeEditionColor}
+        stampTitle={gateModal.stamp?.stampTitle}
+        milesRequired={gateModal.stamp?.milesRequired}
+        onClose={() => setGateModal((prev) => ({ ...prev, open: false }))}
       />
     </>
   );
