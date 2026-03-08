@@ -429,7 +429,7 @@ export default function AdminValidate() {
                       return (
                         <div
                           key={row.id}
-                          className={`grid grid-cols-[1fr_auto_auto_auto_auto_auto] items-center gap-3 px-4 py-3 text-sm ${
+                          className={`grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] items-center gap-3 px-4 py-3 text-sm ${
                             i < rows.length - 1 ? "border-b border-border" : ""
                           }`}
                         >
@@ -473,6 +473,23 @@ export default function AdminValidate() {
                           <div className="w-16 flex flex-col items-center gap-0.5">
                             <Dot ok={correctCount} />
                             <span className="text-[10px] text-muted-foreground">{row.milestone_count}/6</span>
+                          </div>
+
+                          {/* Stripe price ID — informational; checkout uses shared price IDs */}
+                          <div className="w-16 flex flex-col items-center gap-0.5">
+                            {row.stripe_price_id ? (
+                              <>
+                                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                <span className="text-[9px] text-muted-foreground font-mono truncate max-w-[60px]" title={row.stripe_price_id}>
+                                  {row.stripe_price_id.slice(-8)}
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                                <span className="text-[9px] text-muted-foreground">shared</span>
+                              </>
+                            )}
                           </div>
 
                           {/* Active status */}
