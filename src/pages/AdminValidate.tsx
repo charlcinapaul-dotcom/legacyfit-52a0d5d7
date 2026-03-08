@@ -14,6 +14,11 @@ import {
   ClipboardList,
   ImagePlus,
   Award,
+  LayoutDashboard,
+  Volume2,
+  FileText,
+  Stamp,
+  Radio,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
