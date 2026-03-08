@@ -89,6 +89,13 @@ function groupEntries(summary: Record<string, boolean>) {
 
 // ── component ────────────────────────────────────────────────────────────────
 
+interface ImageGenResult {
+  slug: string;
+  success: boolean;
+  url?: string;
+  error?: string;
+}
+
 export default function AdminValidate() {
   const navigate = useNavigate();
   const [challengeId, setChallengeId] = useState("");
@@ -99,6 +106,8 @@ export default function AdminValidate() {
   const [challenges, setChallenges] = useState<
     { id: string; title: string; slug: string | null; is_active: boolean | null }[]
   >([]);
+  const [imageGenLoading, setImageGenLoading] = useState(false);
+  const [imageGenResults, setImageGenResults] = useState<ImageGenResult[] | null>(null);
 
   // ── auth gate ──────────────────────────────────────────────────────────────
   useEffect(() => {
