@@ -2,8 +2,10 @@ import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, Loader2, AlertCircle } from "lucide-react";
-// supabase client still used below for challenge slug lookup
 import { Button } from "@/components/ui/button";
+
+const VERIFY_URL = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/verify-payment`;
+const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
@@ -20,17 +22,43 @@ const PaymentSuccess = () => {
       }
 
       try {
-        const res = await fetch("https://mpnhugdjsechtkugnjqz.supabase.co/functions/v1/verify-payment", {
+        // Get the user's live session token — this is what verify-payment needs
+        const { data: { session } } = await supabase.auth.getSession();
+        const accessToken = session?.access_token;
+
+        if (!accessToken) {
+          // Session expired or user not logged in — webhook will have handled it server-side.
+          // Still show success if we can confirm via DB directly.
+          if (challengeId) {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+              const { data: enrollment } = await supabase
+                .from("user_challenges")
+                .select("payment_status")
+                .eq("user_id", user.id)
+                .eq("challenge_id", challengeId)
+                .maybeSingle();
+              if (enrollment?.payment_status === "paid") {
+                await fetchSlug(challengeId);
+                setStatus("success");
+                return;
+              }
+            }
+          }
+          setStatus("error");
+          return;
+        }
+
+        const res = await fetch(VERIFY_URL, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            apikey:
-              "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wbmh1Z2Rqc2VjaHRrdWduanF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0NjQzNTEsImV4cCI6MjA4NzA0MDM1MX0.FfpndJLq1MMHPx88ypdCgYQxuFTBAeECM3VkEL48GjU",
-            Authorization:
-              "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wbmh1Z2Rqc2VjaHRrdWduanF6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE0NjQzNTEsImV4cCI6MjA4NzA0MDM1MX0.FfpndJLq1MMHPx88ypdCgYQxuFTBAeECM3VkEL48GjU",
+            "apikey": ANON_KEY,
+            "Authorization": `Bearer ${accessToken}`,
           },
           body: JSON.stringify({ sessionId }),
         });
+
         const data = await res.json();
 
         if (!res.ok || !data?.success) {
@@ -38,20 +66,20 @@ const PaymentSuccess = () => {
           return;
         }
 
-        // Fetch challenge slug for navigation
-        if (challengeId) {
-          const { data: challenge } = await supabase
-            .from("challenges")
-            .select("slug")
-            .eq("id", challengeId)
-            .maybeSingle();
-          if (challenge?.slug) setChallengeSlug(challenge.slug);
-        }
-
+        if (challengeId) await fetchSlug(challengeId);
         setStatus("success");
       } catch {
         setStatus("error");
       }
+    };
+
+    const fetchSlug = async (id: string) => {
+      const { data: challenge } = await supabase
+        .from("challenges")
+        .select("slug")
+        .eq("id", id)
+        .maybeSingle();
+      if (challenge?.slug) setChallengeSlug(challenge.slug);
     };
 
     verify();
