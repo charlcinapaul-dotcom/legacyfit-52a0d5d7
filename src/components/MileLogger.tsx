@@ -360,7 +360,10 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
         editionColor={challengeEditionColor}
         stampTitle={gateModal.stamp?.stampTitle}
         milesRequired={gateModal.stamp?.milesRequired}
-        onClose={() => setGateModal((prev) => ({ ...prev, open: false }))}
+        onClose={() => {
+          setGateModal((prev) => ({ ...prev, open: false }));
+          onMaybeLater?.();
+        }}
       />
     </>
   );
