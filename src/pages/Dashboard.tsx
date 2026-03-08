@@ -61,13 +61,6 @@ const Dashboard = () => {
   const [certGenerating, setCertGenerating] = useState(false);
   const { data: activeChallenge } = useActiveChallenge();
 
-  // Load free walk history from localStorage
-  useEffect(() => {
-    const raw = localStorage.getItem(FREE_WALK_HISTORY_KEY);
-    if (raw) {
-      try { setFreeWalkHistory(JSON.parse(raw)); } catch { /* ignore */ }
-    }
-  }, []);
 
   useEffect(() => {
     // Set up auth state listener first
