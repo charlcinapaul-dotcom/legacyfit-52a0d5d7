@@ -1,24 +1,28 @@
 
-## What Needs to Change
+## Root Cause
 
-**One database record** — update Charles Drew's `edition` field from `Women's History` to `First Steps: Black Pioneers`.
+The `create-checkout` edge function is working correctly and returning a valid Stripe URL every time. The network logs confirm `200` responses with valid `checkout.stripe.com` URLs.
 
-The existing filter logic in `Challenges.tsx` already handles this correctly:
-- `womensHistory` = active challenges that are NOT `slug === "pride"` AND NOT `edition.includes("first steps: black pioneers")`
-- `pioneers` = active challenges where `edition.includes("first steps: black pioneers")`
-
-So once the DB field is updated, Charles Drew will automatically move from the Women's History section to the First Steps: Black Pioneers section on the `/challenges` page — no code changes needed.
-
-## Change
-
-**Database update (data operation — insert tool):**
-```sql
-UPDATE challenges
-SET edition = 'First Steps: Black Pioneers'
-WHERE slug = 'charles-drew';
+The bug is in `ChallengePricing.tsx` line 117:
+```ts
+window.open(data.url, "_blank");  // ← BLOCKED by popup blocker
 ```
 
-Confirmed current value: `Women's History`  
-Target value: `First Steps: Black Pioneers` (matches exact string used by all other Black Pioneers challenges)
+`window.open()` to a new tab is blocked by browsers when called after an `await` inside an async function, because the browser no longer considers it a direct user gesture. The user's click event context is lost during the async `supabase.functions.invoke()` call.
 
-No code changes. No migration. No other fields touched.
+## Fix
+
+Change line 117 in `src/components/ChallengePricing.tsx`:
+```ts
+// FROM:
+window.open(data.url, "_blank");
+
+// TO:
+window.location.href = data.url;
+```
+
+This navigates the current tab to Stripe Checkout, which always works regardless of popup blockers. After payment, Stripe redirects back to `/payment-success?session_id=...` as configured in the edge function.
+
+## Files to Change
+
+- `src/components/ChallengePricing.tsx` — line 117 only
