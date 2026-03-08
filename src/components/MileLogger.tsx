@@ -224,11 +224,11 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
             {(isFirstMileFreeWindow ? [1] : QUICK_MILES).map((quickMiles) => (
               <Button
                 key={quickMiles}
-                variant="outline"
+                variant={isFirstMileFreeWindow ? "default" : "outline"}
                 size="sm"
                 onClick={() => handleQuickLog(quickMiles)}
                 disabled={isLogging || isRateLimited || quickMiles > dailyRemaining}
-                className="h-12 text-lg font-bold hover:bg-primary hover:text-primary-foreground transition-colors"
+                className={isFirstMileFreeWindow ? "h-12 text-base font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors" : "h-12 text-lg font-bold hover:bg-primary hover:text-primary-foreground transition-colors"}
               >
                 {isLogging ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
