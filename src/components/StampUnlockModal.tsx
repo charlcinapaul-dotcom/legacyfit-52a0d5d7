@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { MapPin, Share2, Volume2, VolumeX } from "lucide-react";
+import { MapPin, Share2, Volume2, VolumeX, ArrowRight } from "lucide-react";
 import type { UnlockedStamp } from "@/hooks/useMileLogging";
 
 interface StampUnlockModalProps {
@@ -10,6 +10,12 @@ interface StampUnlockModalProps {
   challengeSlug?: string;
   /** 0-based order index of the first newly unlocked milestone within the challenge */
   milestoneStartIndex?: number;
+  /** Whether the user has already paid for this challenge */
+  isEnrolled?: boolean;
+  /** Called when user taps "Continue Challenge" on the first-mile stamp (unenrolled path) */
+  onContinueToPurchase?: (stamp: UnlockedStamp) => void;
+  /** Called when user taps "Share Achievement" on the first-mile stamp (unenrolled path) */
+  onShareAchievement?: (stamp: UnlockedStamp) => void;
 }
 
 export function StampUnlockModal({
