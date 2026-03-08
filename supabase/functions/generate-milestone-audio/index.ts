@@ -31,7 +31,7 @@ serve(async (req: Request): Promise<Response> => {
     // Fetch milestone
     const { data: milestone, error: fetchError } = await supabase
       .from("milestones")
-      .select("id, title, stamp_copy, audio_url, challenge_id")
+      .select("id, title, historical_event, audio_url, challenge_id")
       .eq("id", milestoneId)
       .single();
 

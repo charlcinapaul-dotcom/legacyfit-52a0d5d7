@@ -62,7 +62,7 @@ serve(async (req: Request): Promise<Response> => {
     // Fetch milestones without audio
     const { data: milestones, error } = await supabase
       .from("milestones")
-      .select("id, title, stamp_copy, challenge_id")
+      .select("id, title, historical_event, challenge_id")
       .is("audio_url", null)
       .order("challenge_id")
       .order("order_index")
