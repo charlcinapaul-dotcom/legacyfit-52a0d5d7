@@ -109,6 +109,8 @@ export default function AdminValidate() {
   >([]);
   const [imageGenLoading, setImageGenLoading] = useState(false);
   const [imageGenResults, setImageGenResults] = useState<ImageGenResult[] | null>(null);
+  const [stampGenLoading, setStampGenLoading] = useState(false);
+  const [stampGenResults, setStampGenResults] = useState<ImageGenResult[] | null>(null);
 
   // ── auth gate ──────────────────────────────────────────────────────────────
   useEffect(() => {
