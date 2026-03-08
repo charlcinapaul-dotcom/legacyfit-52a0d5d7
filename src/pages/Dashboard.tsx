@@ -78,7 +78,6 @@ const Dashboard = () => {
           fetchProfile(session.user.id);
           fetchUserChallenges(session.user.id);
           fetchCounts(session.user.id);
-          savePendingFreeWalk(session.user.id);
         }, 0);
       }
     });
@@ -99,37 +98,6 @@ const Dashboard = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
-
-  // Save a pending free walk result if the user just signed up / logged in from CompleteScreen
-  const savePendingFreeWalk = async (userId: string) => {
-    const raw = localStorage.getItem(FREE_WALK_PENDING_KEY);
-    if (!raw) return;
-    try {
-      const { miles, time, calories } = JSON.parse(raw) as { miles: number; time: string; calories: number };
-      // Increment total_miles on the profile
-      const { data: prof } = await supabase
-        .from("profiles")
-        .select("total_miles")
-        .eq("user_id", userId)
-        .single();
-      const current = prof?.total_miles ?? 0;
-      await supabase
-        .from("profiles")
-        .update({ total_miles: current + miles })
-        .eq("user_id", userId);
-      // Save to history
-      const histRaw = localStorage.getItem(FREE_WALK_HISTORY_KEY);
-      const hist: FreeWalkEntry[] = histRaw ? JSON.parse(histRaw) : [];
-      const entry: FreeWalkEntry = { miles, time, calories, completedAt: new Date().toISOString() };
-      const updated = [entry, ...hist].slice(0, 10);
-      localStorage.setItem(FREE_WALK_HISTORY_KEY, JSON.stringify(updated));
-      setFreeWalkHistory(updated);
-      localStorage.removeItem(FREE_WALK_PENDING_KEY);
-      toast.success(`🏅 Free walk saved! +${miles} miles added to your profile.`);
-    } catch (e) {
-      console.error("Failed to save free walk:", e);
-    }
-  };
 
   const fetchProfile = async (userId: string) => {
     try {
