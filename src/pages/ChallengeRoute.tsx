@@ -601,6 +601,7 @@ const ChallengeRoute = () => {
                   challengeId={challenge.id} 
                   challengeSlug={slug}
                   challengeName={challenge.name}
+                  challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
                 />
               </TabsContent>
               <TabsContent value="steps">
