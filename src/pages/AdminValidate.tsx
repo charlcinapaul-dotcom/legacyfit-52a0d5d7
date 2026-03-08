@@ -911,27 +911,42 @@ export default function AdminValidate() {
             <h2 className="text-xl font-bold text-foreground">Generate Passport Stamps</h2>
           </div>
           <p className="text-muted-foreground text-sm leading-relaxed mb-1">
-            Generates AI vintage circular passport stamps for all 13 Black Pioneers challenge milestones
-            that are currently missing one. Each stamp features a double outer ring, wheat/laurel wreath,
-            bold name, location subtitle, mileage banner, and worn vintage ink look.
+            Generates AI vintage parchment passport stamps for all 13 Black Pioneers challenge milestones.
+            Each stamp is unique: pioneer name, mileage banner, and historical location — navy/burgundy distressed ink on aged parchment (#F5EDD8).
           </p>
           <p className="text-muted-foreground text-xs mb-5">
             Runs in batches of 10 — click multiple times to complete all 78 milestones.
-            Already-stamped milestones are skipped automatically.
+            Already-stamped milestones are skipped. Use <strong>Reset</strong> first to force-regenerate with the new parchment style.
           </p>
 
-          <Button
-            onClick={generateStamps}
-            disabled={stampGenLoading}
-            className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
-          >
-            {stampGenLoading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Award className="w-4 h-4" />
-            )}
-            {stampGenLoading ? "Generating stamps…" : "Generate Missing Stamps (batch of 10)"}
-          </Button>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button
+              onClick={resetPioneersStamps}
+              disabled={resetStampsLoading || stampGenLoading}
+              variant="destructive"
+              className="gap-2"
+            >
+              {resetStampsLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <XCircle className="w-4 h-4" />
+              )}
+              {resetStampsLoading ? "Resetting…" : "Reset Pioneers Stamps"}
+            </Button>
+
+            <Button
+              onClick={generateStamps}
+              disabled={stampGenLoading || resetStampsLoading}
+              className="gap-2"
+            >
+              {stampGenLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Award className="w-4 h-4" />
+              )}
+              {stampGenLoading ? "Generating stamps…" : "Generate Missing Stamps (batch of 10)"}
+            </Button>
+          </div>
 
           {stampGenResults && (
             <div className="mt-6 bg-card border border-border rounded-lg overflow-hidden">
