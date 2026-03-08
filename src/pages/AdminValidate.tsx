@@ -171,7 +171,42 @@ export default function AdminValidate() {
     }
   };
 
-  // ── loading states ─────────────────────────────────────────────────────────
+  // ── generate challenge images ───────────────────────────────────────────────
+  const generateImages = async () => {
+    setImageGenLoading(true);
+    setImageGenResults(null);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const url = `https://${projectId}.supabase.co/functions/v1/generate-challenge-images`;
+
+      toast.info("Image generation started — this may take several minutes…");
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        toast.error(json.error ?? "Image generation failed.");
+        return;
+      }
+      setImageGenResults(json.results ?? []);
+      const successCount = (json.results ?? []).filter((r: ImageGenResult) => r.success).length;
+      toast.success(`Done! ${successCount} image(s) generated or already present.`);
+    } catch (e) {
+      toast.error("Failed to reach image generation function.");
+    } finally {
+      setImageGenLoading(false);
+    }
+  };
+
+
   if (authChecking) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
