@@ -270,6 +270,55 @@ export default function AdminValidate() {
     }
   };
 
+  const PIONEERS_SLUGS = [
+    "madam-cj-walker","charles-drew","mae-jemison","daniel-hale-williams",
+    "patricia-bath","harriet-pickens","benjamin-o-davis-sr","willa-brown",
+    "cornelius-coffey","jane-bolin","constance-baker-motley","garrett-morgan","matthew-henson",
+  ];
+
+  // ── reset Black Pioneers stamps (null out so they can be regenerated) ──────
+  const resetPioneersStamps = async () => {
+    setResetStampsLoading(true);
+    try {
+      // Get challenge IDs for the 13 Pioneers
+      const { data: chs, error: chErr } = await supabase
+        .from("challenges")
+        .select("id")
+        .in("slug", PIONEERS_SLUGS);
+      if (chErr || !chs?.length) { toast.error("Could not find Pioneer challenges."); return; }
+      const challengeIds = chs.map((c) => c.id);
+
+      // Get milestone IDs for those challenges
+      const { data: ms, error: msErr } = await supabase
+        .from("milestones")
+        .select("id")
+        .in("challenge_id", challengeIds);
+      if (msErr || !ms?.length) { toast.error("No milestones found."); return; }
+      const milestoneIds = ms.map((m) => m.id);
+
+      // 1. Null out stamp_image_url on milestones
+      const { error: updateErr } = await supabase
+        .from("milestones")
+        .update({ stamp_image_url: null })
+        .in("id", milestoneIds);
+      if (updateErr) { toast.error(`Milestone update failed: ${updateErr.message}`); return; }
+
+      // 2. Delete passport_stamp_images rows for these milestones
+      const { error: deleteErr } = await supabase
+        .from("passport_stamp_images")
+        .delete()
+        .in("milestone_id", milestoneIds);
+      if (deleteErr) { toast.error(`Stamp image delete failed: ${deleteErr.message}`); return; }
+
+      toast.success(`Reset ${milestoneIds.length} milestone stamps — ready to regenerate!`);
+      await loadReadiness();
+    } catch (e) {
+      toast.error("Reset failed.");
+    } finally {
+      setResetStampsLoading(false);
+    }
+  };
+
   // ── generate passport stamps ───────────────────────────────────────────────
   const generateStamps = async () => {
     setStampGenLoading(true);
