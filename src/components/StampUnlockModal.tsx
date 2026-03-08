@@ -223,23 +223,61 @@ export function StampUnlockModal({
           )}
 
           {/* Actions */}
-          <div className="flex gap-3 w-full">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleShare}
-              className="flex-1 border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
-            </Button>
-            <Button
-              onClick={handleNext}
-              className="flex-1 bg-amber-500 text-amber-950 hover:bg-amber-400"
-            >
-              {hasMore ? `Next (${stamps.length - currentIndex - 1} more)` : "Continue"}
-            </Button>
-          </div>
+          {(() => {
+            // First-mile gate: only on last stamp of this batch when user is unenrolled
+            const isFirstMileGate =
+              !isEnrolled &&
+              !hasMore &&
+              currentStamp.milesRequired === 1;
+
+            if (isFirstMileGate) {
+              return (
+                <div className="flex flex-col gap-3 w-full pt-2">
+                  <Button
+                    onClick={() => {
+                      if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ""; }
+                      onContinueToPurchase?.(currentStamp);
+                    }}
+                    className="w-full bg-amber-500 text-amber-950 hover:bg-amber-400 font-semibold"
+                  >
+                    <ArrowRight className="w-4 h-4 mr-2" />
+                    Continue Challenge
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ""; }
+                      onShareAchievement?.(currentStamp);
+                    }}
+                    className="w-full border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
+                  >
+                    <Share2 className="w-4 h-4 mr-2" />
+                    Share Achievement
+                  </Button>
+                </div>
+              );
+            }
+
+            return (
+              <div className="flex gap-3 w-full">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleShare}
+                  className="flex-1 border-amber-500/50 text-amber-400 hover:bg-amber-500/10"
+                >
+                  <Share2 className="w-4 h-4 mr-2" />
+                  Share
+                </Button>
+                <Button
+                  onClick={handleNext}
+                  className="flex-1 bg-amber-500 text-amber-950 hover:bg-amber-400"
+                >
+                  {hasMore ? `Next (${stamps.length - currentIndex - 1} more)` : "Continue"}
+                </Button>
+              </div>
+            );
+          })()}
 
           {/* Progress indicator */}
           {stamps.length > 1 && (
