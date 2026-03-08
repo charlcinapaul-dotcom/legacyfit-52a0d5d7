@@ -91,7 +91,7 @@ export function PassportStamp({ stamp, onClick }: PassportStampProps) {
 
       {/* Location indicator for unlocked */}
       {stamp.isUnlocked && stamp.location_name && (
-        <div className="absolute bottom-2 left-2 right-2 text-[10px] text-amber-500/80 truncate">
+        <div className="absolute bottom-2 left-2 right-2 text-[10px] text-amber-300 truncate drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
           📍 {stamp.location_name}
         </div>
       )}
