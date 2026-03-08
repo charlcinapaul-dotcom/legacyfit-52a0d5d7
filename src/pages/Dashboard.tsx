@@ -450,50 +450,6 @@ const Dashboard = () => {
           )}
         </div>
 
-        {/* Free Walk Activity */}
-        {freeWalkHistory.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-foreground">Free Walk Activity</h2>
-              <Button variant="ghost" className="text-primary text-sm" onClick={() => navigate("/free-walk")}>
-                Walk Again
-              </Button>
-            </div>
-            <div className="grid gap-3">
-              {freeWalkHistory.map((entry, i) => (
-                <Card key={i} className="bg-card border-border">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <PersonStanding className="w-5 h-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-foreground text-sm">Free Walk — Walk With Queens</p>
-                        <p className="text-xs text-muted-foreground">
-                          {new Date(entry.completedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-4 text-right flex-shrink-0">
-                        <div className="flex items-center gap-1.5 text-primary">
-                          <MapPin className="w-3.5 h-3.5" />
-                          <span className="text-sm font-bold">{entry.miles} mi</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 text-muted-foreground">
-                          <Timer className="w-3.5 h-3.5" />
-                          <span className="text-sm">{entry.time}</span>
-                        </div>
-                        <div className="hidden sm:flex items-center gap-1.5 text-muted-foreground">
-                          <Flame className="w-3.5 h-3.5" />
-                          <span className="text-sm">{entry.calories} cal</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Digital BIB */}
         {profile?.bib_number && (
