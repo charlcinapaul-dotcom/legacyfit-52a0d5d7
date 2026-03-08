@@ -150,13 +150,56 @@ Before setting `is_active = true`, confirm ALL of the following:
 
 ---
 
-## 10. Reference Files
+## 10. Challenge Passport Page — `/challenge/:slug/passport`
+
+Each challenge has a dedicated passport page at `/challenge/:slug/passport` with two tabs.
+
+### Tab 1 — Journey Stamps
+
+Displays a **responsive 2-column (mobile) / 3-column (desktop) grid** of the 6 challenge-specific stamps.
+
+- Data source: `usePassportStamps(challengeId)` — returns all 6 milestones for the challenge, each with an `isUnlocked` boolean computed by cross-referencing `user_passport_stamps`.
+- **Locked stamps**: rendered with `blur-sm opacity-80` via `PassportStamp` component — artwork is hidden until the milestone mile threshold is reached.
+- **Unlocked stamps**: rendered at full resolution and full opacity.
+- Clicking any stamp (locked or unlocked) opens a detail modal (`selectedStamp`) showing:
+  - Full stamp image (grayscale + 50% opacity if locked)
+  - `stamp_title`, `location_name`, `stamp_mileage_display`
+  - `stamp_copy` (italic quote)
+  - `historical_event` text
+  - Unlock date (unlocked stamps only)
+- Implementation lives in `src/pages/ChallengePassport.tsx` → `<TabsContent value="stamps">`.
+
+### Tab 2 — Passport Checkpoint
+
+Displays an ordered list of the 6 milestones as cards.
+
+- Unlocked milestones show a **"View on Map"** button linking to `https://www.google.com/maps/search/?api=1&query={lat},{lng}`.
+- Locked milestones show a lock icon and "Reach X mi" label.
+- Implementation lives in `src/pages/ChallengePassport.tsx` → `<TabsContent value="checkpoint">`.
+
+### Stamp Visual Design Standard
+
+All stamp images follow a vintage passport aesthetic:
+- **Shape**: Circular with double concentric outer ring
+- **Top arc**: Decorative wheat or laurel wreath
+- **Bottom edge**: `LEGACYFIT` brand mark
+- **Typography**: Bold serif all-caps name + location subtitle + rectangular mileage banner
+- **Ink style**: Worn/distressed aesthetic
+- **Colors**: Burgundy Red or Navy Blue (baked into PNG — not controlled by CSS)
+- **Generation**: AI via `google/gemini-3-pro-image-preview` → stored in `challenge-images` storage bucket at `stamps/` path → URL written to `milestones.stamp_image_url` and `passport_stamp_images` table
+
+---
+
+## 11. Reference Files
 
 | File | What it governs |
 |---|---|
 | `src/hooks/useMileLogging.ts` | Free first-mile gate, milestone unlock logic |
 | `src/pages/ChallengeRoute.tsx` | Edition color themes, challenge page layout |
+| `src/pages/ChallengePassport.tsx` | Challenge passport page, Journey Stamps + Checkpoint tabs |
 | `src/pages/Challenges.tsx` | Challenge list routing and section assignment |
+| `src/components/PassportStamp.tsx` | Stamp card component — blur/unlock rendering |
+| `src/hooks/usePassportStamps.ts` | Fetches challenge milestones with `isUnlocked` state |
 | `src/components/ChallengePricing.tsx` | Pricing tiers and Stripe checkout trigger |
 | `supabase/functions/create-checkout/index.ts` | Global Stripe price IDs |
 | `supabase/functions/generate-milestone-audio/index.ts` | ElevenLabs audio generation |
