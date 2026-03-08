@@ -1,27 +1,28 @@
 
-## Problem
-The "Start Your Free 1 Mile Legacy Passport" button text is overflowing the button bounds on mobile. It appears in three places in `MileLogger.tsx`:
-1. Line 150–152: Guest/unauthenticated user card
-2. Line 185–188: Non-enrolled user (post-auth, no free window) card
-3. Line 226/231: The logged-in free-window quick-log button
+## Root Cause
 
-All three use `h-12` (fixed height = 48px) with `text-base font-bold`, which forces the long text to clip or overflow when the button is narrow on mobile.
+The `create-checkout` edge function is working correctly and returning a valid Stripe URL every time. The network logs confirm `200` responses with valid `checkout.stripe.com` URLs.
+
+The bug is in `ChallengePricing.tsx` line 117:
+```ts
+window.open(data.url, "_blank");  // ← BLOCKED by popup blocker
+```
+
+`window.open()` to a new tab is blocked by browsers when called after an `await` inside an async function, because the browser no longer considers it a direct user gesture. The user's click event context is lost during the async `supabase.functions.invoke()` call.
 
 ## Fix
-Three targeted changes in `src/components/MileLogger.tsx`:
 
-1. **Lines 150–152** — add `whitespace-normal leading-tight py-3 h-auto` to replace `h-12`, allowing the text to wrap inside the button naturally:
-   ```
-   className="w-full py-3 h-auto text-sm font-bold leading-tight whitespace-normal bg-primary ..."
-   ```
+Change line 117 in `src/components/ChallengePricing.tsx`:
+```ts
+// FROM:
+window.open(data.url, "_blank");
 
-2. **Lines 185–188** — same fix.
+// TO:
+window.location.href = data.url;
+```
 
-3. **Lines 226/231** — the quick-log button in free-window mode: same `h-auto py-3 text-sm leading-tight whitespace-normal` treatment so the label wraps instead of overflowing.
+This navigates the current tab to Stripe Checkout, which always works regardless of popup blockers. After payment, Stripe redirects back to `/payment-success?session_id=...` as configured in the edge function.
 
-The key changes per button:
-- `h-12` → `h-auto`
-- `text-base` → `text-sm`
-- Add `py-3 leading-tight whitespace-normal`
+## Files to Change
 
-This keeps the button full-width and gold, but lets the label reflow to two lines cleanly without any text escaping the container.
+- `src/components/ChallengePricing.tsx` — line 117 only

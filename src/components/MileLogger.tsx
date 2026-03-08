@@ -147,7 +147,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
         </CardHeader>
         <CardContent>
           <Link to={`/auth?redirect=${encodeURIComponent(challengeSlug ? `/challenge/${challengeSlug}` : '/challenges')}`}>
-            <Button className="w-full h-12 text-base font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+            <Button className="w-full h-auto py-3 text-sm font-bold leading-tight whitespace-normal bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
               Start Your Free 1 Mile Legacy Passport
             </Button>
           </Link>
@@ -183,7 +183,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
             </p>
           ) : (
             <Link to={`/auth?redirect=${encodeURIComponent(challengeSlug ? `/challenge/${challengeSlug}` : '/challenges')}`}>
-              <Button className="w-full h-12 text-base font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+              <Button className="w-full h-auto py-3 text-sm font-bold leading-tight whitespace-normal bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
                 Start Your Free 1 Mile Legacy Passport
               </Button>
             </Link>
@@ -223,7 +223,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
                 size="sm"
                 onClick={() => handleQuickLog(quickMiles)}
                 disabled={isLogging || isRateLimited || quickMiles > dailyRemaining}
-                className={isFirstMileFreeWindow ? "h-12 text-base font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors" : "h-12 text-lg font-bold hover:bg-primary hover:text-primary-foreground transition-colors"}
+                className={isFirstMileFreeWindow ? "h-auto py-3 text-sm font-bold leading-tight whitespace-normal bg-primary text-primary-foreground hover:bg-primary/90 transition-colors" : "h-12 text-lg font-bold hover:bg-primary hover:text-primary-foreground transition-colors"}
               >
                 {isLogging ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
