@@ -149,7 +149,7 @@ const Challenges = () => {
 
       {/* Free Mile Strip */}
       <div className="w-full bg-primary py-5 px-4 text-center">
-        <p className="text-lg font-bold text-primary-foreground">🎫 Your first mile is always free — no credit card needed.</p>
+        <p className="text-lg font-bold text-primary-foreground">Your first mile is always free — no credit card needed.</p>
       </div>
 
       {/* Coming Soon Banner */}
