@@ -131,6 +131,7 @@ export default function AdminValidate() {
   const [imageGenResults, setImageGenResults] = useState<ImageGenResult[] | null>(null);
   const [stampGenLoading, setStampGenLoading] = useState(false);
   const [stampGenResults, setStampGenResults] = useState<ImageGenResult[] | null>(null);
+  const [resetStampsLoading, setResetStampsLoading] = useState(false);
   const [readiness, setReadiness] = useState<ReadinessRow[]>([]);
   const [readinessLoading, setReadinessLoading] = useState(false);
 
