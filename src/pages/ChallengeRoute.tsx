@@ -375,7 +375,10 @@ const ChallengeRoute = () => {
               <div className="flex-1">
                 <span className="font-semibold text-foreground">Your first mile is saved.</span>
                 <span className="text-muted-foreground ml-1">
-                  Unlock the full journey to keep earning stamps and complete {challenge.name}.
+                  Unlock the full journey to keep earning stamps and complete{" "}
+                  {challenge.name
+                    .replace(/\s+(equality|freedom|courage|legacy|justice|peace|hope|pride|strength|trail|walk|run|journey|challenge|mile)s?(\s+.*)?$/i, "")
+                    .trim()}'s challenge.
                 </span>
               </div>
               <button
