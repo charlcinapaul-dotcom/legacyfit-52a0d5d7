@@ -126,7 +126,25 @@ export default function ChallengePassport() {
               Passport Checkpoint
             </TabsTrigger>
           </TabsList>
-...
+
+          <TabsContent value="stamps">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {stamps.length === 0 ? (
+                <div className="col-span-full text-center py-12 text-muted-foreground">
+                  No stamps available yet.
+                </div>
+              ) : (
+                stamps.map((stamp) => (
+                  <PassportStamp
+                    key={stamp.id}
+                    stamp={stamp}
+                    onClick={() => setSelectedStamp(stamp)}
+                  />
+                ))
+              )}
+            </div>
+          </TabsContent>
+
           <TabsContent value="checkpoint">
             <div className="space-y-3">
               {stamps.length === 0 ? (
