@@ -84,36 +84,35 @@ serve(async (req) => {
       });
     }
 
-    if (existing) {
-      // Update existing pending enrollment
-      await supabaseAdmin
-        .from("user_challenges")
-        .update({
-          payment_status: "paid",
-          stripe_payment_id: session.payment_intent as string,
-        })
-        .eq("id", existing.id);
-    } else {
-      // Create new enrollment
-      await supabaseAdmin
-        .from("user_challenges")
-        .insert({
+    // Upsert enrollment — idempotent via unique(user_id, challenge_id)
+    const { error: upsertError } = await supabaseAdmin
+      .from("user_challenges")
+      .upsert(
+        {
           user_id: userId,
           challenge_id: challengeId,
           payment_status: "paid",
           stripe_payment_id: session.payment_intent as string,
-        });
+        },
+        { onConflict: "user_id,challenge_id" }
+      );
+
+    if (upsertError) {
+      throw new Error(`Failed to record enrollment: ${upsertError.message}`);
     }
 
-    // Record payment (ignore duplicate errors)
-    const { error: paymentError } = await supabaseAdmin.from("payments").insert({
-      user_id: userId,
-      challenge_id: challengeId,
-      amount_cents: session.amount_total || 2900,
-      status: "paid",
-      stripe_payment_id: session.payment_intent as string,
-      stripe_checkout_session_id: sessionId,
-    });
+    // Record payment — idempotent via unique(stripe_checkout_session_id)
+    const { error: paymentError } = await supabaseAdmin.from("payments").upsert(
+      {
+        user_id: userId,
+        challenge_id: challengeId,
+        amount_cents: session.amount_total || 1299,
+        status: "paid",
+        stripe_payment_id: session.payment_intent as string,
+        stripe_checkout_session_id: sessionId,
+      },
+      { onConflict: "stripe_checkout_session_id" }
+    );
 
     if (paymentError) {
       console.warn("Payment record insert warning:", paymentError.message);
