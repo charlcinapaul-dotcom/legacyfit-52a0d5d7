@@ -169,8 +169,8 @@ const Challenges = () => {
         </section>
       ) : (
         <>
-          {/* Free Walk */}
-          <section className="pb-10 px-4">
+          {/* Free Walk — hidden from users, preserved in codebase */}
+          {/* <section className="pb-10 px-4">
             <div className="container mx-auto max-w-5xl">
               <h2 className="text-2xl font-bold text-foreground mb-6">Free to Try</h2>
               <Link
@@ -192,7 +192,7 @@ const Challenges = () => {
                 <ChevronRight className="absolute bottom-6 right-6 w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
               </Link>
             </div>
-          </section>
+          </section> */}
 
           {/* Women's History Edition */}
           {womensHistory.length > 0 && (

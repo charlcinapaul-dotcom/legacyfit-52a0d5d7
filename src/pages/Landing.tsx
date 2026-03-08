@@ -56,11 +56,13 @@ const Landing = () => {
                 Start Your Journey <ChevronRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
+            {/* Free Walk CTA — hidden from users, preserved in codebase
             <Link to="/free-walk">
               <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10 text-lg px-8 py-6">
                 Start Your Free Walk
               </Button>
             </Link>
+            */}
             <Link to="/about">
               <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-secondary text-lg px-8 py-6">
                 Learn More
