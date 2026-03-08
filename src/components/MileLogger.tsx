@@ -135,7 +135,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
     );
   }
 
-  // Not authenticated
+  // Not authenticated — show the same free-mile CTA as unenrolled users
   if (!isAuthenticated) {
     return (
       <Card className="border-primary/20">
@@ -145,14 +145,10 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
             Log Miles
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-muted-foreground text-sm">
-            Sign in to start logging your miles and earning stamps.
-          </p>
+        <CardContent>
           <Link to="/auth">
-            <Button className="w-full">
-              <LogIn className="w-4 h-4 mr-2" />
-              Sign In to Log Miles
+            <Button className="w-full h-12 text-base font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+              Start Your Free 1 Mile Legacy Passport
             </Button>
           </Link>
         </CardContent>
