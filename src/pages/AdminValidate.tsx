@@ -91,7 +91,9 @@ function groupEntries(summary: Record<string, boolean>) {
 // ── component ────────────────────────────────────────────────────────────────
 
 interface ImageGenResult {
-  slug: string;
+  slug?: string;
+  milestoneId?: string;
+  title?: string;
   success: boolean;
   url?: string;
   error?: string;
