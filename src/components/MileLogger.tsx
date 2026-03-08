@@ -25,11 +25,12 @@ interface MileLoggerProps {
   totalMilestones?: number;
   challengeEditionColor?: "gold" | "burgundy" | "pride";
   onChallengeCompleted?: (data: { name: string; miles: number; imageUrl: string | null }) => void;
+  onMaybeLater?: () => void;
 }
 
 const QUICK_MILES = [1, 3, 5, 7];
 
-export function MileLogger({ challengeId, challengeSlug, challengeName, totalMilestones = 6, challengeEditionColor = "gold", onChallengeCompleted }: MileLoggerProps) {
+export function MileLogger({ challengeId, challengeSlug, challengeName, totalMilestones = 6, challengeEditionColor = "gold", onChallengeCompleted, onMaybeLater }: MileLoggerProps) {
   const [miles, setMiles] = useState<number>(1);
   const [notes, setNotes] = useState("");
   const [showCustom, setShowCustom] = useState(false);
@@ -359,7 +360,10 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
         editionColor={challengeEditionColor}
         stampTitle={gateModal.stamp?.stampTitle}
         milesRequired={gateModal.stamp?.milesRequired}
-        onClose={() => setGateModal((prev) => ({ ...prev, open: false }))}
+        onClose={() => {
+          setGateModal((prev) => ({ ...prev, open: false }));
+          onMaybeLater?.();
+        }}
       />
     </>
   );

@@ -3,7 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
-import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar, Volume2, VolumeX, RotateCcw, Wand2, Loader2 } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar, Volume2, VolumeX, RotateCcw, Wand2, Loader2, Sparkles, X } from "lucide-react";
+
 import { useMilestoneAudio } from "@/hooks/useMilestoneAudio";
 import { cn } from "@/lib/utils";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
@@ -82,6 +83,7 @@ const ChallengeRoute = () => {
   const challengeId = data?.challenge?.id;
   const { data: enrollment } = useEnrollmentStatus(challengeId);
   const { toast } = useToast();
+  const [showReEngagementBanner, setShowReEngagementBanner] = useState(false);
 
   // Audio hook for milestone narration
   const { playMilestoneAudio, toggleMute, replay, muted, isPlaying, currentAudioUrl } = useMilestoneAudio();
@@ -359,6 +361,26 @@ const ChallengeRoute = () => {
             </div>
           </div>
 
+          {/* Re-engagement banner — shown after user taps "Maybe Later" on purchase screen */}
+          {showReEngagementBanner && !enrollment?.isEnrolled && (
+            <div className="relative flex items-start gap-3 bg-primary/10 border border-primary/25 rounded-xl px-4 py-3 mb-8 text-sm">
+              <Sparkles className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <span className="font-semibold text-foreground">Your first mile is saved.</span>
+                <span className="text-muted-foreground ml-1">
+                  Unlock the full journey to keep earning stamps and complete {challenge.name}.
+                </span>
+              </div>
+              <button
+                onClick={() => setShowReEngagementBanner(false)}
+                className="text-muted-foreground hover:text-foreground transition-colors ml-2 mt-0.5 shrink-0"
+                aria-label="Dismiss"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
           {/* Days Adjustment Section */}
           <div className="bg-card rounded-xl border border-border p-6 mb-8">
             <div className="flex items-center gap-3 mb-4">
@@ -602,6 +624,7 @@ const ChallengeRoute = () => {
                   challengeSlug={slug}
                   challengeName={challenge.name}
                   challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
+                  onMaybeLater={() => setShowReEngagementBanner(true)}
                 />
               </TabsContent>
               <TabsContent value="steps">
