@@ -85,6 +85,13 @@ const ChallengeRoute = () => {
   const { toast } = useToast();
   const [showReEngagementBanner, setShowReEngagementBanner] = useState(false);
 
+  // Auto-dismiss banner the moment enrollment is confirmed
+  useEffect(() => {
+    if (enrollment?.isEnrolled) {
+      setShowReEngagementBanner(false);
+    }
+  }, [enrollment?.isEnrolled]);
+
   // Audio hook for milestone narration
   const { playMilestoneAudio, toggleMute, replay, muted, isPlaying, currentAudioUrl } = useMilestoneAudio();
 
