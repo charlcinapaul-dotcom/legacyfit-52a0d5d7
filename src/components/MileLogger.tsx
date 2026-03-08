@@ -25,6 +25,7 @@ interface MileLoggerProps {
   totalMilestones?: number;
   challengeEditionColor?: "gold" | "burgundy" | "pride";
   onChallengeCompleted?: (data: { name: string; miles: number; imageUrl: string | null }) => void;
+  onMaybeLater?: () => void;
 }
 
 const QUICK_MILES = [1, 3, 5, 7];
