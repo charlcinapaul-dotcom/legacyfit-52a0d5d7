@@ -384,12 +384,13 @@ export default function AdminValidate() {
           ) : (
             <div className="bg-card border border-border rounded-lg overflow-hidden">
               {/* Table header */}
-              <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] items-center gap-3 px-4 py-2.5 bg-secondary/40 border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+              <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] items-center gap-3 px-4 py-2.5 bg-secondary/40 border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
                 <span>Challenge</span>
                 <span className="text-center w-16">Narration</span>
                 <span className="text-center w-14">Audio</span>
                 <span className="text-center w-14">Stamps</span>
                 <span className="text-center w-16">Milestones</span>
+                <span className="text-center w-16">Stripe</span>
                 <span className="text-center w-14">Status</span>
               </div>
 
