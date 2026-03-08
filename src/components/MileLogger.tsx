@@ -193,12 +193,21 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
             <Footprints className="w-5 h-5 text-primary" />
             Log Miles
           </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Total logged: <span className="font-semibold text-primary">{totalMiles} miles</span>
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Today: {dailyLogged} / {maxDailyAggregate} mi · <span className="font-medium">{dailyRemaining} mi remaining</span>
-          </p>
+          {isFirstMileFreeWindow && (
+            <div className="mt-1 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary font-medium">
+              🎯 Try your first mile free — log 1 mile to unlock a preview stamp, then choose your journey.
+            </div>
+          )}
+          {!isFirstMileFreeWindow && (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Total logged: <span className="font-semibold text-primary">{totalMiles} miles</span>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Today: {dailyLogged} / {maxDailyAggregate} mi · <span className="font-medium">{dailyRemaining} mi remaining</span>
+              </p>
+            </>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
           {isRateLimited && <RateLimitBanner countdown={formatCountdown()} />}
