@@ -183,7 +183,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
             </p>
           ) : (
             <Link to={`/auth?redirect=${encodeURIComponent(challengeSlug ? `/challenge/${challengeSlug}` : '/challenges')}`}>
-              <Button className="w-full h-12 text-base font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+              <Button className="w-full h-auto py-3 text-sm font-bold leading-tight whitespace-normal bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
                 Start Your Free 1 Mile Legacy Passport
               </Button>
             </Link>
