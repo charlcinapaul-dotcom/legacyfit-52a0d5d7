@@ -74,7 +74,7 @@ const getColorStyles = (color: string) => {
 // Map edition to color theme
 const getEditionColor = (edition: string): string => {
   if (edition.toLowerCase().includes("pride")) return "pride";
-  if (edition.toLowerCase().includes("first black pioneers")) return "pioneers";
+  if (edition.toLowerCase().includes("first steps: black pioneers")) return "pioneers";
   return "gold";
 };
 
