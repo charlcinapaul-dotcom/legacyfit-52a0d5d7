@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
-import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar, Volume2, VolumeX, RotateCcw, Wand2, Loader2, Sparkles, X } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar, Volume2, VolumeX, RotateCcw, Wand2, Loader2, Sparkles, X, Footprints } from "lucide-react";
 
 import { useMilestoneAudio } from "@/hooks/useMilestoneAudio";
 import { cn } from "@/lib/utils";
@@ -84,6 +84,7 @@ const ChallengeRoute = () => {
   const { data: enrollment } = useEnrollmentStatus(challengeId);
   const { toast } = useToast();
   const [showReEngagementBanner, setShowReEngagementBanner] = useState(false);
+  const logMilesSectionRef = useRef<HTMLDivElement>(null);
 
   // Auto-dismiss banner the moment enrollment is confirmed
   useEffect(() => {
@@ -369,7 +370,7 @@ const ChallengeRoute = () => {
           </div>
 
           {/* Log Miles / Steps Section */}
-          <div className="mt-8">
+          <div className="mt-8" ref={logMilesSectionRef}>
             <Tabs defaultValue="miles" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-4">
                 <TabsTrigger value="miles">Log Miles</TabsTrigger>
@@ -675,6 +676,21 @@ const ChallengeRoute = () => {
           days: customDays,
         }}
       />
+
+      {/* Mobile sticky Log Miles FAB */}
+      <button
+        onClick={() => logMilesSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+        className={cn(
+          "fixed bottom-6 left-1/2 -translate-x-1/2 z-40 md:hidden",
+          "flex items-center gap-2 px-6 py-3 rounded-full shadow-lg",
+          "text-sm font-semibold text-primary-foreground",
+          colors.button
+        )}
+        aria-label="Log miles"
+      >
+        <Footprints className="w-4 h-4" />
+        Log Miles
+      </button>
     </div>
   );
 };
