@@ -242,7 +242,7 @@ const Challenges = () => {
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     backgroundClip: "text",
-                  }}>First Black Pioneers Edition</span>
+                  }}>First Steps: Black Pioneers Edition</span>
                 </h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   {pioneers.map((c) => (
