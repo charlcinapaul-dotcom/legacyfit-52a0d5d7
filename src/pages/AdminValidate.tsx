@@ -12,6 +12,7 @@ import {
   Footprints,
   LogOut,
   ClipboardList,
+  ImagePlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -88,6 +89,13 @@ function groupEntries(summary: Record<string, boolean>) {
 
 // ── component ────────────────────────────────────────────────────────────────
 
+interface ImageGenResult {
+  slug: string;
+  success: boolean;
+  url?: string;
+  error?: string;
+}
+
 export default function AdminValidate() {
   const navigate = useNavigate();
   const [challengeId, setChallengeId] = useState("");
@@ -98,6 +106,8 @@ export default function AdminValidate() {
   const [challenges, setChallenges] = useState<
     { id: string; title: string; slug: string | null; is_active: boolean | null }[]
   >([]);
+  const [imageGenLoading, setImageGenLoading] = useState(false);
+  const [imageGenResults, setImageGenResults] = useState<ImageGenResult[] | null>(null);
 
   // ── auth gate ──────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -161,7 +171,42 @@ export default function AdminValidate() {
     }
   };
 
-  // ── loading states ─────────────────────────────────────────────────────────
+  // ── generate challenge images ───────────────────────────────────────────────
+  const generateImages = async () => {
+    setImageGenLoading(true);
+    setImageGenResults(null);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const url = `https://${projectId}.supabase.co/functions/v1/generate-challenge-images`;
+
+      toast.info("Image generation started — this may take several minutes…");
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        toast.error(json.error ?? "Image generation failed.");
+        return;
+      }
+      setImageGenResults(json.results ?? []);
+      const successCount = (json.results ?? []).filter((r: ImageGenResult) => r.success).length;
+      toast.success(`Done! ${successCount} image(s) generated or already present.`);
+    } catch (e) {
+      toast.error("Failed to reach image generation function.");
+    } finally {
+      setImageGenLoading(false);
+    }
+  };
+
+
   if (authChecking) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -469,6 +514,76 @@ export default function AdminValidate() {
             </div>
           </div>
         )}
+
+        {/* ── Generate Challenge Images ──────────────────────────────────── */}
+        <div className="mt-12 pt-8 border-t border-border">
+          <div className="flex items-center gap-2 mb-2">
+            <ImagePlus className="w-5 h-5 text-primary" />
+            <h2 className="text-xl font-bold text-foreground">Generate Challenge Images</h2>
+          </div>
+          <p className="text-muted-foreground text-sm leading-relaxed mb-5">
+            Generates AI hero backdrop images for all challenges that are currently missing one.
+            Challenges that already have an <code className="text-primary bg-primary/10 px-1 py-0.5 rounded text-xs">image_url</code> are skipped.
+            This may take several minutes.
+          </p>
+
+          <Button
+            onClick={generateImages}
+            disabled={imageGenLoading}
+            className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+          >
+            {imageGenLoading ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <ImagePlus className="w-4 h-4" />
+            )}
+            {imageGenLoading ? "Generating images…" : "Generate Missing Images"}
+          </Button>
+
+          {imageGenResults && (
+            <div className="mt-6 bg-card border border-border rounded-lg overflow-hidden">
+              <div className="px-4 py-3 bg-secondary/40 border-b border-border flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">
+                  Results — {imageGenResults.filter(r => r.success).length}/{imageGenResults.length} successful
+                </span>
+              </div>
+              <ul className="divide-y divide-border">
+                {imageGenResults.map((r) => (
+                  <li key={r.slug} className="px-4 py-3 flex items-center justify-between gap-3 text-sm">
+                    <div className="flex items-center gap-2.5">
+                      {r.success ? (
+                        <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-destructive flex-shrink-0" />
+                      )}
+                      <span className="font-mono text-foreground">{r.slug}</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {r.success && r.url ? (
+                        <a
+                          href={r.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary underline underline-offset-2 truncate max-w-[180px]"
+                        >
+                          View image
+                        </a>
+                      ) : r.error ? (
+                        <span className="text-xs text-destructive truncate max-w-[220px]">{r.error}</span>
+                      ) : null}
+                      <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm font-semibold ${
+                        r.success ? "bg-green-500/15 text-green-500" : "bg-destructive/15 text-destructive"
+                      }`}>
+                        {r.success ? "OK" : "FAIL"}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
