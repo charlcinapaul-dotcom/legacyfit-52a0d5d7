@@ -110,6 +110,7 @@ interface ReadinessRow {
   slug: string | null;
   edition: string;
   is_active: boolean | null;
+  stripe_price_id: string | null;
   milestone_count: number;
   has_historical_event_count: number;
   has_audio_count: number;
@@ -138,7 +139,7 @@ export default function AdminValidate() {
     setReadinessLoading(true);
     const { data: chs } = await supabase
       .from("challenges")
-      .select("id, title, slug, edition, is_active")
+      .select("id, title, slug, edition, is_active, stripe_price_id")
       .order("edition")
       .order("title");
 
@@ -159,6 +160,7 @@ export default function AdminValidate() {
         slug: c.slug,
         edition: c.edition,
         is_active: c.is_active,
+        stripe_price_id: c.stripe_price_id ?? null,
         milestone_count: ms.length,
         has_historical_event_count: ms.filter((m) => m.historical_event).length,
         has_audio_count: ms.filter((m) => m.audio_url).length,
@@ -382,12 +384,13 @@ export default function AdminValidate() {
           ) : (
             <div className="bg-card border border-border rounded-lg overflow-hidden">
               {/* Table header */}
-              <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] items-center gap-3 px-4 py-2.5 bg-secondary/40 border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+              <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] items-center gap-3 px-4 py-2.5 bg-secondary/40 border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
                 <span>Challenge</span>
                 <span className="text-center w-16">Narration</span>
                 <span className="text-center w-14">Audio</span>
                 <span className="text-center w-14">Stamps</span>
                 <span className="text-center w-16">Milestones</span>
+                <span className="text-center w-16">Stripe</span>
                 <span className="text-center w-14">Status</span>
               </div>
 
@@ -426,7 +429,7 @@ export default function AdminValidate() {
                       return (
                         <div
                           key={row.id}
-                          className={`grid grid-cols-[1fr_auto_auto_auto_auto_auto] items-center gap-3 px-4 py-3 text-sm ${
+                          className={`grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] items-center gap-3 px-4 py-3 text-sm ${
                             i < rows.length - 1 ? "border-b border-border" : ""
                           }`}
                         >
@@ -470,6 +473,23 @@ export default function AdminValidate() {
                           <div className="w-16 flex flex-col items-center gap-0.5">
                             <Dot ok={correctCount} />
                             <span className="text-[10px] text-muted-foreground">{row.milestone_count}/6</span>
+                          </div>
+
+                          {/* Stripe price ID — informational; checkout uses shared price IDs */}
+                          <div className="w-16 flex flex-col items-center gap-0.5">
+                            {row.stripe_price_id ? (
+                              <>
+                                <CheckCircle2 className="w-4 h-4 text-green-500" />
+                                <span className="text-[9px] text-muted-foreground font-mono truncate max-w-[60px]" title={row.stripe_price_id}>
+                                  {row.stripe_price_id.slice(-8)}
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                                <span className="text-[9px] text-muted-foreground">shared</span>
+                              </>
+                            )}
                           </div>
 
                           {/* Active status */}
