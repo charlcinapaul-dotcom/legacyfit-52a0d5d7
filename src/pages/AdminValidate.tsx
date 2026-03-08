@@ -361,8 +361,161 @@ export default function AdminValidate() {
         </div>
       </nav>
 
-      <main className="container mx-auto px-4 py-10 max-w-3xl">
-        {/* Header */}
+      <main className="container mx-auto px-4 py-10 max-w-4xl">
+
+        {/* ── Readiness Dashboard ─────────────────────────────────────────── */}
+        <div className="mb-12">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <LayoutDashboard className="w-5 h-5 text-primary" />
+              <h1 className="text-2xl font-bold text-foreground">Challenge Readiness</h1>
+            </div>
+            <button
+              onClick={loadReadiness}
+              disabled={readinessLoading}
+              className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1.5 transition-colors"
+            >
+              {readinessLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Radio className="w-3.5 h-3.5" />}
+              {readinessLoading ? "Refreshing…" : "Refresh"}
+            </button>
+          </div>
+
+          {readinessLoading && readiness.length === 0 ? (
+            <div className="flex items-center gap-2 text-muted-foreground text-sm py-6">
+              <Loader2 className="w-4 h-4 animate-spin" /> Loading readiness data…
+            </div>
+          ) : (
+            <div className="bg-card border border-border rounded-lg overflow-hidden">
+              {/* Table header */}
+              <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] items-center gap-3 px-4 py-2.5 bg-secondary/40 border-b border-border text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+                <span>Challenge</span>
+                <span className="text-center w-16">Narration</span>
+                <span className="text-center w-14">Audio</span>
+                <span className="text-center w-14">Stamps</span>
+                <span className="text-center w-16">Milestones</span>
+                <span className="text-center w-14">Status</span>
+              </div>
+
+              {/* Group by edition */}
+              {(["Women's History", "First Steps: Black Pioneers", "Pride"] as string[]).map((edition) => {
+                const rows = readiness.filter((r) => r.edition === edition);
+                if (rows.length === 0) return null;
+
+                const editionColor =
+                  edition === "Women's History"
+                    ? "text-[#C084FC]"
+                    : edition === "First Steps: Black Pioneers"
+                    ? "text-amber-600"
+                    : "text-pink-400";
+
+                return (
+                  <div key={edition}>
+                    <div className={`px-4 py-2 border-b border-border bg-secondary/20 text-xs font-bold uppercase tracking-widest ${editionColor}`}>
+                      {edition}
+                    </div>
+                    {rows.map((row, i) => {
+                      const allNarration = row.has_historical_event_count === row.milestone_count && row.milestone_count > 0;
+                      const allAudio = row.has_audio_count === row.milestone_count && row.milestone_count > 0;
+                      const allStamps = row.has_stamp_image_count === row.milestone_count && row.milestone_count > 0;
+                      const correctCount = row.milestone_count === 6;
+
+                      const Dot = ({ ok, partial }: { ok: boolean; partial?: boolean }) =>
+                        ok ? (
+                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                        ) : partial ? (
+                          <AlertTriangle className="w-4 h-4 text-yellow-500" />
+                        ) : (
+                          <XCircle className="w-4 h-4 text-destructive" />
+                        );
+
+                      return (
+                        <div
+                          key={row.id}
+                          className={`grid grid-cols-[1fr_auto_auto_auto_auto_auto] items-center gap-3 px-4 py-3 text-sm ${
+                            i < rows.length - 1 ? "border-b border-border" : ""
+                          }`}
+                        >
+                          {/* Title + slug */}
+                          <div className="min-w-0">
+                            <p className="font-medium text-foreground truncate">{row.title}</p>
+                            <p className="text-[11px] text-muted-foreground font-mono">{row.slug}</p>
+                          </div>
+
+                          {/* Narration */}
+                          <div className="w-16 flex flex-col items-center gap-0.5">
+                            <Dot ok={allNarration} />
+                            <span className="text-[10px] text-muted-foreground">
+                              {row.has_historical_event_count}/{row.milestone_count}
+                            </span>
+                          </div>
+
+                          {/* Audio */}
+                          <div className="w-14 flex flex-col items-center gap-0.5">
+                            <Dot
+                              ok={allAudio}
+                              partial={row.has_audio_count > 0 && !allAudio}
+                            />
+                            <span className="text-[10px] text-muted-foreground">
+                              {row.has_audio_count}/{row.milestone_count}
+                            </span>
+                          </div>
+
+                          {/* Stamps */}
+                          <div className="w-14 flex flex-col items-center gap-0.5">
+                            <Dot
+                              ok={allStamps}
+                              partial={row.has_stamp_image_count > 0 && !allStamps}
+                            />
+                            <span className="text-[10px] text-muted-foreground">
+                              {row.has_stamp_image_count}/{row.milestone_count}
+                            </span>
+                          </div>
+
+                          {/* Milestone count */}
+                          <div className="w-16 flex flex-col items-center gap-0.5">
+                            <Dot ok={correctCount} />
+                            <span className="text-[10px] text-muted-foreground">{row.milestone_count}/6</span>
+                          </div>
+
+                          {/* Active status */}
+                          <div className="w-14 flex justify-center">
+                            <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold ${
+                              row.is_active
+                                ? "bg-green-500/15 text-green-500"
+                                : "bg-muted text-muted-foreground"
+                            }`}>
+                              {row.is_active ? "Live" : "Draft"}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })}
+
+              {/* Summary footer */}
+              {readiness.length > 0 && (
+                <div className="px-4 py-3 bg-secondary/20 border-t border-border flex items-center gap-6 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5" />
+                    Narration: {readiness.filter(r => r.has_historical_event_count === r.milestone_count && r.milestone_count > 0).length}/{readiness.length} complete
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Volume2 className="w-3.5 h-3.5" />
+                    Audio: {readiness.filter(r => r.has_audio_count === r.milestone_count && r.milestone_count > 0).length}/{readiness.length} complete
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <Stamp className="w-3.5 h-3.5" />
+                    Stamps: {readiness.filter(r => r.has_stamp_image_count === r.milestone_count && r.milestone_count > 0).length}/{readiness.length} complete
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ── Validator ────────────────────────────────────────────────────── */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-2">
             <ClipboardList className="w-5 h-5 text-primary" />
