@@ -104,6 +104,18 @@ interface ImageGenResult {
   error?: string;
 }
 
+interface ReadinessRow {
+  id: string;
+  title: string;
+  slug: string | null;
+  edition: string;
+  is_active: boolean | null;
+  milestone_count: number;
+  has_historical_event_count: number;
+  has_audio_count: number;
+  has_stamp_image_count: number;
+}
+
 export default function AdminValidate() {
   const navigate = useNavigate();
   const [challengeId, setChallengeId] = useState("");
@@ -118,6 +130,8 @@ export default function AdminValidate() {
   const [imageGenResults, setImageGenResults] = useState<ImageGenResult[] | null>(null);
   const [stampGenLoading, setStampGenLoading] = useState(false);
   const [stampGenResults, setStampGenResults] = useState<ImageGenResult[] | null>(null);
+  const [readiness, setReadiness] = useState<ReadinessRow[]>([]);
+  const [readinessLoading, setReadinessLoading] = useState(false);
 
   // ── auth gate ──────────────────────────────────────────────────────────────
   useEffect(() => {
