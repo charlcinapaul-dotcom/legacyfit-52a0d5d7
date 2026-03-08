@@ -209,8 +209,43 @@ export default function AdminValidate() {
     }
   };
 
+  // ── generate passport stamps ───────────────────────────────────────────────
+  const generateStamps = async () => {
+    setStampGenLoading(true);
+    setStampGenResults(null);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+      const url = `https://${projectId}.supabase.co/functions/v1/generate-all-stamps`;
 
-  if (authChecking) {
+      toast.info("Stamp generation started — this may take several minutes…");
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ limit: 10 }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        toast.error(json.error ?? "Stamp generation failed.");
+        return;
+      }
+      setStampGenResults(json.results ?? []);
+      const successCount = (json.results ?? []).filter((r: ImageGenResult) => r.success).length;
+      toast.success(`Done! ${successCount} stamp(s) generated.`);
+    } catch {
+      toast.error("Failed to reach stamp generation function.");
+    } finally {
+      setStampGenLoading(false);
+    }
+  };
+
+
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
