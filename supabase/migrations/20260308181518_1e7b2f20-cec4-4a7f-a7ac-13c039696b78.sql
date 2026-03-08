@@ -1,0 +1,13 @@
+UPDATE public.challenges SET image_url = 'https://utfexhdncajccdpvquky.supabase.co/storage/v1/object/public/challenge-images/madam-cj-walker-cover.jpg' WHERE id = 'b8357290-a293-4199-8847-b0f0239f77af';
+UPDATE public.challenges SET image_url = 'https://utfexhdncajccdpvquky.supabase.co/storage/v1/object/public/challenge-images/charles-drew-cover.jpg' WHERE id = '24a3892a-ff92-4c90-acbc-2404452108ed';
+UPDATE public.challenges SET image_url = 'https://utfexhdncajccdpvquky.supabase.co/storage/v1/object/public/challenge-images/mae-jemison-cover.jpg' WHERE id = 'e6dd603c-1fe4-4009-838d-6593e0a4c3f3';
+UPDATE public.challenges SET image_url = 'https://utfexhdncajccdpvquky.supabase.co/storage/v1/object/public/challenge-images/daniel-hale-williams-cover.jpg' WHERE id = 'edd8304b-a913-417b-9d52-b82c4992efed';
+UPDATE public.challenges SET image_url = 'https://utfexhdncajccdpvquky.supabase.co/storage/v1/object/public/challenge-images/patricia-bath-cover.jpg' WHERE id = 'd1db1b67-a86d-47de-ad6b-5c5b77f2fe4b';
+UPDATE public.challenges SET image_url = 'https://utfexhdncajccdpvquky.supabase.co/storage/v1/object/public/challenge-images/harriet-pickens-cover.jpg' WHERE id = 'c00b2943-4a4e-4d99-849f-8190bb83eafd';
+UPDATE public.challenges SET image_url = 'https://utfexhdncajccdpvquky.supabase.co/storage/v1/object/public/challenge-images/benjamin-o-davis-sr-cover.jpg' WHERE id = '174993d6-4e1d-4d5a-9f2f-a08209702aa3';
+UPDATE public.challenges SET image_url = 'https://utfexhdncajccdpvquky.supabase.co/storage/v1/object/public/challenge-images/willa-brown-cover.jpg' WHERE id = '2b53e327-d276-47f3-a0e1-abd23c80e1c5';
+UPDATE public.challenges SET image_url = 'https://utfexhdncajccdpvquky.supabase.co/storage/v1/object/public/challenge-images/cornelius-coffey-cover.jpg' WHERE id = '8f5c458b-e111-4d3f-a52b-d72ad8d89e5f';
+UPDATE public.challenges SET image_url = 'https://utfexhdncajccdpvquky.supabase.co/storage/v1/object/public/challenge-images/jane-bolin-cover.jpg' WHERE id = '9377367c-24da-4058-bce8-fc575ceab02d';
+UPDATE public.challenges SET image_url = 'https://utfexhdncajccdpvquky.supabase.co/storage/v1/object/public/challenge-images/constance-baker-motley-cover.jpg' WHERE id = '31e2c7a3-d8cd-4952-91f6-51eb796791a5';
+UPDATE public.challenges SET image_url = 'https://utfexhdncajccdpvquky.supabase.co/storage/v1/object/public/challenge-images/garrett-morgan-cover.jpg' WHERE id = '8da1996b-be3c-4314-a217-89893f867e7d';
+UPDATE public.challenges SET image_url = 'https://utfexhdncajccdpvquky.supabase.co/storage/v1/object/public/challenge-images/matthew-henson-cover.jpg' WHERE id = '02fef327-620b-4da4-9c9a-48341908b26c';
