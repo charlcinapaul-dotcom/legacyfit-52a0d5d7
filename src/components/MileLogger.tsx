@@ -211,9 +211,9 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
         </CardHeader>
         <CardContent className="space-y-4">
           {isRateLimited && <RateLimitBanner countdown={formatCountdown()} />}
-          {/* Quick buttons */}
-          <div className="grid grid-cols-4 gap-2">
-            {QUICK_MILES.map((quickMiles) => (
+          {/* Quick buttons — in free preview window, only show +1 */}
+          <div className={`grid gap-2 ${isFirstMileFreeWindow ? "grid-cols-1" : "grid-cols-4"}`}>
+            {(isFirstMileFreeWindow ? [1] : QUICK_MILES).map((quickMiles) => (
               <Button
                 key={quickMiles}
                 variant="outline"
@@ -225,14 +225,14 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
                 {isLogging ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  `+${quickMiles}`
+                  isFirstMileFreeWindow ? "Log 1 Free Mile" : `+${quickMiles}`
                 )}
               </Button>
             ))}
           </div>
 
-          {/* Custom entry toggle */}
-          <Button
+          {/* Custom entry toggle — hide in free window */}
+          {!isFirstMileFreeWindow && (
             variant="ghost"
             size="sm"
             onClick={() => setShowCustom(!showCustom)}
