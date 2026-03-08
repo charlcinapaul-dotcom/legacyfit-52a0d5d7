@@ -23,6 +23,9 @@ export function StampUnlockModal({
   onClose,
   challengeSlug,
   milestoneStartIndex = 0,
+  isEnrolled = true,
+  onContinueToPurchase,
+  onShareAchievement,
 }: StampUnlockModalProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
