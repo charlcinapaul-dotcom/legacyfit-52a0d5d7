@@ -125,16 +125,8 @@ export function FirstMileGateModal({
                 challengeId={challengeId}
                 challengeSlug={challengeSlug}
                 editionColor={editionColor}
+                onMaybeLater={onClose}
               />
-            </div>
-
-            <div className="pb-2 text-center">
-              <button
-                onClick={onClose}
-                className="text-sm text-muted-foreground hover:text-foreground underline underline-offset-4 transition-colors"
-              >
-                Maybe Later
-              </button>
             </div>
           </>
         )}
