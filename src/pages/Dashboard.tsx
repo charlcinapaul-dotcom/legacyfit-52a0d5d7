@@ -16,20 +16,7 @@ import {
   Loader2,
   ChevronRight,
   Trophy,
-  Timer,
-  Flame,
-  PersonStanding
 } from "lucide-react";
-
-const FREE_WALK_HISTORY_KEY = "legacyfit_free_walk_history";
-const FREE_WALK_PENDING_KEY = "legacyfit_pending_free_walk";
-
-interface FreeWalkEntry {
-  miles: number;
-  time: string;
-  calories: number;
-  completedAt: string;
-}
 import type { User, Session } from "@supabase/supabase-js";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
 import { MileLogger } from "@/components/MileLogger";
