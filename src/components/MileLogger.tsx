@@ -231,76 +231,79 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
             ))}
           </div>
 
-          {/* Custom entry toggle — hide in free window */}
+          {/* Custom entry toggle + form — hidden in free preview window */}
           {!isFirstMileFreeWindow && (
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowCustom(!showCustom)}
-            className="w-full text-muted-foreground"
-          >
-            {showCustom ? "Hide custom entry" : "Custom amount..."}
-          </Button>
-
-          {/* Custom entry form */}
-          {showCustom && (
-            <div className="space-y-4 pt-2 border-t">
-              <div className="space-y-2">
-                <Label htmlFor="miles" className="flex justify-between">
-                  <span>Miles</span>
-                  <span className="font-bold text-primary">{miles}</span>
-                </Label>
-                <Slider
-                  id="miles-slider"
-                  value={[miles]}
-                  onValueChange={([v]) => setMiles(v)}
-                  min={0.5}
-                  max={Math.min(maxSingleEntry, dailyRemaining)}
-                  step={0.5}
-                  className="py-2"
-                />
-                <Input
-                  id="miles"
-                  type="number"
-                  value={miles}
-                  onChange={(e) => setMiles(Number(e.target.value))}
-                  min={0.1}
-                  step={0.1}
-                  className="mt-2"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes (optional)</Label>
-                <Textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Morning run, evening walk..."
-                  rows={2}
-                />
-              </div>
-
-              {miles > maxSingleEntry && (
-                <p className="text-xs text-destructive">Max {maxSingleEntry} miles per entry.</p>
-              )}
-              {miles > dailyRemaining && miles <= maxSingleEntry && (
-                <p className="text-xs text-destructive">Only {dailyRemaining} miles remaining today.</p>
-              )}
+            <>
               <Button
-                onClick={handleCustomLog}
-                disabled={isLogging || isRateLimited || miles <= 0 || miles > maxSingleEntry || miles > dailyRemaining}
-                className="w-full"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowCustom(!showCustom)}
+                className="w-full text-muted-foreground"
               >
-                {isLogging ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Logging...
-                  </>
-                ) : (
-                  `Log ${miles} miles`
-                )}
+                {showCustom ? "Hide custom entry" : "Custom amount..."}
               </Button>
-            </div>
+
+              {showCustom && (
+                <div className="space-y-4 pt-2 border-t">
+                  <div className="space-y-2">
+                    <Label htmlFor="miles" className="flex justify-between">
+                      <span>Miles</span>
+                      <span className="font-bold text-primary">{miles}</span>
+                    </Label>
+                    <Slider
+                      id="miles-slider"
+                      value={[miles]}
+                      onValueChange={([v]) => setMiles(v)}
+                      min={0.5}
+                      max={Math.min(maxSingleEntry, dailyRemaining)}
+                      step={0.5}
+                      className="py-2"
+                    />
+                    <Input
+                      id="miles"
+                      type="number"
+                      value={miles}
+                      onChange={(e) => setMiles(Number(e.target.value))}
+                      min={0.1}
+                      step={0.1}
+                      className="mt-2"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="notes">Notes (optional)</Label>
+                    <Textarea
+                      id="notes"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Morning run, evening walk..."
+                      rows={2}
+                    />
+                  </div>
+
+                  {miles > maxSingleEntry && (
+                    <p className="text-xs text-destructive">Max {maxSingleEntry} miles per entry.</p>
+                  )}
+                  {miles > dailyRemaining && miles <= maxSingleEntry && (
+                    <p className="text-xs text-destructive">Only {dailyRemaining} miles remaining today.</p>
+                  )}
+                  <Button
+                    onClick={handleCustomLog}
+                    disabled={isLogging || isRateLimited || miles <= 0 || miles > maxSingleEntry || miles > dailyRemaining}
+                    className="w-full"
+                  >
+                    {isLogging ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Logging...
+                      </>
+                    ) : (
+                      `Log ${miles} miles`
+                    )}
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
