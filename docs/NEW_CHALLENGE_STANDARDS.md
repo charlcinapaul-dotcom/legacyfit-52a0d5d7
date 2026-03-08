@@ -10,7 +10,7 @@
 |---|---|
 | `title` | Full proper name + theme word. e.g. `"Ruth Bader Ginsburg Equality Journey"` |
 | `slug` | URL-safe lowercase, globally unique. e.g. `"ruth-bader-ginsburg"` |
-| `edition` | Must be `"Women's History"` or `"Pride"`. Controls color theme (see §6). |
+| `edition` | Must be `"Women's History"`, `"Pride"`, or `"First Black Pioneers"`. Controls color theme (see §6). |
 | `total_miles` | Numeric. Must exactly equal `miles_required` of milestone 6. |
 | `description` | 1–2 sentences. Public-facing copy shown on Challenges page. |
 | `is_active` | Set to `false` on insert. Only set to `true` after all 6 milestones are fully seeded, audio generated, and stamp images generated. |
@@ -80,6 +80,7 @@ Determined by the `edition` field. Logic lives in `getEditionColor()` in `src/pa
 | edition value | Theme | Visual |
 |---|---|---|
 | Contains `"pride"` (case-insensitive) | `"pride"` | Rainbow gradient |
+| Contains `"first black pioneers"` (case-insensitive) | `"pioneers"` | Amber/bronze tones |
 | Anything else (`"Women's History"`, etc.) | `"gold"` | Gold/amber tones |
 
 > Note: A `"cyan"` theme exists in `getColorStyles()` but is not mapped to any edition yet.
@@ -92,7 +93,8 @@ Logic lives in `src/pages/Challenges.tsx`.
 
 | Condition | Displayed in |
 |---|---|
-| `slug !== "pride"` AND `is_active = true` | **Women's History Edition** section |
+| `edition === "Women's History"` AND `is_active = true` | **Women's History Edition** section |
+| `edition === "First Black Pioneers"` AND `is_active = true` | **First Black Pioneers Edition** section |
 | `slug === "pride"` AND `is_active = true` | **Pride Edition** section |
 | `is_active = false` | **Past Editions** (grayed out) |
 

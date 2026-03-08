@@ -46,6 +46,17 @@ const getColorStyles = (color: string) => {
         button: "bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 text-white hover:opacity-90",
         iconColor: "text-purple-400",
       };
+    case "pioneers":
+      return {
+        badge: "bg-amber-700/10 border-amber-700/20 text-amber-600",
+        text: "text-amber-600",
+        bgLight: "bg-amber-700/5 border-amber-700/20",
+        bgSolid: "bg-amber-700 border-amber-700 text-white",
+        bgHighlight: "bg-amber-700/10 text-amber-600",
+        routeLine: "bg-amber-700",
+        button: "bg-amber-700 text-white hover:bg-amber-700/90",
+        iconColor: "text-amber-600",
+      };
     default: // gold
       return {
         badge: "bg-primary/10 border-primary/20 text-primary",
@@ -63,6 +74,7 @@ const getColorStyles = (color: string) => {
 // Map edition to color theme
 const getEditionColor = (edition: string): string => {
   if (edition.toLowerCase().includes("pride")) return "pride";
+  if (edition.toLowerCase().includes("first black pioneers")) return "pioneers";
   return "gold";
 };
 
