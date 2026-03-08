@@ -369,7 +369,7 @@ const ChallengeRoute = () => {
           </div>
 
           {/* Log Miles / Steps Section */}
-          <div className="mt-8">
+          <div className="mt-8" ref={logMilesSectionRef}>
             <Tabs defaultValue="miles" className="w-full">
               <TabsList className="grid w-full grid-cols-2 mb-4">
                 <TabsTrigger value="miles">Log Miles</TabsTrigger>
