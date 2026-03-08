@@ -154,23 +154,26 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
     );
   }
 
-  // Not enrolled (paid)
-  if (!enrollment?.isEnrolled) {
+  // Not enrolled (paid) — but allow free first-mile preview (totalMiles === 0)
+  const hasPendingPayment = enrollment?.status === "pending";
+  const isFirstMileFreeWindow = !enrollment?.isEnrolled && !hasPendingPayment && totalMiles === 0;
+
+  if (!enrollment?.isEnrolled && !isFirstMileFreeWindow) {
     return (
       <Card className="border-border">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
             <ShieldAlert className="w-5 h-5 text-muted-foreground" />
-            Enrollment Required
+            {hasPendingPayment ? "Payment Processing" : "Enrollment Required"}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <p className="text-muted-foreground text-sm">
-            {enrollment?.status === "pending"
+            {hasPendingPayment
               ? "Your payment is being processed. You'll be able to log miles once payment is confirmed."
-              : "You need to enroll in this challenge before you can log miles."}
+              : "You need to enroll in this challenge before you can log more miles."}
           </p>
-          {enrollment?.status !== "pending" && (
+          {!hasPendingPayment && (
             <Link to={`/challenge/${challengeSlug || ""}`}>
               <Button className="w-full">
                 Join This Challenge
@@ -190,18 +193,27 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
             <Footprints className="w-5 h-5 text-primary" />
             Log Miles
           </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Total logged: <span className="font-semibold text-primary">{totalMiles} miles</span>
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Today: {dailyLogged} / {maxDailyAggregate} mi · <span className="font-medium">{dailyRemaining} mi remaining</span>
-          </p>
+          {isFirstMileFreeWindow && (
+            <div className="mt-1 px-3 py-2 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary font-medium">
+              🎯 Try your first mile free — log 1 mile to unlock a preview stamp, then choose your journey.
+            </div>
+          )}
+          {!isFirstMileFreeWindow && (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Total logged: <span className="font-semibold text-primary">{totalMiles} miles</span>
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Today: {dailyLogged} / {maxDailyAggregate} mi · <span className="font-medium">{dailyRemaining} mi remaining</span>
+              </p>
+            </>
+          )}
         </CardHeader>
         <CardContent className="space-y-4">
           {isRateLimited && <RateLimitBanner countdown={formatCountdown()} />}
-          {/* Quick buttons */}
-          <div className="grid grid-cols-4 gap-2">
-            {QUICK_MILES.map((quickMiles) => (
+          {/* Quick buttons — in free preview window, only show +1 */}
+          <div className={`grid gap-2 ${isFirstMileFreeWindow ? "grid-cols-1" : "grid-cols-4"}`}>
+            {(isFirstMileFreeWindow ? [1] : QUICK_MILES).map((quickMiles) => (
               <Button
                 key={quickMiles}
                 variant="outline"
@@ -213,82 +225,85 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
                 {isLogging ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  `+${quickMiles}`
+                  isFirstMileFreeWindow ? "Log 1 Free Mile" : `+${quickMiles}`
                 )}
               </Button>
             ))}
           </div>
 
-          {/* Custom entry toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowCustom(!showCustom)}
-            className="w-full text-muted-foreground"
-          >
-            {showCustom ? "Hide custom entry" : "Custom amount..."}
-          </Button>
-
-          {/* Custom entry form */}
-          {showCustom && (
-            <div className="space-y-4 pt-2 border-t">
-              <div className="space-y-2">
-                <Label htmlFor="miles" className="flex justify-between">
-                  <span>Miles</span>
-                  <span className="font-bold text-primary">{miles}</span>
-                </Label>
-                <Slider
-                  id="miles-slider"
-                  value={[miles]}
-                  onValueChange={([v]) => setMiles(v)}
-                  min={0.5}
-                  max={Math.min(maxSingleEntry, dailyRemaining)}
-                  step={0.5}
-                  className="py-2"
-                />
-                <Input
-                  id="miles"
-                  type="number"
-                  value={miles}
-                  onChange={(e) => setMiles(Number(e.target.value))}
-                  min={0.1}
-                  step={0.1}
-                  className="mt-2"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="notes">Notes (optional)</Label>
-                <Textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Morning run, evening walk..."
-                  rows={2}
-                />
-              </div>
-
-              {miles > maxSingleEntry && (
-                <p className="text-xs text-destructive">Max {maxSingleEntry} miles per entry.</p>
-              )}
-              {miles > dailyRemaining && miles <= maxSingleEntry && (
-                <p className="text-xs text-destructive">Only {dailyRemaining} miles remaining today.</p>
-              )}
+          {/* Custom entry toggle + form — hidden in free preview window */}
+          {!isFirstMileFreeWindow && (
+            <>
               <Button
-                onClick={handleCustomLog}
-                disabled={isLogging || isRateLimited || miles <= 0 || miles > maxSingleEntry || miles > dailyRemaining}
-                className="w-full"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowCustom(!showCustom)}
+                className="w-full text-muted-foreground"
               >
-                {isLogging ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Logging...
-                  </>
-                ) : (
-                  `Log ${miles} miles`
-                )}
+                {showCustom ? "Hide custom entry" : "Custom amount..."}
               </Button>
-            </div>
+
+              {showCustom && (
+                <div className="space-y-4 pt-2 border-t">
+                  <div className="space-y-2">
+                    <Label htmlFor="miles" className="flex justify-between">
+                      <span>Miles</span>
+                      <span className="font-bold text-primary">{miles}</span>
+                    </Label>
+                    <Slider
+                      id="miles-slider"
+                      value={[miles]}
+                      onValueChange={([v]) => setMiles(v)}
+                      min={0.5}
+                      max={Math.min(maxSingleEntry, dailyRemaining)}
+                      step={0.5}
+                      className="py-2"
+                    />
+                    <Input
+                      id="miles"
+                      type="number"
+                      value={miles}
+                      onChange={(e) => setMiles(Number(e.target.value))}
+                      min={0.1}
+                      step={0.1}
+                      className="mt-2"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="notes">Notes (optional)</Label>
+                    <Textarea
+                      id="notes"
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Morning run, evening walk..."
+                      rows={2}
+                    />
+                  </div>
+
+                  {miles > maxSingleEntry && (
+                    <p className="text-xs text-destructive">Max {maxSingleEntry} miles per entry.</p>
+                  )}
+                  {miles > dailyRemaining && miles <= maxSingleEntry && (
+                    <p className="text-xs text-destructive">Only {dailyRemaining} miles remaining today.</p>
+                  )}
+                  <Button
+                    onClick={handleCustomLog}
+                    disabled={isLogging || isRateLimited || miles <= 0 || miles > maxSingleEntry || miles > dailyRemaining}
+                    className="w-full"
+                  >
+                    {isLogging ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Logging...
+                      </>
+                    ) : (
+                      `Log ${miles} miles`
+                    )}
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
