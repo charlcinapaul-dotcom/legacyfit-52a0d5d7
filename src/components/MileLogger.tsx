@@ -169,25 +169,22 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
 
   if (!enrollment?.isEnrolled && !isFirstMileFreeWindow) {
     return (
-      <Card className="border-border">
+      <Card className="border-primary/20">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <ShieldAlert className="w-5 h-5 text-muted-foreground" />
-            {hasPendingPayment ? "Payment Processing" : "Enrollment Required"}
+            <Footprints className="w-5 h-5 text-primary" />
+            Log Miles
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <p className="text-muted-foreground text-sm">
-            {hasPendingPayment
-              ? "Your payment is being processed. You'll be able to log miles once payment is confirmed."
-              : "You need to enroll in this challenge before you can log more miles."}
-          </p>
-          {!hasPendingPayment && (
-            <Link to={`/challenge/${challengeSlug || ""}`}>
-              <Button className="w-full">
-                Join This Challenge
-              </Button>
-            </Link>
+          {hasPendingPayment ? (
+            <p className="text-muted-foreground text-sm">
+              Your payment is being processed. You'll be able to log miles once payment is confirmed.
+            </p>
+          ) : (
+            <Button className="w-full h-12 text-base font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+              Start Your Free 1 Mile Legacy Passport
+            </Button>
           )}
         </CardContent>
       </Card>
