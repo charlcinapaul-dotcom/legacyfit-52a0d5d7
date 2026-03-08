@@ -80,6 +80,7 @@ Determined by the `edition` field. Logic lives in `getEditionColor()` in `src/pa
 | edition value | Theme | Visual |
 |---|---|---|
 | Contains `"pride"` (case-insensitive) | `"pride"` | Rainbow gradient |
+| Contains `"first black pioneers"` (case-insensitive) | `"pioneers"` | Amber/bronze tones |
 | Anything else (`"Women's History"`, etc.) | `"gold"` | Gold/amber tones |
 
 > Note: A `"cyan"` theme exists in `getColorStyles()` but is not mapped to any edition yet.
