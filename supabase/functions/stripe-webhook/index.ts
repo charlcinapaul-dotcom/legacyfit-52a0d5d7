@@ -95,58 +95,43 @@ serve(async (req) => {
       });
     }
 
-    if (existing) {
-      // Update existing pending enrollment to paid
-      const { error: updateError } = await supabaseAdmin
-        .from("user_challenges")
-        .update({
-          payment_status: "paid",
-          stripe_payment_id: session.payment_intent as string,
-        })
-        .eq("id", existing.id);
-
-      if (updateError) {
-        console.error(`[stripe-webhook] Failed to update enrollment:`, updateError);
-        return new Response(JSON.stringify({ error: "Failed to update enrollment" }), {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      console.log(`[stripe-webhook] Updated existing enrollment ${existing.id} to paid`);
-    } else {
-      // Create brand new enrollment
-      const { error: insertError } = await supabaseAdmin
-        .from("user_challenges")
-        .insert({
+    // Upsert enrollment — idempotent via unique(user_id, challenge_id)
+    const { error: upsertError } = await supabaseAdmin
+      .from("user_challenges")
+      .upsert(
+        {
           user_id: userId,
           challenge_id: challengeId,
           payment_status: "paid",
           stripe_payment_id: session.payment_intent as string,
-        });
+        },
+        { onConflict: "user_id,challenge_id" }
+      );
 
-      if (insertError) {
-        console.error(`[stripe-webhook] Failed to create enrollment:`, insertError);
-        return new Response(JSON.stringify({ error: "Failed to create enrollment" }), {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      console.log(`[stripe-webhook] Created new enrollment for user ${userId}`);
+    if (upsertError) {
+      console.error(`[stripe-webhook] Failed to upsert enrollment:`, upsertError);
+      return new Response(JSON.stringify({ error: "Failed to record enrollment" }), {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
+    console.log(`[stripe-webhook] Enrollment upserted for user ${userId}, challenge ${challengeId}`);
 
-    // Record payment (ignore duplicate key errors — verify-payment may have already written it)
-    const { error: paymentError } = await supabaseAdmin.from("payments").insert({
-      user_id: userId,
-      challenge_id: challengeId,
-      amount_cents: session.amount_total ?? 0,
-      status: "paid",
-      stripe_payment_id: session.payment_intent as string,
-      stripe_checkout_session_id: session.id,
-    });
+    // Record payment — idempotent via unique(stripe_checkout_session_id)
+    const { error: paymentError } = await supabaseAdmin.from("payments").upsert(
+      {
+        user_id: userId,
+        challenge_id: challengeId,
+        amount_cents: session.amount_total ?? 0,
+        status: "paid",
+        stripe_payment_id: session.payment_intent as string,
+        stripe_checkout_session_id: session.id,
+      },
+      { onConflict: "stripe_checkout_session_id" }
+    );
 
     if (paymentError) {
-      // Not fatal — duplicate payments row is acceptable (verify-payment may have written it)
-      console.warn(`[stripe-webhook] Payment record insert warning:`, paymentError.message);
+      console.warn(`[stripe-webhook] Payment upsert warning:`, paymentError.message);
     } else {
       console.log(`[stripe-webhook] Payment record written for session ${session.id}`);
     }
