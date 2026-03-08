@@ -10,7 +10,7 @@
 |---|---|
 | `title` | Full proper name + theme word. e.g. `"Ruth Bader Ginsburg Equality Journey"` |
 | `slug` | URL-safe lowercase, globally unique. e.g. `"ruth-bader-ginsburg"` |
-| `edition` | Must be `"Women's History"` or `"Pride"`. Controls color theme (see §6). |
+| `edition` | Must be `"Women's History"`, `"Pride"`, or `"First Black Pioneers"`. Controls color theme (see §6). |
 | `total_miles` | Numeric. Must exactly equal `miles_required` of milestone 6. |
 | `description` | 1–2 sentences. Public-facing copy shown on Challenges page. |
 | `is_active` | Set to `false` on insert. Only set to `true` after all 6 milestones are fully seeded, audio generated, and stamp images generated. |

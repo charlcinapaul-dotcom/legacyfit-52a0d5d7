@@ -2,11 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { PageLayout } from "@/components/PageLayout";
 import { Button } from "@/components/ui/button";
-import { MapPin, ChevronRight, AlertCircle } from "lucide-react";
+import { MapPin, ChevronRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import legacyfitLogo from "@/assets/legacyfit-logo.png";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface Challenge {
   id: string;
@@ -57,11 +55,55 @@ const Challenges = () => {
   const active = challenges.filter((c) => c.is_active);
   const past = challenges.filter((c) => !c.is_active);
 
-  // Group active challenges by visual heading
-  const womensHistory = active.filter((c) => c.slug !== "pride");
+  // Section groupings
+  const womensHistory = active.filter(
+    (c) => c.slug !== "pride" && !c.edition.toLowerCase().includes("first black pioneers")
+  );
   const pride = active.filter((c) => c.slug === "pride");
+  const pioneers = active.filter((c) => c.edition.toLowerCase().includes("first black pioneers"));
 
-  const ChallengeCard = ({ c }: { c: Challenge }) => {
+  // ── Card components ──────────────────────────────────────────────
+
+  const WomensHistoryCard = ({ c }: { c: Challenge }) => {
+    const isCurrentChallenge = activeChallenge?.challengeId === c.id;
+    const isLocked = !!activeChallenge && !activeChallenge.isCompleted && !isCurrentChallenge;
+
+    const Wrapper = isLocked ? "div" : Link;
+    const wrapperProps = isLocked
+      ? { className: "group relative overflow-hidden rounded-xl bg-card border border-border p-6 opacity-50 cursor-not-allowed" }
+      : {
+          to: `/challenge/${c.slug}`,
+          className: "group relative overflow-hidden rounded-xl bg-card border border-border hover:border-[#C084FC] transition-colors p-6",
+          style: { boxShadow: "none" } as React.CSSProperties,
+          onMouseEnter: (e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(192, 132, 252, 0.3)"; },
+          onMouseLeave: (e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.boxShadow = "none"; },
+        };
+
+    return (
+      <Wrapper key={c.id} {...(wrapperProps as any)}>
+        <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-[#C084FC] transition-colors">
+          {c.title}
+        </h3>
+        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{c.description}</p>
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{c.total_miles} miles</span>
+        </div>
+        {isCurrentChallenge && (
+          <span className="absolute top-6 right-6 text-xs font-medium px-2 py-1 rounded-full bg-[#C084FC]/10 text-[#C084FC] border border-[#C084FC]/20">
+            Active
+          </span>
+        )}
+        {isLocked && (
+          <span className="absolute top-6 right-6 text-xs text-muted-foreground">Locked</span>
+        )}
+        {!isLocked && !isCurrentChallenge && (
+          <ChevronRight className="absolute top-6 right-6 w-5 h-5 text-muted-foreground group-hover:text-[#C084FC] transition-colors" />
+        )}
+      </Wrapper>
+    );
+  };
+
+  const PrideCard = ({ c }: { c: Challenge }) => {
     const isCurrentChallenge = activeChallenge?.challengeId === c.id;
     const isLocked = !!activeChallenge && !activeChallenge.isCompleted && !isCurrentChallenge;
 
@@ -94,7 +136,7 @@ const Challenges = () => {
     );
   };
 
-  const WomensHistoryCard = ({ c }: { c: Challenge }) => {
+  const PioneersCard = ({ c }: { c: Challenge }) => {
     const isCurrentChallenge = activeChallenge?.challengeId === c.id;
     const isLocked = !!activeChallenge && !activeChallenge.isCompleted && !isCurrentChallenge;
 
@@ -103,15 +145,15 @@ const Challenges = () => {
       ? { className: "group relative overflow-hidden rounded-xl bg-card border border-border p-6 opacity-50 cursor-not-allowed" }
       : {
           to: `/challenge/${c.slug}`,
-          className: "group relative overflow-hidden rounded-xl bg-card border border-border hover:border-[#C084FC] transition-colors p-6",
-          style: { boxShadow: 'none' } as React.CSSProperties,
-          onMouseEnter: (e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.boxShadow = '0 0 20px rgba(192, 132, 252, 0.3)'; },
-          onMouseLeave: (e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.boxShadow = 'none'; },
+          className: "group relative overflow-hidden rounded-xl bg-card border border-border hover:border-amber-700/50 transition-colors p-6",
+          style: { boxShadow: "none" } as React.CSSProperties,
+          onMouseEnter: (e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.boxShadow = "0 0 20px rgba(180, 83, 9, 0.25)"; },
+          onMouseLeave: (e: React.MouseEvent) => { (e.currentTarget as HTMLElement).style.boxShadow = "none"; },
         };
 
     return (
       <Wrapper key={c.id} {...(wrapperProps as any)}>
-        <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-[#C084FC] transition-colors">
+        <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-amber-600 transition-colors">
           {c.title}
         </h3>
         <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{c.description}</p>
@@ -119,7 +161,7 @@ const Challenges = () => {
           <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />{c.total_miles} miles</span>
         </div>
         {isCurrentChallenge && (
-          <span className="absolute top-6 right-6 text-xs font-medium px-2 py-1 rounded-full bg-[#C084FC]/10 text-[#C084FC] border border-[#C084FC]/20">
+          <span className="absolute top-6 right-6 text-xs font-medium px-2 py-1 rounded-full bg-amber-700/10 text-amber-600 border border-amber-700/20">
             Active
           </span>
         )}
@@ -127,7 +169,7 @@ const Challenges = () => {
           <span className="absolute top-6 right-6 text-xs text-muted-foreground">Locked</span>
         )}
         {!isLocked && !isCurrentChallenge && (
-          <ChevronRight className="absolute top-6 right-6 w-5 h-5 text-muted-foreground group-hover:text-[#C084FC] transition-colors" />
+          <ChevronRight className="absolute top-6 right-6 w-5 h-5 text-muted-foreground group-hover:text-amber-600 transition-colors" />
         )}
       </Wrapper>
     );
@@ -174,41 +216,37 @@ const Challenges = () => {
         </section>
       ) : (
         <>
-          {/* Free Walk — hidden from users, preserved in codebase */}
-          {/* <section className="pb-10 px-4">
-            <div className="container mx-auto max-w-5xl">
-              <h2 className="text-2xl font-bold text-foreground mb-6">Free to Try</h2>
-              <Link
-                to="/free-walk"
-                className="group relative overflow-hidden rounded-xl bg-card border border-border hover:border-primary/50 transition-colors p-6 block max-w-sm"
-              >
-                <span className="absolute top-4 right-4 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
-                  Free
-                </span>
-                <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors pr-14">
-                  Entry Experience of LegacyFit
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Take a virtual 5-mile walk through 11 historical milestones. No account needed — just lace up and go.
-                </p>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1"><MapPin className="w-4 h-4" />5 miles</span>
-                </div>
-                <ChevronRight className="absolute bottom-6 right-6 w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-              </Link>
-            </div>
-          </section> */}
-
           {/* Women's History Edition */}
           {womensHistory.length > 0 && (
             <section className="pb-16 px-4">
               <div className="container mx-auto max-w-5xl">
                 <h2 className="text-2xl font-bold mb-6">
-                  <span style={{ color: '#C084FC' }}>Women's History Edition</span>
+                  <span style={{ color: "#C084FC" }}>Women's History Edition</span>
                 </h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   {womensHistory.map((c) => (
                     <WomensHistoryCard key={c.id} c={c} />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* First Black Pioneers Edition */}
+          {pioneers.length > 0 && (
+            <section className="pb-16 px-4">
+              <div className="container mx-auto max-w-5xl">
+                <h2 className="text-2xl font-bold mb-6">
+                  <span style={{
+                    background: "linear-gradient(90deg, #b45309, #d97706, #92400e)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}>First Black Pioneers Edition</span>
+                </h2>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {pioneers.map((c) => (
+                    <PioneersCard key={c.id} c={c} />
                   ))}
                 </div>
               </div>
@@ -221,15 +259,15 @@ const Challenges = () => {
               <div className="container mx-auto max-w-5xl">
                 <h2 className="text-2xl font-bold mb-6">
                   <span style={{
-                    background: 'linear-gradient(90deg, #C94F7C, #E07A5F, #D4A373, #6C9A8B, #4A90A4, #6D597A)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
+                    background: "linear-gradient(90deg, #C94F7C, #E07A5F, #D4A373, #6C9A8B, #4A90A4, #6D597A)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
                   }}>Pride Edition</span>
                 </h2>
                 <div className="grid md:grid-cols-2 gap-6">
                   {pride.map((c) => (
-                    <ChallengeCard key={c.id} c={c} />
+                    <PrideCard key={c.id} c={c} />
                   ))}
                 </div>
               </div>
