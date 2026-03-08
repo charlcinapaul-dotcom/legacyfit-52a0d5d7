@@ -90,7 +90,7 @@ serve(async (req: Request): Promise<Response> => {
 
     for (const milestone of milestones) {
       try {
-        const textToSpeak = milestone.stamp_copy || milestone.title;
+        const textToSpeak = milestone.historical_event || milestone.title;
         if (!textToSpeak) {
           results.push({ id: milestone.id, title: milestone.title, success: false, error: "No text" });
           continue;

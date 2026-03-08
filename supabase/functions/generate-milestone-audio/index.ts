@@ -46,7 +46,7 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const textToSpeak = milestone.stamp_copy || milestone.title;
+    const textToSpeak = milestone.historical_event || milestone.title;
     if (!textToSpeak) {
       throw new Error("No text available for TTS");
     }
