@@ -48,7 +48,7 @@ const WhyWeGive = () => (
           <div className="flex items-start gap-3 bg-card border border-border rounded-xl p-6 my-6">
             <Ribbon className="w-6 h-6 text-pink-400 shrink-0 mt-1" />
             <p className="text-foreground font-medium">
-              That's why $5 from every registration is reserved for breast cancer support initiatives.
+              A portion of every registration is reserved for breast cancer support initiatives.
             </p>
           </div>
           <p>Because this is bigger than miles logged.</p>
