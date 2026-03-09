@@ -247,14 +247,24 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
-            Welcome back, {profile?.display_name || "Explorer"}!
-          </h1>
-          <p className="text-muted-foreground">
-            Ready to unlock more history today?
-          </p>
+        {/* Hero Section */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary via-card to-secondary border border-border mb-8">
+          <div className="absolute inset-0 bg-gradient-to-r from-background/80 to-transparent z-10" />
+          {activeChallenge?.imageUrl && (
+            <img
+              src={activeChallenge.imageUrl}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover opacity-30"
+            />
+          )}
+          <div className="relative z-20 p-6 md:p-10">
+            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+              Welcome back, {profile?.display_name || "Explorer"}!
+            </h1>
+            <p className="text-muted-foreground">
+              Ready to unlock more history today?
+            </p>
+          </div>
         </div>
 
         {/* Quick Stats */}
