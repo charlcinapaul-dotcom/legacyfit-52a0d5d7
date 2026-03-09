@@ -1,27 +1,28 @@
 
-## Fix: Hero Stamp Grid Alignment
+## Root Cause
 
-### Root Cause
-The `StampGridBackground` grid has three compounding issues:
-1. **`p-1` padding** on each cell creates visible dark borders/seams between stamps
-2. **Grid row height** isn't forced to fill — on different screen heights the 4-row grid (desktop) or 6-row grid (mobile) doesn't distribute evenly, causing rows to collapse
-3. **`object-contain`** leaves empty space since stamps are circular images on transparent PNGs — the transparent corners show through as dark gaps
+The `create-checkout` edge function is working correctly and returning a valid Stripe URL every time. The network logs confirm `200` responses with valid `checkout.stripe.com` URLs.
 
-### Fix Plan
+The bug is in `ChallengePricing.tsx` line 117:
+```ts
+window.open(data.url, "_blank");  // ← BLOCKED by popup blocker
+```
 
-**1. Remove cell padding** — change `p-1` to `p-0` so stamps tile edge-to-edge with no seam
+`window.open()` to a new tab is blocked by browsers when called after an `await` inside an async function, because the browser no longer considers it a direct user gesture. The user's click event context is lost during the async `supabase.functions.invoke()` call.
 
-**2. Force rows to fill height** — add `auto-rows-fr` (fractional rows) so every row takes equal height regardless of total content height. Since stamps are square, also set `aspect-square` at cell level and make the outer grid use `content-stretch`
+## Fix
 
-**3. Increase grid count per breakpoint** — 24 cells may not be enough to fill the full hero height on tall screens. Bump to 48 cells (mobile 4×12, desktop 6×8) to guarantee full coverage
+Change line 117 in `src/components/ChallengePricing.tsx`:
+```ts
+// FROM:
+window.open(data.url, "_blank");
 
-**4. Fix image sizing** — switch from `w-full h-full object-contain` to `w-full h-full object-cover` so the circular stamp fills each cell without transparent-corner gaps. Since the stamps are on transparent PNGs, the better fix is to keep `object-contain` but ensure each cell has a matching parchment/neutral background to fill any gaps, or alternatively use `scale-110` to slightly overflow and hide corners
+// TO:
+window.location.href = data.url;
+```
 
-**Exact changes to `StampGridBackground.tsx`:**
-- `GRID_COUNT` → 48
-- Remove `p-1` from cell div
-- Add `grid-rows-[repeat(12,1fr)] md:grid-rows-[repeat(8,1fr)]` to the grid div so rows distribute evenly
-- Keep `object-contain` but set cell background to a neutral dark so transparent PNG corners don't show white
+This navigates the current tab to Stripe Checkout, which always works regardless of popup blockers. After payment, Stripe redirects back to `/payment-success?session_id=...` as configured in the edge function.
 
-### Files to Change
-- `src/components/StampGridBackground.tsx` — grid count, cell padding, row sizing
+## Files to Change
+
+- `src/components/ChallengePricing.tsx` — line 117 only
