@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-const GRID_COUNT = 24;
+const GRID_COUNT = 18;
 
 const StampGridBackground = () => {
   const { data: stamps } = useQuery({
@@ -12,7 +12,7 @@ const StampGridBackground = () => {
         .select("id, stamp_image_url")
         .not("stamp_image_url", "is", null)
         .order("order_index")
-        .limit(24);
+        .limit(18);
       if (error) throw error;
       return data?.filter((m) => m.stamp_image_url) ?? [];
     },
@@ -24,7 +24,7 @@ const StampGridBackground = () => {
   return (
     <div className="absolute inset-0 overflow-hidden bg-black">
       {/* 6 cols × 4 rows = 24 stamps, fully static */}
-      <div className="grid grid-cols-6 grid-rows-4 h-full w-full">
+      <div className="grid grid-cols-6 grid-rows-3 h-full w-full">
         {Array.from({ length: GRID_COUNT }, (_, i) => {
           const stamp = stamps?.[i % (stamps.length || 1)];
           return (
