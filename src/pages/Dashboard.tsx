@@ -247,7 +247,7 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {/* Hero Section */}
+        {/* Hero Section — matches challenge page hero layout */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary via-card to-secondary border border-border mb-8">
           <div className="absolute inset-0 bg-gradient-to-r from-background/80 to-transparent z-10" />
           {activeChallenge?.imageUrl && (
@@ -257,60 +257,42 @@ const Dashboard = () => {
               className="absolute inset-0 w-full h-full object-cover opacity-30"
             />
           )}
+
           <div className="relative z-20 p-6 md:p-10">
-            <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
               Welcome back, {profile?.display_name || "Explorer"}!
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground max-w-xl mb-8">
               Ready to unlock more history today?
             </p>
+
+            {/* Stats Grid — inside hero with backdrop tiles, matching challenge page */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 border border-border">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <TrendingUp className="w-4 h-4" />
+                  <span className="text-xs uppercase tracking-wide">Total Miles</span>
+                </div>
+                <div className="text-2xl font-bold text-foreground">{profile?.total_miles || 0}</div>
+              </div>
+
+              <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 border border-border">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Target className="w-4 h-4" />
+                  <span className="text-xs uppercase tracking-wide">Milestones</span>
+                </div>
+                <div className="text-2xl font-bold text-foreground">{milestoneCount}</div>
+              </div>
+
+              <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 border border-border">
+                <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                  <Award className="w-4 h-4" />
+                  <span className="text-xs uppercase tracking-wide">Stamps</span>
+                </div>
+                <div className="text-2xl font-bold text-foreground">{stampCount}</div>
+              </div>
+            </div>
           </div>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-foreground">{profile?.total_miles || 0}</p>
-                  <p className="text-xs text-muted-foreground">Total Miles</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
-                  <Target className="w-5 h-5 text-accent" />
-                </div>
-                <div>
-                   <p className="text-2xl font-bold text-foreground">{milestoneCount}</p>
-                   <p className="text-xs text-muted-foreground">Milestones</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-border">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Award className="w-5 h-5 text-primary" />
-                </div>
-                <div>
-                   <p className="text-2xl font-bold text-foreground">{stampCount}</p>
-                   <p className="text-xs text-muted-foreground">Stamps</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
         </div>
 
         {/* Log Miles - inline if active challenge exists */}
