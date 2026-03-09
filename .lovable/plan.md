@@ -1,28 +1,35 @@
 
 ## Root Cause
 
-The `create-checkout` edge function is working correctly and returning a valid Stripe URL every time. The network logs confirm `200` responses with valid `checkout.stripe.com` URLs.
+Two bugs in `StampGridBackground.tsx`:
 
-The bug is in `ChallengePricing.tsx` line 117:
-```ts
-window.open(data.url, "_blank");  // ← BLOCKED by popup blocker
+**1. Overlapping stamps:**
+The cell div uses `aspect-square` while the grid uses `grid-rows-4 h-full`. These two constraints fight each other. `aspect-square` forces each cell to be as tall as it is wide (~1/6 of viewport width), but `grid-rows-4 h-full` forces the grid to stretch to full container height and distributes rows evenly. The cell's intrinsic `aspect-square` size and the grid's forced row height don't agree — cells overflow their grid tracks and overlap neighbors.
+
+**Fix:** Remove `aspect-square` from the cell. The grid already distributes rows via `grid-rows-4 h-full`, so cells will naturally fill their track. No need for `aspect-square` at all.
+
+**2. One stamp different size:**
+The query fetches stamps filtered by `stamp_image_url IS NOT NULL` and ordered by `order_index`, then wraps with `i % stamps.length`. If fewer than 24 stamps exist in the DB (e.g. 23), the modulo wraps one slot back to index 0 — that stamp gets rendered twice. One of the two copies of the same stamp might have a different rendered dimension due to its natural image dimensions conflicting with the cell size.
+
+More likely: with `aspect-square` removed but `object-contain` kept, stamp images that have different natural aspect ratios (e.g. one that is more rectangular) will render at a different visible size within the cell. The fix is `object-cover` so every image fills its cell identically regardless of source dimensions — OR keep `object-contain` but give all cells identical dimensions via the grid layout.
+
+**Combined Fix:**
+- Remove `aspect-square` from the cell `div` — cells size to grid track height
+- Add `w-full h-full` explicitly to the cell `div` to ensure it fills its grid track completely
+- Keep `object-contain` on img with `w-full h-full` — stamps are circular PNGs so `object-contain` keeps them correctly proportioned inside a square cell
+
+### Exact Change — `src/components/StampGridBackground.tsx`
+
+**Line 31:** Change cell div from:
+```tsx
+<div key={i} className="aspect-square bg-black overflow-hidden">
+```
+To:
+```tsx
+<div key={i} className="bg-black overflow-hidden w-full h-full">
 ```
 
-`window.open()` to a new tab is blocked by browsers when called after an `await` inside an async function, because the browser no longer considers it a direct user gesture. The user's click event context is lost during the async `supabase.functions.invoke()` call.
+That's the only change needed. The grid is `grid-cols-6 grid-rows-4 h-full w-full` — each of the 24 cells will occupy exactly 1/6 width × 1/4 height of the container, evenly, with no overlap and uniform sizing.
 
-## Fix
-
-Change line 117 in `src/components/ChallengePricing.tsx`:
-```ts
-// FROM:
-window.open(data.url, "_blank");
-
-// TO:
-window.location.href = data.url;
-```
-
-This navigates the current tab to Stripe Checkout, which always works regardless of popup blockers. After payment, Stripe redirects back to `/payment-success?session_id=...` as configured in the edge function.
-
-## Files to Change
-
-- `src/components/ChallengePricing.tsx` — line 117 only
+### Files to Change
+- `src/components/StampGridBackground.tsx` — remove `aspect-square`, add `w-full h-full` on cell div (line 31 only)
