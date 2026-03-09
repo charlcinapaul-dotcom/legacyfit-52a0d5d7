@@ -242,16 +242,29 @@ Displays an ordered list of the 6 milestones as cards.
 - Locked milestones show a lock icon and "Reach X mi" label.
 - Implementation lives in `src/pages/ChallengePassport.tsx` → `<TabsContent value="checkpoint">`.
 
-### Stamp Visual Design Standard
+### Stamp Visual Design Standard (Women's History Edition parchment spec — applies to ALL editions)
 
-All stamp images follow a vintage passport aesthetic:
-- **Shape**: Circular with double concentric outer ring
-- **Top arc**: Decorative wheat or laurel wreath
-- **Bottom edge**: `LEGACYFIT` brand mark
-- **Typography**: Bold serif all-caps name + location subtitle + rectangular mileage banner
-- **Ink style**: Worn/distressed aesthetic
-- **Colors**: Burgundy Red or Navy Blue (baked into PNG — not controlled by CSS)
-- **Generation**: AI via `google/gemini-3-pro-image-preview` → stored in `challenge-images` storage bucket at `stamps/` path → URL written to `milestones.stamp_image_url` and `passport_stamp_images` table
+All stamp images MUST follow this vintage parchment aesthetic. This is the **binding standard** for every edition.
+
+| Property | Requirement |
+|---|---|
+| **Canvas background** | Aged parchment paper — `#F5EDD8` warm cream/tan texture. Covers the **entire** square canvas. No white, no grey, no transparent pixels. |
+| **Shape** | Circular with **double concentric outer ring** |
+| **Top arc** | Decorative wheat or laurel wreath above the name |
+| **Bottom edge** | `LEGACYFIT` brand mark |
+| **Center text** | Pioneer/person name — bold serif all-caps, dominant text (unique per stamp) |
+| **Mileage banner** | Horizontal ribbon/banner — e.g. `"5 MILES"` (unique per milestone) |
+| **Location subtitle** | `location_name` below the name (unique per milestone) |
+| **Ink color** | Deep Navy `#1E3A5F` or Burgundy Red `#7A1E2C` — distressed/worn, not flat |
+| **Typography style** | Bold serif all-caps, vintage hand-crafted look |
+| **Generation model** | `google/gemini-3-pro-image-preview` |
+| **Storage path** | `challenge-images` bucket → `stamps/{milestone_id}.png` |
+| **DB write** | URL written to `milestones.stamp_image_url` AND `passport_stamp_images` table |
+| **UI container** | `bg-[#F5EDD8] rounded-lg` on the `<img>` wrapper in `PassportStamp.tsx` |
+
+**Locked stamp display**: `blur-sm opacity-80` — artwork visible but obscured until milestone threshold reached.
+
+> **Why parchment?** The `#F5EDD8` warm cream background is the defining aesthetic of the Women's History Edition and must apply uniformly to all editions for visual consistency across the platform.
 
 ---
 
