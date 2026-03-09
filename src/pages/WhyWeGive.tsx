@@ -71,7 +71,7 @@ const WhyWeGive = () => (
           <Ribbon className="w-10 h-10 text-primary mx-auto mb-6" />
           <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-4">Our Commitment</h2>
           <p className="text-xl text-foreground font-medium mb-4">
-            $5 from every registration is reserved for breast cancer support initiatives.
+            A portion of every registration is reserved for breast cancer support initiatives.
           </p>
           <p className="text-muted-foreground">
             No vague language. No hidden math. Transparent giving, every time.
