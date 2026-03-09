@@ -108,6 +108,9 @@ export default {
           "50%": { opacity: "0.5" },
         },
       },
+      gridTemplateRows: {
+        "10": "repeat(10, minmax(0, 1fr))",
+      },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
