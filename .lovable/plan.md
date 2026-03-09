@@ -1,40 +1,28 @@
 
 ## Root Cause
 
-The hero `<section>` has no explicit height — it's only as tall as its padding + content (`pt-16 pb-20`). The `StampGridBackground` uses `absolute inset-0` so it fills that short section, leaving large empty areas.
+The `create-checkout` edge function is working correctly and returning a valid Stripe URL every time. The network logs confirm `200` responses with valid `checkout.stripe.com` URLs.
 
-Looking at the screenshot: the stamps should tile across the **full viewport height** of the hero, with the content centered in the middle — exactly like The Conqueror layout.
-
-Two issues to fix:
-
-**1. Hero section needs `min-h-screen`**  
-Add `min-h-screen` to the hero `<section>` in `Landing.tsx` so it fills the full viewport. Content should be vertically centered inside it.
-
-**2. Cell `aspect-square` must be removed**  
-The `aspect-square` class on each grid cell (line 31 of `StampGridBackground.tsx`) conflicts with `grid-rows-3 h-full`. Each cell forces itself to be square (1/6 viewport width tall), then the 3 rows of squares don't fill the full height — leaving gaps. Removing `aspect-square` and using `w-full h-full` lets the grid distribute rows evenly across the full height.
-
-### Changes
-
-**`src/pages/Landing.tsx` — line 35:**
-```
-// From:
-<section className="relative pt-16 pb-20 px-4 overflow-hidden w-full max-w-full">
-
-// To:
-<section className="relative min-h-screen flex flex-col justify-center pt-16 pb-20 px-4 overflow-hidden w-full max-w-full">
+The bug is in `ChallengePricing.tsx` line 117:
+```ts
+window.open(data.url, "_blank");  // ← BLOCKED by popup blocker
 ```
 
-**`src/components/StampGridBackground.tsx` — line 31:**
+`window.open()` to a new tab is blocked by browsers when called after an `await` inside an async function, because the browser no longer considers it a direct user gesture. The user's click event context is lost during the async `supabase.functions.invoke()` call.
+
+## Fix
+
+Change line 117 in `src/components/ChallengePricing.tsx`:
+```ts
+// FROM:
+window.open(data.url, "_blank");
+
+// TO:
+window.location.href = data.url;
 ```
-// From:
-<div key={i} className="aspect-square bg-black overflow-hidden">
 
-// To:
-<div key={i} className="w-full h-full bg-black overflow-hidden">
-```
+This navigates the current tab to Stripe Checkout, which always works regardless of popup blockers. After payment, Stripe redirects back to `/payment-success?session_id=...` as configured in the edge function.
 
-These two changes together make the hero fill the full viewport height and the stamp grid tile evenly across it with no gaps — matching the reference screenshot.
+## Files to Change
 
-### Files to Change
-- `src/pages/Landing.tsx` — line 35: add `min-h-screen flex flex-col justify-center`
-- `src/components/StampGridBackground.tsx` — line 31: replace `aspect-square` with `w-full h-full`
+- `src/components/ChallengePricing.tsx` — line 117 only

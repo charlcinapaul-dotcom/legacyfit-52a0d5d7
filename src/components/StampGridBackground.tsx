@@ -28,7 +28,7 @@ const StampGridBackground = () => {
         {Array.from({ length: GRID_COUNT }, (_, i) => {
           const stamp = stamps?.[i % (stamps.length || 1)];
           return (
-            <div key={i} className="aspect-square bg-black overflow-hidden">
+            <div key={i} className="w-full h-full bg-black overflow-hidden">
               {stamp?.stamp_image_url && (
                 <img
                   src={stamp.stamp_image_url}
