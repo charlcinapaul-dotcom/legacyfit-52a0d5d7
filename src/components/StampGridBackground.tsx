@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-const GRID_COUNT = 24;
+const GRID_COUNT = 18;
 
 const StampGridBackground = () => {
   const { data: stamps } = useQuery({
@@ -12,7 +12,7 @@ const StampGridBackground = () => {
         .select("id, stamp_image_url")
         .not("stamp_image_url", "is", null)
         .order("order_index")
-        .limit(24);
+        .limit(18);
       if (error) throw error;
       return data?.filter((m) => m.stamp_image_url) ?? [];
     },
