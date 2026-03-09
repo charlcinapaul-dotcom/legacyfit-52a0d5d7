@@ -39,7 +39,7 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
         primaryBtn: "bg-[#7A1E2C] hover:bg-[#9E2A3C] text-white",
         secondaryBtn:
           "border border-[#7A1E2C]/40 text-[#7A1E2C] hover:bg-[#7A1E2C]/5 bg-transparent",
-        ring: "ring-2 ring-[#7A1E2C]/30 border-[#7A1E2C]/30",
+        ring: "border-2 border-[#7A1E2C]/30",
         fanBadge: "bg-[#7A1E2C]/10 text-[#7A1E2C] border-[#7A1E2C]/25",
         price: "text-[#7A1E2C]",
       };
