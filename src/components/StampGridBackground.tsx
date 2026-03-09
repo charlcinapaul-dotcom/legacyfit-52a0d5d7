@@ -1,10 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-const COLS_MOBILE = 6;
-const COLS_DESKTOP = 8;
-const ROWS = 10;
-const GRID_COUNT = COLS_DESKTOP * ROWS; // 80 cells — enough for largest breakpoint
+// 8 cols × 10 rows = 80 cells on desktop; 6 cols × 10 rows on mobile
+const GRID_COUNT = 80;
 
 const StampGridBackground = () => {
   const { data: stamps } = useQuery({
@@ -26,104 +24,21 @@ const StampGridBackground = () => {
 
   if (!stamps?.length) return null;
 
-  // Repeat stamps to fill all cells
   const gridStamps = Array.from({ length: GRID_COUNT }, (_, i) => ({
-    ...stamps[i % stamps.length],
-    gridKey: `${stamps[i % stamps.length].id}-${i}`,
+    url: stamps[i % stamps.length].stamp_image_url!,
+    key: `${stamps[i % stamps.length].id}-${i}`,
   }));
 
   return (
-    <div
-      className="absolute inset-0 overflow-hidden stamp-grid-bg"
-      style={{ willChange: "auto" }}
-    >
-      {/* Static stamp grid — no transitions, no animations */}
-      <div
-        className="absolute inset-0"
-        style={{
-          display: "grid",
-          gridTemplateColumns: `repeat(${COLS_MOBILE}, 1fr)`,
-          gridTemplateRows: `repeat(${ROWS}, 1fr)`,
-          width: "100%",
-          height: "100%",
-          position: "absolute",
-          top: 0,
-          left: 0,
-        }}
-      >
-        {gridStamps.map((stamp) => (
-          <div
-            key={stamp.gridKey}
-            style={{
-              backgroundColor: "#000",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
-            }}
-          >
+    <div className="absolute inset-0 overflow-hidden stamp-grid-bg">
+      {/* Fully static stamp grid — no transitions, no animations, no transforms */}
+      <div className="absolute inset-0 grid grid-cols-6 md:grid-cols-8 grid-rows-10 bg-black">
+        {gridStamps.map(({ url, key }) => (
+          <div key={key} className="bg-black overflow-hidden">
             <img
-              src={stamp.stamp_image_url!}
+              src={url}
               alt=""
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "contain",
-                opacity: 0.45,
-                filter: "blur(0.4px)",
-                display: "block",
-                flexShrink: 0,
-              }}
-              loading="eager"
-              draggable={false}
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* Wider desktop grid overlay using CSS media query approach */}
-      <style>{`
-        @media (min-width: 768px) {
-          .stamp-grid-inner {
-            grid-template-columns: repeat(${COLS_DESKTOP}, 1fr) !important;
-          }
-        }
-      `}</style>
-      <div
-        className="stamp-grid-inner absolute inset-0"
-        style={{
-          display: "grid",
-          gridTemplateColumns: `repeat(${COLS_MOBILE}, 1fr)`,
-          gridTemplateRows: `repeat(${ROWS}, 1fr)`,
-          width: "100%",
-          height: "100%",
-          position: "absolute",
-          top: 0,
-          left: 0,
-        }}
-      >
-        {gridStamps.map((stamp) => (
-          <div
-            key={`d-${stamp.gridKey}`}
-            style={{
-              backgroundColor: "#000",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
-            }}
-          >
-            <img
-              src={stamp.stamp_image_url!}
-              alt=""
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "contain",
-                opacity: 0.45,
-                filter: "blur(0.4px)",
-                display: "block",
-              }}
+              className="w-full h-full object-contain opacity-45"
               loading="eager"
               draggable={false}
             />
@@ -133,8 +48,8 @@ const StampGridBackground = () => {
 
       {/* Dark overlay for text readability */}
       <div
-        className="absolute inset-0"
-        style={{ backgroundColor: "rgba(0,0,0,0.45)", pointerEvents: "none" }}
+        className="absolute inset-0 pointer-events-none"
+        style={{ backgroundColor: "rgba(0,0,0,0.45)" }}
       />
     </div>
   );
