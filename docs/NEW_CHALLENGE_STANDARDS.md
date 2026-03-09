@@ -54,22 +54,87 @@ Every challenge MUST have **exactly 6 milestones**. No more, no fewer.
 ## 4. Stamp Image Generation Rules
 
 - **Trigger**: NOT automatic — must be manually generated via the admin UI after insert.
-- **Style**: Vintage passport stamp aesthetic. Circular or rectangular with worn/distressed edges.
-- **Colors**: Deep blue, burgundy, or sepia. Baked into PNG — not controlled by CSS.
-- **Required elements**: `stamp_title`, `location_name`, miles badge (`stamp_mileage_display`), small `LegacyFit` brand mark.
-- **Uniqueness**: Every stamp image must be visually distinct. No duplicate imagery across challenges.
-- **Storage**: Saved to `passport_stamp_images` table AND mirrored to `milestones.stamp_image_url`.
-- **Action required**: After all 6 milestones are inserted, call `generate-stamp-image` for each via admin panel. Confirm all 6 images are set before activating the challenge.
+- **Generation model**: `google/gemini-3-pro-image-preview` via `generate-all-stamps` edge function.
+
+### 4a. Parchment Background Standard (REQUIRED — matches Women's History Edition)
+
+Every stamp MUST use the aged parchment aesthetic:
+
+- **Canvas background**: Aged parchment paper — hex `#F5EDD8` warm cream/tan texture covering the **entire** square canvas. No white areas, no grey areas, no transparent corners.
+- **Ink colors**: Deep Navy (`#1E3A5F`) or Burgundy Red (`#7A1E2C`) — distressed/worn look, not flat.
+- **Prompt enforcement**: The generation prompt must explicitly state `"aged parchment paper background (#F5EDD8 warm cream). The entire canvas must use the warm cream/tan parchment texture — no white, no grey, no transparent areas."`.
+
+### 4b. Required Visual Elements (ALL must be present)
+
+| Element | Source field | Placement |
+|---|---|---|
+| **Pioneer/person name** | `stamp_title` or `milestones.title` | Center, bold serif all-caps, dominant text |
+| **Mileage banner** | `stamp_mileage_display` | Horizontal ribbon/banner across stamp (e.g. `"5 MILES"`) |
+| **Historical location** | `location_name` | Below the name, smaller subtitle text |
+| **Double concentric outer ring** | — | Circular outer border with two rings |
+| **Decorative wheat or laurel wreath** | — | Top arc of the stamp, above the name |
+| **LEGACYFIT brand mark** | — | Bottom edge of stamp |
+
+### 4c. Uniqueness Requirements
+
+Every stamp is unique along **three dimensions**:
+1. **Person** — the pioneer's name is the dominant center text.
+2. **Mile** — the mileage banner reflects the exact `miles_required` of that milestone.
+3. **Location** — the `location_name` appears below the name and should visually differ per stamp.
+
+No two stamps across any challenges may share the same visual composition.
+
+### 4d. Storage & Admin Workflow
+
+- **Storage**: Saved to `challenge-images` bucket at path `stamps/{milestone_id}.png` → URL written to both `milestones.stamp_image_url` AND `passport_stamp_images` table.
+- **UI containers**: Stamp image containers in `PassportStamp.tsx` use `bg-[#F5EDD8] rounded-lg` to provide visual fallback consistency while stamps load.
+- **Admin reset**: If stamps were generated with incorrect backgrounds (white/grey), use the **"Reset Pioneers Stamps"** button on `/admin/validate` to null-out `stamp_image_url` for all milestones in the affected challenges, then re-trigger generation.
+- **Action required**: After all 6 milestones are inserted, trigger `generate-all-stamps` (batch of 10) via admin panel. Confirm all 6 `stamp_image_url` values are populated before activating the challenge.
 
 ---
 
 ## 5. Pricing Rules
 
-- LegacyFit uses **two global price tiers** for all challenges — there is no per-challenge pricing.
-- `digital` tier → Stripe Price ID `price_1T8emA3JzkAB6gcFRznutdsG` → **$12.99 Digital Collection**
-- `boarding_pass` tier → Stripe Price ID `price_1T8emZ3JzkAB6gcFwP7KsM2F` → **$29.00 Collector's Edition**
-- These are defined in `supabase/functions/create-checkout/index.ts` `PRICE_IDS` constant.
-- Do NOT create new Stripe products or prices for individual challenges.
+### 5a. Global Stripe Price Tiers
+
+LegacyFit uses **two global price tiers** for ALL challenges — there is NO per-challenge pricing.
+
+| Tier key | Stripe Price ID | Amount | Label |
+|---|---|---|---|
+| `digital` | `price_1T8emA3JzkAB6gcFRznutdsG` | **$12.99** | Digital Collection |
+| `boarding_pass` | `price_1T8emZ3JzkAB6gcFwP7KsM2F` | **$29.00** | Collector's Edition |
+
+- Price IDs are hardcoded in `supabase/functions/create-checkout/index.ts` in the `PRICE_IDS` constant.
+- Do **NOT** create new Stripe products or prices for individual challenges.
+- Do **NOT** set `price_cents`, `stripe_price_id`, or `stripe_product_id` on the `challenges` row — these fields are left null.
+
+### 5b. What Each Tier Includes
+
+| Tier | Features |
+|---|---|
+| **Digital Collection ($12.99)** | 6 Digital Stamps · Full Challenge Access · Every milestone story · Yours to keep |
+| **Collector's Edition ($29.00)** | 6 Physical Boarding Passes · 6 Digital Stamps · Full Challenge Access · Printed and mailed |
+
+The Collector's Edition is labeled **"Fan Favorite"** in the `ChallengePricing` UI.
+
+### 5c. Reward Codes & Promo Access
+
+LegacyFit has a **reward code** system that grants free enrolled (`paid`) access without going through Stripe checkout.
+
+**How reward codes work:**
+- Codes are stored in the `reward_codes` table (`code`, `user_id`, `is_redeemed`, `redeemed_for_challenge_id`).
+- A user redeems a code via the `RewardCodeRedemption` component shown below the pricing cards on every challenge page.
+- On redemption, the `redeem-reward-code` edge function marks the code `is_redeemed = true` and upserts a `user_challenges` row with `payment_status = 'paid'`.
+- Reward codes are auto-generated for referrers when every 3rd referred user signs up (via `check_referral_reward` DB trigger).
+- Admins can also manually insert codes into `reward_codes` for sponsored or promotional access.
+
+**Important:** Reward code redemption bypasses Stripe entirely — no checkout session is created. The enrolled state is identical to a paid enrollment.
+
+### 5d. Stripe Mode
+
+- The active `STRIPE_SECRET_KEY` secret determines whether Stripe runs in **test mode** (`sk_test_...`) or **live mode** (`sk_live_...`).
+- Price IDs must match the mode: test Price IDs only work with test keys; live Price IDs only work with live keys.
+- **Never mix modes.** Verify the secret matches the hardcoded Price IDs before activating any challenge.
 
 ---
 
@@ -177,16 +242,29 @@ Displays an ordered list of the 6 milestones as cards.
 - Locked milestones show a lock icon and "Reach X mi" label.
 - Implementation lives in `src/pages/ChallengePassport.tsx` → `<TabsContent value="checkpoint">`.
 
-### Stamp Visual Design Standard
+### Stamp Visual Design Standard (Women's History Edition parchment spec — applies to ALL editions)
 
-All stamp images follow a vintage passport aesthetic:
-- **Shape**: Circular with double concentric outer ring
-- **Top arc**: Decorative wheat or laurel wreath
-- **Bottom edge**: `LEGACYFIT` brand mark
-- **Typography**: Bold serif all-caps name + location subtitle + rectangular mileage banner
-- **Ink style**: Worn/distressed aesthetic
-- **Colors**: Burgundy Red or Navy Blue (baked into PNG — not controlled by CSS)
-- **Generation**: AI via `google/gemini-3-pro-image-preview` → stored in `challenge-images` storage bucket at `stamps/` path → URL written to `milestones.stamp_image_url` and `passport_stamp_images` table
+All stamp images MUST follow this vintage parchment aesthetic. This is the **binding standard** for every edition.
+
+| Property | Requirement |
+|---|---|
+| **Canvas background** | Aged parchment paper — `#F5EDD8` warm cream/tan texture. Covers the **entire** square canvas. No white, no grey, no transparent pixels. |
+| **Shape** | Circular with **double concentric outer ring** |
+| **Top arc** | Decorative wheat or laurel wreath above the name |
+| **Bottom edge** | `LEGACYFIT` brand mark |
+| **Center text** | Pioneer/person name — bold serif all-caps, dominant text (unique per stamp) |
+| **Mileage banner** | Horizontal ribbon/banner — e.g. `"5 MILES"` (unique per milestone) |
+| **Location subtitle** | `location_name` below the name (unique per milestone) |
+| **Ink color** | Deep Navy `#1E3A5F` or Burgundy Red `#7A1E2C` — distressed/worn, not flat |
+| **Typography style** | Bold serif all-caps, vintage hand-crafted look |
+| **Generation model** | `google/gemini-3-pro-image-preview` |
+| **Storage path** | `challenge-images` bucket → `stamps/{milestone_id}.png` |
+| **DB write** | URL written to `milestones.stamp_image_url` AND `passport_stamp_images` table |
+| **UI container** | `bg-[#F5EDD8] rounded-lg` on the `<img>` wrapper in `PassportStamp.tsx` |
+
+**Locked stamp display**: `blur-sm opacity-80` — artwork visible but obscured until milestone threshold reached.
+
+> **Why parchment?** The `#F5EDD8` warm cream background is the defining aesthetic of the Women's History Edition and must apply uniformly to all editions for visual consistency across the platform.
 
 ---
 
