@@ -245,7 +245,7 @@ export const ChallengePricing = ({
         {/* Option 2 — Collector's Edition */}
         <div
           className={cn(
-            "relative rounded-xl bg-card p-5 sm:p-6 flex flex-col min-w-0",
+            "relative rounded-xl border bg-card p-5 sm:p-6 flex flex-col min-w-0",
             accent.ring,
           )}
         >

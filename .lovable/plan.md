@@ -1,35 +1,28 @@
 
 ## Root Cause
 
-The Collector's Edition card (right card) is missing its right-side border. Looking at line 246–251:
+The `create-checkout` edge function is working correctly and returning a valid Stripe URL every time. The network logs confirm `200` responses with valid `checkout.stripe.com` URLs.
 
-```tsx
-<div
-  className={cn(
-    "relative rounded-xl bg-card p-5 sm:p-6 flex flex-col min-w-0",
-    accent.ring,
-  )}
->
+The bug is in `ChallengePricing.tsx` line 117:
+```ts
+window.open(data.url, "_blank");  // ← BLOCKED by popup blocker
 ```
 
-The `accent.ring` value for gold (default) is `"ring-2 ring-primary/30 border-primary/30"`. This uses Tailwind's **`ring`** utility (box-shadow based), **not** a CSS `border`. However, `border-primary/30` is also included — but there's no `border` width class (like `border` or `border-2`) on the element itself, so the border color is set but no border is actually drawn on any side. The left card (line 207) uses `border border-border` which explicitly has the `border` class.
+`window.open()` to a new tab is blocked by browsers when called after an `await` inside an async function, because the browser no longer considers it a direct user gesture. The user's click event context is lost during the async `supabase.functions.invoke()` call.
 
-The `ring-2` utility renders via `box-shadow` and should be visible on all sides — but without a `border` class, the right-side border isn't rendered because Tailwind's ring sometimes gets clipped by parent `overflow-hidden` or the `min-w-0` + grid layout on certain screen widths.
+## Fix
 
-### Fix
+Change line 117 in `src/components/ChallengePricing.tsx`:
+```ts
+// FROM:
+window.open(data.url, "_blank");
 
-On the Collector's Edition card div, add `border` to the className alongside `accent.ring`. This ensures the border renders as a true CSS border on all 4 sides:
-
-**Line 248 — change from:**
-```tsx
-"relative rounded-xl bg-card p-5 sm:p-6 flex flex-col min-w-0",
-```
-**To:**
-```tsx
-"relative rounded-xl border bg-card p-5 sm:p-6 flex flex-col min-w-0",
+// TO:
+window.location.href = data.url;
 ```
 
-This adds a `border` class (1px solid) which works together with `border-primary/30` already present in `accent.ring` to draw the colored border on all four sides consistently, matching how the left card uses `border border-border`.
+This navigates the current tab to Stripe Checkout, which always works regardless of popup blockers. After payment, Stripe redirects back to `/payment-success?session_id=...` as configured in the edge function.
 
-### File to Change
-- `src/components/ChallengePricing.tsx` — line 248, add `border` to the Collector's Edition card className
+## Files to Change
+
+- `src/components/ChallengePricing.tsx` — line 117 only
