@@ -39,7 +39,7 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
         primaryBtn: "bg-[#7A1E2C] hover:bg-[#9E2A3C] text-white",
         secondaryBtn:
           "border border-[#7A1E2C]/40 text-[#7A1E2C] hover:bg-[#7A1E2C]/5 bg-transparent",
-        ring: "ring-2 ring-[#7A1E2C]/30 border-[#7A1E2C]/30",
+        ring: "border-2 border-[#7A1E2C]/30",
         fanBadge: "bg-[#7A1E2C]/10 text-[#7A1E2C] border-[#7A1E2C]/25",
         price: "text-[#7A1E2C]",
       };
@@ -52,7 +52,7 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
           "bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 text-white hover:opacity-90",
         secondaryBtn:
           "border border-purple-500/40 text-purple-400 hover:bg-purple-500/5 bg-transparent",
-        ring: "ring-2 ring-purple-500/30 border-purple-500/30",
+        ring: "border-2 border-purple-500/30",
         fanBadge: "bg-purple-500/10 text-purple-400 border-purple-500/25",
         price: "text-purple-400",
       };
@@ -63,7 +63,7 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
         primaryBtn: "bg-primary hover:bg-primary/90 text-primary-foreground",
         secondaryBtn:
           "border border-primary/40 text-primary hover:bg-primary/5 bg-transparent",
-        ring: "ring-2 ring-primary/30 border-primary/30",
+        ring: "border-2 border-primary/30",
         fanBadge: "bg-primary/10 text-primary border-primary/25",
         price: "text-primary",
       };
