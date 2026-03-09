@@ -95,11 +95,46 @@ No two stamps across any challenges may share the same visual composition.
 
 ## 5. Pricing Rules
 
-- LegacyFit uses **two global price tiers** for all challenges — there is no per-challenge pricing.
-- `digital` tier → Stripe Price ID `price_1T8emA3JzkAB6gcFRznutdsG` → **$12.99 Digital Collection**
-- `boarding_pass` tier → Stripe Price ID `price_1T8emZ3JzkAB6gcFwP7KsM2F` → **$29.00 Collector's Edition**
-- These are defined in `supabase/functions/create-checkout/index.ts` `PRICE_IDS` constant.
-- Do NOT create new Stripe products or prices for individual challenges.
+### 5a. Global Stripe Price Tiers
+
+LegacyFit uses **two global price tiers** for ALL challenges — there is NO per-challenge pricing.
+
+| Tier key | Stripe Price ID | Amount | Label |
+|---|---|---|---|
+| `digital` | `price_1T8emA3JzkAB6gcFRznutdsG` | **$12.99** | Digital Collection |
+| `boarding_pass` | `price_1T8emZ3JzkAB6gcFwP7KsM2F` | **$29.00** | Collector's Edition |
+
+- Price IDs are hardcoded in `supabase/functions/create-checkout/index.ts` in the `PRICE_IDS` constant.
+- Do **NOT** create new Stripe products or prices for individual challenges.
+- Do **NOT** set `price_cents`, `stripe_price_id`, or `stripe_product_id` on the `challenges` row — these fields are left null.
+
+### 5b. What Each Tier Includes
+
+| Tier | Features |
+|---|---|
+| **Digital Collection ($12.99)** | 6 Digital Stamps · Full Challenge Access · Every milestone story · Yours to keep |
+| **Collector's Edition ($29.00)** | 6 Physical Boarding Passes · 6 Digital Stamps · Full Challenge Access · Printed and mailed |
+
+The Collector's Edition is labeled **"Fan Favorite"** in the `ChallengePricing` UI.
+
+### 5c. Reward Codes & Promo Access
+
+LegacyFit has a **reward code** system that grants free enrolled (`paid`) access without going through Stripe checkout.
+
+**How reward codes work:**
+- Codes are stored in the `reward_codes` table (`code`, `user_id`, `is_redeemed`, `redeemed_for_challenge_id`).
+- A user redeems a code via the `RewardCodeRedemption` component shown below the pricing cards on every challenge page.
+- On redemption, the `redeem-reward-code` edge function marks the code `is_redeemed = true` and upserts a `user_challenges` row with `payment_status = 'paid'`.
+- Reward codes are auto-generated for referrers when every 3rd referred user signs up (via `check_referral_reward` DB trigger).
+- Admins can also manually insert codes into `reward_codes` for sponsored or promotional access.
+
+**Important:** Reward code redemption bypasses Stripe entirely — no checkout session is created. The enrolled state is identical to a paid enrollment.
+
+### 5d. Stripe Mode
+
+- The active `STRIPE_SECRET_KEY` secret determines whether Stripe runs in **test mode** (`sk_test_...`) or **live mode** (`sk_live_...`).
+- Price IDs must match the mode: test Price IDs only work with test keys; live Price IDs only work with live keys.
+- **Never mix modes.** Verify the secret matches the hardcoded Price IDs before activating any challenge.
 
 ---
 
