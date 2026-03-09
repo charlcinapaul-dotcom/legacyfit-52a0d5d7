@@ -1,7 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-const GRID_COUNT = 48; // enough to fill the section on tall screens
+const COLS_MOBILE = 6;
+const COLS_DESKTOP = 8;
+const ROWS = 10;
+const GRID_COUNT = COLS_DESKTOP * ROWS; // 80 cells — enough for largest breakpoint
 
 const StampGridBackground = () => {
   const { data: stamps } = useQuery({
@@ -12,7 +15,7 @@ const StampGridBackground = () => {
         .select("id, stamp_image_url")
         .not("stamp_image_url", "is", null)
         .order("order_index")
-        .limit(48);
+        .limit(80);
       if (error) throw error;
       return data?.filter((m) => m.stamp_image_url) ?? [];
     },
@@ -21,45 +24,117 @@ const StampGridBackground = () => {
     refetchOnWindowFocus: false,
   });
 
-  // Repeat stamps to fill GRID_COUNT cells if we have fewer unique stamps
-  const gridStamps = stamps?.length
-    ? Array.from({ length: GRID_COUNT }, (_, i) => ({
-        ...stamps[i % stamps.length],
-        gridKey: `${stamps[i % stamps.length].id}-${i}`,
-      }))
-    : [];
+  if (!stamps?.length) return null;
+
+  // Repeat stamps to fill all cells
+  const gridStamps = Array.from({ length: GRID_COUNT }, (_, i) => ({
+    ...stamps[i % stamps.length],
+    gridKey: `${stamps[i % stamps.length].id}-${i}`,
+  }));
 
   return (
-    <div className="absolute inset-0 overflow-hidden stamp-grid-bg">
-      {/* Stamp sheet layer */}
+    <div
+      className="absolute inset-0 overflow-hidden stamp-grid-bg"
+      style={{ willChange: "auto" }}
+    >
+      {/* Static stamp grid — no transitions, no animations */}
       <div
-        className={`absolute inset-0 transition-opacity duration-700 ${
-          gridStamps.length ? "opacity-100" : "opacity-0"
-        }`}
+        className="absolute inset-0"
+        style={{
+          display: "grid",
+          gridTemplateColumns: `repeat(${COLS_MOBILE}, 1fr)`,
+          gridTemplateRows: `repeat(${ROWS}, 1fr)`,
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          top: 0,
+          left: 0,
+        }}
       >
-        <div className="w-full h-full grid grid-cols-4 md:grid-cols-6 grid-rows-[repeat(12,1fr)] md:grid-rows-[repeat(8,1fr)]">
-          {gridStamps.map((stamp) => (
-            <div
-              key={stamp.gridKey}
-              className="flex items-center justify-center bg-black"
-            >
-              <img
-                src={stamp.stamp_image_url!}
-                alt=""
-                className="w-full h-full object-contain opacity-50 blur-[0.5px]"
-                loading="eager"
-                fetchPriority="high"
-                draggable={false}
-              />
-            </div>
-          ))}
-        </div>
+        {gridStamps.map((stamp) => (
+          <div
+            key={stamp.gridKey}
+            style={{
+              backgroundColor: "#000",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+            }}
+          >
+            <img
+              src={stamp.stamp_image_url!}
+              alt=""
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                opacity: 0.45,
+                filter: "blur(0.4px)",
+                display: "block",
+                flexShrink: 0,
+              }}
+              loading="eager"
+              draggable={false}
+            />
+          </div>
+        ))}
+      </div>
+
+      {/* Wider desktop grid overlay using CSS media query approach */}
+      <style>{`
+        @media (min-width: 768px) {
+          .stamp-grid-inner {
+            grid-template-columns: repeat(${COLS_DESKTOP}, 1fr) !important;
+          }
+        }
+      `}</style>
+      <div
+        className="stamp-grid-inner absolute inset-0"
+        style={{
+          display: "grid",
+          gridTemplateColumns: `repeat(${COLS_MOBILE}, 1fr)`,
+          gridTemplateRows: `repeat(${ROWS}, 1fr)`,
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          top: 0,
+          left: 0,
+        }}
+      >
+        {gridStamps.map((stamp) => (
+          <div
+            key={`d-${stamp.gridKey}`}
+            style={{
+              backgroundColor: "#000",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+            }}
+          >
+            <img
+              src={stamp.stamp_image_url!}
+              alt=""
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "contain",
+                opacity: 0.45,
+                filter: "blur(0.4px)",
+                display: "block",
+              }}
+              loading="eager"
+              draggable={false}
+            />
+          </div>
+        ))}
       </div>
 
       {/* Dark overlay for text readability */}
       <div
         className="absolute inset-0"
-        style={{ backgroundColor: "rgba(0,0,0,0.4)" }}
+        style={{ backgroundColor: "rgba(0,0,0,0.45)", pointerEvents: "none" }}
       />
     </div>
   );
