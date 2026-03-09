@@ -52,7 +52,7 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
           "bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 text-white hover:opacity-90",
         secondaryBtn:
           "border border-purple-500/40 text-purple-400 hover:bg-purple-500/5 bg-transparent",
-        ring: "ring-2 ring-purple-500/30 border-purple-500/30",
+        ring: "border-2 border-purple-500/30",
         fanBadge: "bg-purple-500/10 text-purple-400 border-purple-500/25",
         price: "text-purple-400",
       };
