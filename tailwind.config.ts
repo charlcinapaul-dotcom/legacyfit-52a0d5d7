@@ -109,6 +109,7 @@ export default {
         },
       },
       gridTemplateRows: {
+        "4": "repeat(4, minmax(0, 1fr))",
         "10": "repeat(10, minmax(0, 1fr))",
       },
       animation: {
