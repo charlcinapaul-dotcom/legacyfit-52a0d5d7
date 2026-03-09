@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-const GRID_COUNT = 24; // enough to fill the section without gaps
+const GRID_COUNT = 48; // enough to fill the section on tall screens
 
 const StampGridBackground = () => {
   const { data: stamps } = useQuery({
@@ -12,7 +12,7 @@ const StampGridBackground = () => {
         .select("id, stamp_image_url")
         .not("stamp_image_url", "is", null)
         .order("order_index")
-        .limit(24);
+        .limit(48);
       if (error) throw error;
       return data?.filter((m) => m.stamp_image_url) ?? [];
     },
@@ -37,11 +37,11 @@ const StampGridBackground = () => {
           gridStamps.length ? "opacity-100" : "opacity-0"
         }`}
       >
-        <div className="w-full h-full grid grid-cols-4 md:grid-cols-6">
+        <div className="w-full h-full grid grid-cols-4 md:grid-cols-6 grid-rows-[repeat(12,1fr)] md:grid-rows-[repeat(8,1fr)]">
           {gridStamps.map((stamp) => (
             <div
               key={stamp.gridKey}
-              className="flex items-center justify-center p-1"
+              className="flex items-center justify-center bg-black"
             >
               <img
                 src={stamp.stamp_image_url!}
