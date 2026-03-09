@@ -54,12 +54,42 @@ Every challenge MUST have **exactly 6 milestones**. No more, no fewer.
 ## 4. Stamp Image Generation Rules
 
 - **Trigger**: NOT automatic — must be manually generated via the admin UI after insert.
-- **Style**: Vintage passport stamp aesthetic. Circular or rectangular with worn/distressed edges.
-- **Colors**: Deep blue, burgundy, or sepia. Baked into PNG — not controlled by CSS.
-- **Required elements**: `stamp_title`, `location_name`, miles badge (`stamp_mileage_display`), small `LegacyFit` brand mark.
-- **Uniqueness**: Every stamp image must be visually distinct. No duplicate imagery across challenges.
-- **Storage**: Saved to `passport_stamp_images` table AND mirrored to `milestones.stamp_image_url`.
-- **Action required**: After all 6 milestones are inserted, call `generate-stamp-image` for each via admin panel. Confirm all 6 images are set before activating the challenge.
+- **Generation model**: `google/gemini-3-pro-image-preview` via `generate-all-stamps` edge function.
+
+### 4a. Parchment Background Standard (REQUIRED — matches Women's History Edition)
+
+Every stamp MUST use the aged parchment aesthetic:
+
+- **Canvas background**: Aged parchment paper — hex `#F5EDD8` warm cream/tan texture covering the **entire** square canvas. No white areas, no grey areas, no transparent corners.
+- **Ink colors**: Deep Navy (`#1E3A5F`) or Burgundy Red (`#7A1E2C`) — distressed/worn look, not flat.
+- **Prompt enforcement**: The generation prompt must explicitly state `"aged parchment paper background (#F5EDD8 warm cream). The entire canvas must use the warm cream/tan parchment texture — no white, no grey, no transparent areas."`.
+
+### 4b. Required Visual Elements (ALL must be present)
+
+| Element | Source field | Placement |
+|---|---|---|
+| **Pioneer/person name** | `stamp_title` or `milestones.title` | Center, bold serif all-caps, dominant text |
+| **Mileage banner** | `stamp_mileage_display` | Horizontal ribbon/banner across stamp (e.g. `"5 MILES"`) |
+| **Historical location** | `location_name` | Below the name, smaller subtitle text |
+| **Double concentric outer ring** | — | Circular outer border with two rings |
+| **Decorative wheat or laurel wreath** | — | Top arc of the stamp, above the name |
+| **LEGACYFIT brand mark** | — | Bottom edge of stamp |
+
+### 4c. Uniqueness Requirements
+
+Every stamp is unique along **three dimensions**:
+1. **Person** — the pioneer's name is the dominant center text.
+2. **Mile** — the mileage banner reflects the exact `miles_required` of that milestone.
+3. **Location** — the `location_name` appears below the name and should visually differ per stamp.
+
+No two stamps across any challenges may share the same visual composition.
+
+### 4d. Storage & Admin Workflow
+
+- **Storage**: Saved to `challenge-images` bucket at path `stamps/{milestone_id}.png` → URL written to both `milestones.stamp_image_url` AND `passport_stamp_images` table.
+- **UI containers**: Stamp image containers in `PassportStamp.tsx` use `bg-[#F5EDD8] rounded-lg` to provide visual fallback consistency while stamps load.
+- **Admin reset**: If stamps were generated with incorrect backgrounds (white/grey), use the **"Reset Pioneers Stamps"** button on `/admin/validate` to null-out `stamp_image_url` for all milestones in the affected challenges, then re-trigger generation.
+- **Action required**: After all 6 milestones are inserted, trigger `generate-all-stamps` (batch of 10) via admin panel. Confirm all 6 `stamp_image_url` values are populated before activating the challenge.
 
 ---
 
