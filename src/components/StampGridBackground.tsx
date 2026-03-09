@@ -24,7 +24,7 @@ const StampGridBackground = () => {
   return (
     <div className="absolute inset-0 overflow-hidden bg-black">
       {/* 6 cols × 4 rows = 24 stamps, fully static */}
-      <div className="grid grid-cols-6 grid-rows-4 h-full w-full">
+      <div className="grid grid-cols-6 grid-rows-3 h-full w-full">
         {Array.from({ length: GRID_COUNT }, (_, i) => {
           const stamp = stamps?.[i % (stamps.length || 1)];
           return (
