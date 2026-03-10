@@ -16,15 +16,19 @@ interface JourneyMapProps {
   colorClass?: string; // e.g. "text-primary" or "text-cyan"
 }
 
-const NODE_R = 22;        // node radius px
+const NODE_R = 22;        // node radius px (desktop)
+const NODE_R_SM = 19;     // node radius px (mobile <480px)
 const NODE_SPACING = 88;  // px between nodes (horizontal)
 const SVG_H = 130;        // total SVG height
 const TRACK_Y = 64;       // vertical center of the track line
-const LABEL_Y = TRACK_Y + NODE_R + 14; // mile label below node
 
 export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "text-primary" }: JourneyMapProps) {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Responsive node radius — smaller on narrow mobile viewports
+  const rN = typeof window !== "undefined" && window.innerWidth < 480 ? NODE_R_SM : NODE_R;
+  const LABEL_Y = TRACK_Y + rN + 14;
 
   const sorted = [...milestones].sort((a, b) => a.miles - b.miles);
   // First mile is always free — treat effective progress as at least 1
@@ -32,15 +36,15 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
   const firstLockedIdx = sorted.findIndex(m => effectiveMiles < m.miles);
   // "YOU" marker uses real milesLogged for position (shows 0 if never logged)
   const youX = totalMiles > 0
-    ? (milesLogged / totalMiles) * ((sorted.length - 1) * NODE_SPACING + NODE_R * 2) + NODE_R
-    : NODE_R;
+    ? (milesLogged / totalMiles) * ((sorted.length - 1) * NODE_SPACING + rN * 2) + rN
+    : rN;
 
   const svgWidth = sorted.length > 0
-    ? (sorted.length - 1) * NODE_SPACING + NODE_R * 2 + 40
+    ? (sorted.length - 1) * NODE_SPACING + rN * 2 + 40
     : 300;
 
   // Node x positions
-  const nodeX = (i: number) => NODE_R + 20 + i * NODE_SPACING;
+  const nodeX = (i: number) => rN + 20 + i * NODE_SPACING;
 
   // Scroll to "YOU" marker on mount
   useEffect(() => {
@@ -66,11 +70,12 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
       </div>
 
       {/* Scrollable SVG map */}
-      <div
-        ref={scrollRef}
-        className="overflow-x-auto pb-1"
-        style={{ scrollbarWidth: "none" }}
-      >
+      <div className="relative">
+        <div
+          ref={scrollRef}
+          className="overflow-x-auto pb-1"
+          style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" } as React.CSSProperties}
+        >
         <svg
           width={svgWidth}
           height={SVG_H}
@@ -116,7 +121,7 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
                   <circle
                     cx={x}
                     cy={TRACK_Y}
-                    r={NODE_R + 5}
+                    r={rN + 5}
                     fill="none"
                     stroke="hsl(var(--primary))"
                     strokeWidth="1.5"
@@ -129,22 +134,22 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
                 <circle
                   cx={x}
                   cy={TRACK_Y}
-                  r={NODE_R}
+                  r={rN}
                   fill={
                     isUnlocked
-                      ? "hsl(var(--primary))"
+                      ? "#2d1060"
                       : isNext
                       ? "hsl(var(--secondary))"
                       : "hsl(var(--secondary))"
                   }
                   stroke={
                     isUnlocked
-                      ? "hsl(var(--primary))"
+                      ? "#FFD700"
                       : isNext
                       ? "hsl(var(--primary))"
                       : "hsl(var(--border))"
                   }
-                  strokeWidth={isUnlocked ? "0" : isNext ? "2" : "1.5"}
+                  strokeWidth={isUnlocked ? "2" : isNext ? "2" : "1.5"}
                   strokeDasharray={!isUnlocked && !isNext ? "5 3" : undefined}
                   opacity={!isUnlocked && !isNext ? 0.5 : 1}
                 />
@@ -213,7 +218,7 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
                 {/* Selection indicator arrow */}
                 {isSelected && (
                   <polygon
-                    points={`${x - 5},${TRACK_Y - NODE_R - 3} ${x + 5},${TRACK_Y - NODE_R - 3} ${x},${TRACK_Y - NODE_R + 4}`}
+                    points={`${x - 5},${TRACK_Y - rN - 3} ${x + 5},${TRACK_Y - rN - 3} ${x},${TRACK_Y - rN + 4}`}
                     fill="hsl(var(--primary))"
                     opacity="0.9"
                   />
@@ -228,9 +233,9 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
               {/* Vertical tick */}
               <line
                 x1={youX}
-                y1={TRACK_Y - NODE_R - 6}
+                y1={TRACK_Y - rN - 6}
                 x2={youX}
-                y2={TRACK_Y + NODE_R + 6}
+                y2={TRACK_Y + rN + 6}
                 stroke="hsl(var(--foreground))"
                 strokeWidth="1.5"
                 strokeDasharray="3 2"
@@ -239,7 +244,7 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
               {/* Label pill */}
               <rect
                 x={youX - 30}
-                y={TRACK_Y - NODE_R - 22}
+                y={TRACK_Y - rN - 22}
                 width={60}
                 height={16}
                 rx="8"
@@ -248,7 +253,7 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
               />
               <text
                 x={youX}
-                y={TRACK_Y - NODE_R - 10}
+                y={TRACK_Y - rN - 10}
                 textAnchor="middle"
                 fontSize="9"
                 fontWeight="bold"
@@ -260,6 +265,12 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
             </g>
           )}
         </svg>
+        </div>
+        {/* Right-edge fade hint for scrollable content */}
+        <div
+          className="pointer-events-none absolute top-0 right-0 h-full w-10"
+          style={{ background: "linear-gradient(to right, transparent, hsl(var(--card)))" }}
+        />
       </div>
 
       {/* ── Tooltip / Detail card ── */}
