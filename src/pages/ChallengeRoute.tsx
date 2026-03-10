@@ -495,6 +495,14 @@ const ChallengeRoute = () => {
             </div>
           </div>
 
+          {/* Journey Map */}
+          <JourneyMap
+            milestones={challenge.milestones}
+            milesLogged={userProgress.milesLogged}
+            totalMiles={challenge.totalMiles}
+            colorClass={colors.text}
+          />
+
           {/* Pricing Section — only shown to unenrolled users */}
           {!enrollment?.isEnrolled && (
             <div className="bg-card rounded-xl border border-border p-6 md:p-8 mb-8">
