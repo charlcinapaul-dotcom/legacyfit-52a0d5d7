@@ -61,6 +61,7 @@ const App = () => (
             <Route path="/payment-success" element={<PaymentSuccess />} />
             <Route path="/free-walk" element={<FreeWalk />} />
             <Route path="/admin/validate" element={<AdminValidate />} />
+            <Route path="/export" element={<Export />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
