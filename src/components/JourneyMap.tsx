@@ -172,16 +172,30 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
                     ⏳
                   </text>
                 ) : (
-                  <text
-                    x={x}
-                    y={TRACK_Y + 5}
-                    textAnchor="middle"
-                    fontSize="13"
-                    fill="hsl(var(--muted-foreground))"
-                    opacity="0.7"
-                  >
-                    🔒
-                  </text>
+                  <g>
+                    <text
+                      x={x}
+                      y={TRACK_Y - 2}
+                      textAnchor="middle"
+                      fontSize="11"
+                      fill="hsl(var(--muted-foreground))"
+                      opacity="0.7"
+                    >
+                      🔒
+                    </text>
+                    <text
+                      x={x}
+                      y={TRACK_Y + 11}
+                      textAnchor="middle"
+                      fontSize="7"
+                      fill="hsl(var(--muted-foreground))"
+                      opacity="0.85"
+                      fontFamily="inherit"
+                      fontWeight="600"
+                    >
+                      {miRemaining}mi
+                    </text>
+                  </g>
                 )}
 
                 {/* Mile label below node */}
