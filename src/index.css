@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+.hero-boarding-bg {
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: 100% auto;
+}
+
+@media (min-width: 768px) {
+  .hero-boarding-bg {
+    background-size: cover;
+    background-position: center center;
+  }
+}
+
 /* LegacyFit Design System
    Brand Colors:
    - Background (Black): #000000 → 0 0% 0%
