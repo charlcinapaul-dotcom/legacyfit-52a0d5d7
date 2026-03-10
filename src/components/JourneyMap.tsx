@@ -16,11 +16,11 @@ interface JourneyMapProps {
   colorClass?: string; // e.g. "text-primary" or "text-cyan"
 }
 
-const NODE_R = 22;        // node radius px
+const NODE_R = 22;        // node radius px (desktop)
+const NODE_R_SM = 19;     // node radius px (mobile <480px)
 const NODE_SPACING = 88;  // px between nodes (horizontal)
 const SVG_H = 130;        // total SVG height
 const TRACK_Y = 64;       // vertical center of the track line
-const LABEL_Y = TRACK_Y + NODE_R + 14; // mile label below node
 
 export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "text-primary" }: JourneyMapProps) {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
