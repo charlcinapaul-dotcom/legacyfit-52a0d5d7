@@ -79,6 +79,14 @@ serve(async (req: Request): Promise<Response> => {
 
     if (!ttsResponse.ok) {
       const errorText = await ttsResponse.text();
+      // Gracefully handle quota/auth errors — return null audioUrl instead of 500
+      if (ttsResponse.status === 401 || ttsResponse.status === 429) {
+        console.warn(`ElevenLabs quota/auth issue [${ttsResponse.status}]: ${errorText}`);
+        return new Response(
+          JSON.stringify({ audioUrl: null, warning: `ElevenLabs unavailable: ${ttsResponse.status}` }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       throw new Error(`ElevenLabs API error [${ttsResponse.status}]: ${errorText}`);
     }
 
