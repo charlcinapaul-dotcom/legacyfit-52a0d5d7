@@ -27,8 +27,10 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const sorted = [...milestones].sort((a, b) => a.miles - b.miles);
-  const firstLockedIdx = sorted.findIndex(m => milesLogged < m.miles);
-  // index of "YOU" — between last unlocked and next locked
+  // First mile is always free — treat effective progress as at least 1
+  const effectiveMiles = Math.max(milesLogged, 1);
+  const firstLockedIdx = sorted.findIndex(m => effectiveMiles < m.miles);
+  // "YOU" marker uses real milesLogged for position (shows 0 if never logged)
   const youX = totalMiles > 0
     ? (milesLogged / totalMiles) * ((sorted.length - 1) * NODE_SPACING + NODE_R * 2) + NODE_R
     : NODE_R;
@@ -91,7 +93,7 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
             <line
               x1={nodeX(0)}
               y1={TRACK_Y}
-              x2={firstLockedIdx === -1 ? nodeX(sorted.length - 1) : Math.min(youX, nodeX(Math.max(firstLockedIdx - 1, 0)))}
+              x2={firstLockedIdx === -1 ? nodeX(sorted.length - 1) : Math.min(nodeX(Math.max(firstLockedIdx - 1, 0)), nodeX(Math.max(firstLockedIdx - 1, 0)))}
               y2={TRACK_Y}
               stroke="hsl(var(--primary))"
               strokeWidth="3"
@@ -101,10 +103,11 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
 
           {/* ── Milestone nodes ── */}
           {sorted.map((m, i) => {
-            const isUnlocked = milesLogged >= m.miles;
+            const isUnlocked = effectiveMiles >= m.miles;
             const isNext = i === firstLockedIdx;
             const x = nodeX(i);
             const isSelected = selectedIdx === i;
+            const miRemaining = (m.miles - effectiveMiles).toFixed(1);
 
             return (
               <g key={m.id} onClick={() => handleNodeTap(i)} style={{ cursor: "pointer" }}>
@@ -169,16 +172,30 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
                     ⏳
                   </text>
                 ) : (
-                  <text
-                    x={x}
-                    y={TRACK_Y + 5}
-                    textAnchor="middle"
-                    fontSize="13"
-                    fill="hsl(var(--muted-foreground))"
-                    opacity="0.7"
-                  >
-                    🔒
-                  </text>
+                  <g>
+                    <text
+                      x={x}
+                      y={TRACK_Y - 2}
+                      textAnchor="middle"
+                      fontSize="11"
+                      fill="hsl(var(--muted-foreground))"
+                      opacity="0.7"
+                    >
+                      🔒
+                    </text>
+                    <text
+                      x={x}
+                      y={TRACK_Y + 11}
+                      textAnchor="middle"
+                      fontSize="7"
+                      fill="hsl(var(--muted-foreground))"
+                      opacity="0.85"
+                      fontFamily="inherit"
+                      fontWeight="600"
+                    >
+                      {miRemaining}mi
+                    </text>
+                  </g>
                 )}
 
                 {/* Mile label below node */}
@@ -248,8 +265,8 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
       {/* ── Tooltip / Detail card ── */}
       {selectedIdx !== null && sorted[selectedIdx] && (() => {
         const m = sorted[selectedIdx];
-        const isUnlocked = milesLogged >= m.miles;
-        const remaining = (m.miles - milesLogged).toFixed(1);
+        const isUnlocked = effectiveMiles >= m.miles;
+        const remaining = (m.miles - effectiveMiles).toFixed(1);
         return (
           <div className="mt-3 rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm animate-in fade-in-0 zoom-in-95 duration-150">
             <div className="flex items-start justify-between gap-2">
