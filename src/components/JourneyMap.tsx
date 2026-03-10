@@ -233,9 +233,9 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
               {/* Vertical tick */}
               <line
                 x1={youX}
-                y1={TRACK_Y - NODE_R - 6}
+                y1={TRACK_Y - rN - 6}
                 x2={youX}
-                y2={TRACK_Y + NODE_R + 6}
+                y2={TRACK_Y + rN + 6}
                 stroke="hsl(var(--foreground))"
                 strokeWidth="1.5"
                 strokeDasharray="3 2"
@@ -244,7 +244,7 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
               {/* Label pill */}
               <rect
                 x={youX - 30}
-                y={TRACK_Y - NODE_R - 22}
+                y={TRACK_Y - rN - 22}
                 width={60}
                 height={16}
                 rx="8"
@@ -253,7 +253,7 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
               />
               <text
                 x={youX}
-                y={TRACK_Y - NODE_R - 10}
+                y={TRACK_Y - rN - 10}
                 textAnchor="middle"
                 fontSize="9"
                 fontWeight="bold"
