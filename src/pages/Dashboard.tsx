@@ -25,6 +25,7 @@ import { ReferralCard } from "@/components/ReferralCard";
 import { DigitalBib } from "@/components/DigitalBib";
 import { CompletionCertificate } from "@/components/CompletionCertificate";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StreakBadge } from "@/components/StreakBadge";
 
 interface Profile {
   id: string;
