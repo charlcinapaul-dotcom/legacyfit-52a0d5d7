@@ -78,6 +78,13 @@ export function useMileLogging(challengeId?: string) {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
 
+      // Fetch profile id (user_activity.user_id references profiles.id, not auth.uid())
+      const { data: profileRow } = await supabase
+        .from("profiles")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
       // Check if user is enrolled (paid) BEFORE inserting — so we know which path to use
       const { data: enrollmentRow } = await supabase
         .from("user_challenges")
@@ -97,7 +104,7 @@ export function useMileLogging(challengeId?: string) {
         .limit(1);
       const isFirstMile = !isEnrolledPaid && (!existingEntries || existingEntries.length === 0);
 
-      // Insert mile entry
+      // Insert mile entry (existing table — not changing yet)
       const { error: insertError } = await supabase.from("mile_entries").insert({
         user_id: user.id,
         challenge_id: challengeId,
@@ -107,6 +114,25 @@ export function useMileLogging(challengeId?: string) {
       });
 
       if (insertError) throw insertError;
+
+      // Also write to user_activity (new tracking table)
+      if (profileRow?.id) {
+        // Derive activity_type from source/notes heuristic; default to "manual"
+        const activityType: "walk" | "run" | "bike" | "manual" =
+          source === "apple_health" || source === "google_fit" ? "walk" : "manual";
+        const activitySource: "manual" | "apple_health" | "health_connect" | "wearable" =
+          source === "apple_health" ? "apple_health"
+          : source === "google_fit" ? "health_connect"
+          : "manual";
+
+        await supabase.from("user_activity").insert({
+          user_id: profileRow.id,
+          distance_miles: miles,
+          activity_type: activityType,
+          source: activitySource,
+        });
+        // Silently ignore user_activity insert errors so they never block mile logging
+      }
 
       // Calculate new total
       const { data: allEntries, error: fetchError } = await supabase
