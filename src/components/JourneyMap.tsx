@@ -70,11 +70,12 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
       </div>
 
       {/* Scrollable SVG map */}
-      <div
-        ref={scrollRef}
-        className="overflow-x-auto pb-1"
-        style={{ scrollbarWidth: "none" }}
-      >
+      <div className="relative">
+        <div
+          ref={scrollRef}
+          className="overflow-x-auto pb-1"
+          style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" } as React.CSSProperties}
+        >
         <svg
           width={svgWidth}
           height={SVG_H}
