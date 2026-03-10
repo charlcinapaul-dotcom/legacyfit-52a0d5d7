@@ -265,8 +265,8 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
       {/* ── Tooltip / Detail card ── */}
       {selectedIdx !== null && sorted[selectedIdx] && (() => {
         const m = sorted[selectedIdx];
-        const isUnlocked = milesLogged >= m.miles;
-        const remaining = (m.miles - milesLogged).toFixed(1);
+        const isUnlocked = effectiveMiles >= m.miles;
+        const remaining = (m.miles - effectiveMiles).toFixed(1);
         return (
           <div className="mt-3 rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm animate-in fade-in-0 zoom-in-95 duration-150">
             <div className="flex items-start justify-between gap-2">
