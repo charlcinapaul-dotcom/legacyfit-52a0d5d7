@@ -36,15 +36,15 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
   const firstLockedIdx = sorted.findIndex(m => effectiveMiles < m.miles);
   // "YOU" marker uses real milesLogged for position (shows 0 if never logged)
   const youX = totalMiles > 0
-    ? (milesLogged / totalMiles) * ((sorted.length - 1) * NODE_SPACING + NODE_R * 2) + NODE_R
-    : NODE_R;
+    ? (milesLogged / totalMiles) * ((sorted.length - 1) * NODE_SPACING + rN * 2) + rN
+    : rN;
 
   const svgWidth = sorted.length > 0
-    ? (sorted.length - 1) * NODE_SPACING + NODE_R * 2 + 40
+    ? (sorted.length - 1) * NODE_SPACING + rN * 2 + 40
     : 300;
 
   // Node x positions
-  const nodeX = (i: number) => NODE_R + 20 + i * NODE_SPACING;
+  const nodeX = (i: number) => rN + 20 + i * NODE_SPACING;
 
   // Scroll to "YOU" marker on mount
   useEffect(() => {
