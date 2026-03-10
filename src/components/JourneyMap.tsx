@@ -26,6 +26,10 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Responsive node radius — smaller on narrow mobile viewports
+  const rN = typeof window !== "undefined" && window.innerWidth < 480 ? NODE_R_SM : NODE_R;
+  const LABEL_Y = TRACK_Y + rN + 14;
+
   const sorted = [...milestones].sort((a, b) => a.miles - b.miles);
   // First mile is always free — treat effective progress as at least 1
   const effectiveMiles = Math.max(milesLogged, 1);
