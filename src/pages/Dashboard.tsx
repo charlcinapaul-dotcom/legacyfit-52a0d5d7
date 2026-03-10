@@ -25,6 +25,7 @@ import { ReferralCard } from "@/components/ReferralCard";
 import { DigitalBib } from "@/components/DigitalBib";
 import { CompletionCertificate } from "@/components/CompletionCertificate";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { StreakBadge } from "@/components/StreakBadge";
 
 interface Profile {
   id: string;
@@ -267,7 +268,7 @@ const Dashboard = () => {
             </p>
 
             {/* Stats Grid — inside hero with backdrop tiles, matching challenge page */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 border border-border">
                 <div className="flex items-center gap-2 text-muted-foreground mb-1">
                   <TrendingUp className="w-4 h-4" />
@@ -291,6 +292,8 @@ const Dashboard = () => {
                 </div>
                 <div className="text-2xl font-bold text-foreground">{stampCount}</div>
               </div>
+
+              <StreakBadge />
             </div>
           </div>
         </div>
