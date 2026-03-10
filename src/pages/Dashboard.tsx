@@ -35,6 +35,11 @@ interface Profile {
   total_miles: number;
 }
 
+interface Milestone {
+  miles_required: number;
+  title: string;
+}
+
 interface UserChallenge {
   id: string;
   miles_logged: number | null;
@@ -45,6 +50,7 @@ interface UserChallenge {
     slug: string | null;
     total_miles: number;
     image_url: string | null;
+    milestones?: Milestone[];
   };
 }
 
@@ -133,7 +139,11 @@ const Dashboard = () => {
             title,
             slug,
             total_miles,
-            image_url
+            image_url,
+            milestones (
+              miles_required,
+              title
+            )
           )
         `)
         .eq("user_id", userId);
@@ -391,6 +401,26 @@ const Dashboard = () => {
                             }}
                           />
                         </div>
+                        {(() => {
+                          if (isCompleted) return null;
+                          const milestones = (uc.challenge as any)?.milestones as Milestone[] | undefined;
+                          if (!milestones?.length) return null;
+                          const milesLogged = uc.miles_logged || 0;
+                          const next = milestones
+                            .filter((m) => m.miles_required > milesLogged)
+                            .sort((a, b) => a.miles_required - b.miles_required)[0];
+                          if (!next) return null;
+                          const remaining = (next.miles_required - milesLogged).toFixed(1);
+                          return (
+                            <p className="mt-1.5 text-xs text-muted-foreground leading-tight">
+                              Next:{" "}
+                              <span style={{ color: "#FFD700" }} className="font-medium">
+                                {next.title}
+                              </span>
+                              {" "}— {remaining} mi away
+                            </p>
+                          );
+                        })()}
                         {isCompleted && (
                           <Button
                             variant="ghost"
