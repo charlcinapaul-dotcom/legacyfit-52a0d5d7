@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { JourneyMap } from "@/components/JourneyMap";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -493,6 +494,14 @@ const ChallengeRoute = () => {
               <span>{Math.round(progressPercent)}% complete</span>
             </div>
           </div>
+
+          {/* Journey Map */}
+          <JourneyMap
+            milestones={challenge.milestones}
+            milesLogged={userProgress.milesLogged}
+            totalMiles={challenge.totalMiles}
+            colorClass={colors.text}
+          />
 
           {/* Pricing Section — only shown to unenrolled users */}
           {!enrollment?.isEnrolled && (
