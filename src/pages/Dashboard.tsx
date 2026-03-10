@@ -35,6 +35,11 @@ interface Profile {
   total_miles: number;
 }
 
+interface Milestone {
+  miles_required: number;
+  title: string;
+}
+
 interface UserChallenge {
   id: string;
   miles_logged: number | null;
@@ -45,6 +50,7 @@ interface UserChallenge {
     slug: string | null;
     total_miles: number;
     image_url: string | null;
+    milestones?: Milestone[];
   };
 }
 
