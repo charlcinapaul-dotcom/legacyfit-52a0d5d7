@@ -93,7 +93,7 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
             <line
               x1={nodeX(0)}
               y1={TRACK_Y}
-              x2={firstLockedIdx === -1 ? nodeX(sorted.length - 1) : Math.min(youX, nodeX(Math.max(firstLockedIdx - 1, 0)))}
+              x2={firstLockedIdx === -1 ? nodeX(sorted.length - 1) : Math.min(nodeX(Math.max(firstLockedIdx - 1, 0)), nodeX(Math.max(firstLockedIdx - 1, 0)))}
               y2={TRACK_Y}
               stroke="hsl(var(--primary))"
               strokeWidth="3"
