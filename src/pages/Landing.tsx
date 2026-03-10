@@ -32,7 +32,7 @@ const Landing = () => {
   return (
     <PageLayout>
       {/* ───── 1. Hero ───── */}
-      <section className="relative min-h-screen flex flex-col justify-center pt-16 pb-20 px-4 overflow-hidden w-full max-w-full">
+      <section className="relative min-h-[100vh] flex flex-col justify-center pt-16 pb-20 px-4 overflow-hidden w-full max-w-full">
         <div className="absolute inset-0 overflow-hidden">
           <div
             className="absolute inset-0 hero-boarding-bg"

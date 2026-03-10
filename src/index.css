@@ -4,15 +4,8 @@
 
 .hero-boarding-bg {
   background-repeat: no-repeat;
-  background-position: center top;
-  background-size: 100% auto;
-}
-
-@media (min-width: 768px) {
-  .hero-boarding-bg {
-    background-size: cover;
-    background-position: center center;
-  }
+  background-position: center center;
+  background-size: cover;
 }
 
 /* LegacyFit Design System
