@@ -33,7 +33,18 @@ const Landing = () => {
     <PageLayout>
       {/* ───── 1. Hero ───── */}
       <section className="relative min-h-screen flex flex-col justify-center pt-16 pb-20 px-4 overflow-hidden w-full max-w-full">
-        <StampGridBackground />
+        <div className="absolute inset-0 overflow-hidden">
+          <img
+            src={boardingPassBg}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+            draggable={false}
+          />
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ backgroundColor: "rgba(0,0,0,0.65)" }}
+          />
+        </div>
 
         <div className="container mx-auto text-center relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary border border-border mb-8">
