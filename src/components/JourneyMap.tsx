@@ -27,8 +27,10 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const sorted = [...milestones].sort((a, b) => a.miles - b.miles);
-  const firstLockedIdx = sorted.findIndex(m => milesLogged < m.miles);
-  // index of "YOU" — between last unlocked and next locked
+  // First mile is always free — treat effective progress as at least 1
+  const effectiveMiles = Math.max(milesLogged, 1);
+  const firstLockedIdx = sorted.findIndex(m => effectiveMiles < m.miles);
+  // "YOU" marker uses real milesLogged for position (shows 0 if never logged)
   const youX = totalMiles > 0
     ? (milesLogged / totalMiles) * ((sorted.length - 1) * NODE_SPACING + NODE_R * 2) + NODE_R
     : NODE_R;
