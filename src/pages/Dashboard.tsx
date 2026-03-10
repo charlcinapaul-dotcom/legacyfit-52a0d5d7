@@ -139,7 +139,11 @@ const Dashboard = () => {
             title,
             slug,
             total_miles,
-            image_url
+            image_url,
+            milestones (
+              miles_required,
+              title
+            )
           )
         `)
         .eq("user_id", userId);
