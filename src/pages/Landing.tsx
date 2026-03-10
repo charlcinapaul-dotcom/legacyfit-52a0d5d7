@@ -45,11 +45,6 @@ const Landing = () => {
         </div>
 
         <div className="container mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary border border-border mb-8">
-            <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-            <span className="text-sm text-muted-foreground">Women's History Edition Now Live</span>
-          </div>
-
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
             <span className="text-foreground">Every Mile</span><br />
             <span className="text-gradient-gold">Unlocks History</span>
