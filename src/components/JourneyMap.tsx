@@ -218,7 +218,7 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
                 {/* Selection indicator arrow */}
                 {isSelected && (
                   <polygon
-                    points={`${x - 5},${TRACK_Y - NODE_R - 3} ${x + 5},${TRACK_Y - NODE_R - 3} ${x},${TRACK_Y - NODE_R + 4}`}
+                    points={`${x - 5},${TRACK_Y - rN - 3} ${x + 5},${TRACK_Y - rN - 3} ${x},${TRACK_Y - rN + 4}`}
                     fill="hsl(var(--primary))"
                     opacity="0.9"
                   />
