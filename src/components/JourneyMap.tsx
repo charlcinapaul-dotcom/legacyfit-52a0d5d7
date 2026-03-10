@@ -265,6 +265,12 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
             </g>
           )}
         </svg>
+        </div>
+        {/* Right-edge fade hint for scrollable content */}
+        <div
+          className="pointer-events-none absolute top-0 right-0 h-full w-10"
+          style={{ background: "linear-gradient(to right, transparent, hsl(var(--card)))" }}
+        />
       </div>
 
       {/* ── Tooltip / Detail card ── */}
