@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight, MapPin, Award, Users, Footprints, TrendingUp, BookOpen, Heart } from "lucide-react";
 import { PageLayout } from "@/components/PageLayout";
 import { supabase } from "@/integrations/supabase/client";
-import StampGridBackground from "@/components/StampGridBackground";
+import boardingPassBg from "@/assets/boarding-pass-bg.png";
 
 const Landing = () => {
   const navigate = useNavigate();
