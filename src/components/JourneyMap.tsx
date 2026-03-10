@@ -121,7 +121,7 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
                   <circle
                     cx={x}
                     cy={TRACK_Y}
-                    r={NODE_R + 5}
+                    r={rN + 5}
                     fill="none"
                     stroke="hsl(var(--primary))"
                     strokeWidth="1.5"
@@ -134,22 +134,22 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
                 <circle
                   cx={x}
                   cy={TRACK_Y}
-                  r={NODE_R}
+                  r={rN}
                   fill={
                     isUnlocked
-                      ? "hsl(var(--primary))"
+                      ? "#2d1060"
                       : isNext
                       ? "hsl(var(--secondary))"
                       : "hsl(var(--secondary))"
                   }
                   stroke={
                     isUnlocked
-                      ? "hsl(var(--primary))"
+                      ? "#FFD700"
                       : isNext
                       ? "hsl(var(--primary))"
                       : "hsl(var(--border))"
                   }
-                  strokeWidth={isUnlocked ? "0" : isNext ? "2" : "1.5"}
+                  strokeWidth={isUnlocked ? "2" : isNext ? "2" : "1.5"}
                   strokeDasharray={!isUnlocked && !isNext ? "5 3" : undefined}
                   opacity={!isUnlocked && !isNext ? 0.5 : 1}
                 />
