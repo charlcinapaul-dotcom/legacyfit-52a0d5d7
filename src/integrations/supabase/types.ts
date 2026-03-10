@@ -624,51 +624,6 @@ export type Database = {
           },
         ]
       }
-      user_activity: {
-        Row: {
-          activity_type: string
-          created_at: string
-          distance_miles: number
-          id: string
-          source: string
-          steps: number | null
-          user_id: string
-        }
-        Insert: {
-          activity_type?: string
-          created_at?: string
-          distance_miles: number
-          id?: string
-          source?: string
-          steps?: number | null
-          user_id: string
-        }
-        Update: {
-          activity_type?: string
-          created_at?: string
-          distance_miles?: number
-          id?: string
-          source?: string
-          steps?: number | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_activity_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "leaderboard"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_activity_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_challenges: {
         Row: {
           challenge_id: string
