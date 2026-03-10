@@ -103,10 +103,11 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
 
           {/* ── Milestone nodes ── */}
           {sorted.map((m, i) => {
-            const isUnlocked = milesLogged >= m.miles;
+            const isUnlocked = effectiveMiles >= m.miles;
             const isNext = i === firstLockedIdx;
             const x = nodeX(i);
             const isSelected = selectedIdx === i;
+            const miRemaining = (m.miles - effectiveMiles).toFixed(1);
 
             return (
               <g key={m.id} onClick={() => handleNodeTap(i)} style={{ cursor: "pointer" }}>
