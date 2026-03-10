@@ -1,28 +1,40 @@
 
-## Root Cause
+## What We're Building
 
-The `create-checkout` edge function is working correctly and returning a valid Stripe URL every time. The network logs confirm `200` responses with valid `checkout.stripe.com` URLs.
+Replace the `StampGridBackground` stamp mosaic in the hero section with the uploaded boarding pass image as a static full-cover background. Keep all hero text, buttons, and CTAs exactly as-is. Apply a `rgba(0,0,0,0.65)` overlay (slightly darker than the current 0.45 to maintain the muted look).
 
-The bug is in `ChallengePricing.tsx` line 117:
-```ts
-window.open(data.url, "_blank");  // ← BLOCKED by popup blocker
-```
+## Approach
 
-`window.open()` to a new tab is blocked by browsers when called after an `await` inside an async function, because the browser no longer considers it a direct user gesture. The user's click event context is lost during the async `supabase.functions.invoke()` call.
+The image needs to be copied to `src/assets/` and imported as an ES6 module. Then in `Landing.tsx`, replace `<StampGridBackground />` with a simple `<div>` containing:
+1. The `<img>` tag with `object-cover` filling the full hero area absolutely
+2. A dark overlay `div` at `rgba(0,0,0,0.65)`
 
-## Fix
-
-Change line 117 in `src/components/ChallengePricing.tsx`:
-```ts
-// FROM:
-window.open(data.url, "_blank");
-
-// TO:
-window.location.href = data.url;
-```
-
-This navigates the current tab to Stripe Checkout, which always works regardless of popup blockers. After payment, Stripe redirects back to `/payment-success?session_id=...` as configured in the edge function.
+The `StampGridBackground` component and its stamp-fetching logic are untouched — only removed from the hero section render.
 
 ## Files to Change
 
-- `src/components/ChallengePricing.tsx` — line 117 only
+1. **Copy** `user-uploads://LF_Boarding_Pass.png` → `src/assets/boarding-pass-bg.png`
+
+2. **`src/pages/Landing.tsx`** — lines 36:
+   - Remove `<StampGridBackground />` and its import
+   - Add the static image background in its place:
+   ```tsx
+   import boardingPassBg from "@/assets/boarding-pass-bg.png";
+   
+   // Replace line 36 <StampGridBackground /> with:
+   <div className="absolute inset-0 overflow-hidden">
+     <img
+       src={boardingPassBg}
+       alt=""
+       className="absolute inset-0 w-full h-full object-cover"
+       draggable={false}
+     />
+     <div
+       className="absolute inset-0 pointer-events-none"
+       style={{ backgroundColor: "rgba(0,0,0,0.65)" }}
+     />
+   </div>
+   ```
+   - Also remove the `StampGridBackground` import on line 6
+
+No other lines touched. All hero text, CTAs, and buttons remain exactly as they are.
