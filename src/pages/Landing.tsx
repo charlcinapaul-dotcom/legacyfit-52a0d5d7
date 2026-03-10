@@ -34,11 +34,9 @@ const Landing = () => {
       {/* ───── 1. Hero ───── */}
       <section className="relative min-h-screen flex flex-col justify-center pt-16 pb-20 px-4 overflow-hidden w-full max-w-full">
         <div className="absolute inset-0 overflow-hidden">
-          <img
-            src={boardingPassBg}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-            draggable={false}
+          <div
+            className="absolute inset-0 hero-boarding-bg"
+            style={{ backgroundImage: `url(${boardingPassBg})` }}
           />
           <div
             className="absolute inset-0 pointer-events-none"
