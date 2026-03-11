@@ -93,10 +93,11 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
       {/* Map container — fixed 200px tall */}
       <div className="relative w-full overflow-x-auto" style={{ height: 200, WebkitOverflowScrolling: "touch" } as React.CSSProperties}>
         <svg
-          viewBox="0 0 430 196"
+          viewBox="0 0 470 210"
           width="100%"
           height="200"
-          style={{ display: "block", minWidth: 320 }}
+          style={{ display: "block", minWidth: 340 }}
+          preserveAspectRatio="xMidYMid meet"
           aria-label="Journey map"
         >
           {/* ── Hidden path used for measurement (no stroke) ── */}
