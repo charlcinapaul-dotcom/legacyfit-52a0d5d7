@@ -495,6 +495,32 @@ const ChallengeRoute = () => {
             </div>
           </div>
 
+          {/* Next Milestone Banner */}
+          {(() => {
+            const effectiveMiles = Math.max(userProgress.milesLogged, 1);
+            const nextMilestone = challenge.milestones
+              .slice()
+              .sort((a, b) => a.miles - b.miles)
+              .find(m => effectiveMiles < m.miles);
+            if (!nextMilestone) return null;
+            const miAway = Math.max(0, nextMilestone.miles - effectiveMiles).toFixed(1);
+            return (
+              <div
+                className="mb-4 flex items-center gap-2 rounded-[10px] px-[14px] py-[10px] text-sm"
+                style={{
+                  background: "rgba(192,132,252,0.1)",
+                  border: "1px solid rgba(192,132,252,0.3)",
+                }}
+              >
+                <span className="text-base shrink-0">🥾</span>
+                <span className="text-muted-foreground shrink-0">Next:</span>
+                <span className="font-serif text-foreground font-semibold">{nextMilestone.name}</span>
+                <span className="text-muted-foreground mx-0.5">—</span>
+                <span className="font-mono text-sm shrink-0" style={{ color: "#FFD700" }}>{miAway} mi away</span>
+              </div>
+            );
+          })()}
+
           {/* Journey Map */}
           <JourneyMap
             milestones={challenge.milestones}
