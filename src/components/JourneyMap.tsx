@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { Lock, Crown, Timer, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Milestone {
@@ -13,47 +12,69 @@ interface JourneyMapProps {
   milestones: Milestone[];
   milesLogged: number;
   totalMiles: number;
-  colorClass?: string; // e.g. "text-primary" or "text-cyan"
+  colorClass?: string;
 }
 
-const NODE_R = 22;        // node radius px (desktop)
-const NODE_R_SM = 19;     // node radius px (mobile <480px)
-const NODE_SPACING = 88;  // px between nodes (horizontal)
-const SVG_H = 130;        // total SVG height
-const TRACK_Y = 64;       // vertical center of the track line
+// The SVG path spec (bottom-left → top-right diagonal curve)
+const PATH_D = "M 20,180 C 60,160 80,130 120,110 S 180,85 220,70 S 290,52 340,38 S 380,24 410,16";
+
+// Evaluate a cubic bezier / SVG path at a given t in [0,1] by using
+// a hidden SVGPathElement to get point at length
+function getPointAtFraction(svgEl: SVGPathElement, t: number) {
+  const len = svgEl.getTotalLength();
+  return svgEl.getPointAtLength(t * len);
+}
+
+// Evenly-spaced t values for N milestones along the path
+function milestoneT(index: number, total: number): number {
+  if (total <= 1) return 0;
+  return index / (total - 1);
+}
+
+// Clamp a number between min and max
+function clamp(v: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, v));
+}
+
+const NODE_R = 20;
+const NODE_R_SM = 17;
 
 export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "text-primary" }: JourneyMapProps) {
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const pathRef = useRef<SVGPathElement>(null);
+  const [points, setPoints] = useState<{ x: number; y: number }[]>([]);
+  const [youPoint, setYouPoint] = useState<{ x: number; y: number } | null>(null);
+  const [splitLen, setSplitLen] = useState<number>(0);
 
-  // Responsive node radius — smaller on narrow mobile viewports
   const rN = typeof window !== "undefined" && window.innerWidth < 480 ? NODE_R_SM : NODE_R;
-  const LABEL_Y = TRACK_Y + rN + 14;
-
   const sorted = [...milestones].sort((a, b) => a.miles - b.miles);
-  // First mile is always free — treat effective progress as at least 1
   const effectiveMiles = Math.max(milesLogged, 1);
   const firstLockedIdx = sorted.findIndex(m => effectiveMiles < m.miles);
-  // "YOU" marker uses real milesLogged for position (shows 0 if never logged)
-  const youX = totalMiles > 0
-    ? (milesLogged / totalMiles) * ((sorted.length - 1) * NODE_SPACING + rN * 2) + rN
-    : rN;
 
-  const svgWidth = sorted.length > 0
-    ? (sorted.length - 1) * NODE_SPACING + rN * 2 + 40
-    : 300;
-
-  // Node x positions
-  const nodeX = (i: number) => rN + 20 + i * NODE_SPACING;
-
-  // Scroll to "YOU" marker on mount
+  // Compute point positions once the SVG path is in DOM
   useEffect(() => {
-    if (!scrollRef.current) return;
-    const el = scrollRef.current;
-    // Center the YOU position
-    const targetScroll = youX - el.clientWidth / 2;
-    el.scrollLeft = Math.max(0, targetScroll);
-  }, [youX]);
+    if (!pathRef.current) return;
+    const p = pathRef.current;
+
+    // Milestone node positions
+    const pts = sorted.map((_, i) => {
+      const t = milestoneT(i, sorted.length);
+      const pt = getPointAtFraction(p, t);
+      return { x: pt.x, y: pt.y };
+    });
+    setPoints(pts);
+
+    // YOU marker position (proportional by miles)
+    const youT = totalMiles > 0 ? clamp(milesLogged / totalMiles, 0, 1) : 0;
+    const youPt = getPointAtFraction(p, youT);
+    setYouPoint({ x: youPt.x, y: youPt.y });
+
+    // Split length for dashed/solid stroke
+    const totalLen = p.getTotalLength();
+    const lastUnlockedIdx = firstLockedIdx === -1 ? sorted.length - 1 : Math.max(firstLockedIdx - 1, 0);
+    const splitT = milestoneT(lastUnlockedIdx, sorted.length);
+    setSplitLen(firstLockedIdx === 0 ? 0 : splitT * totalLen);
+  }, [sorted.length, milesLogged, totalMiles, firstLockedIdx]);
 
   const handleNodeTap = (i: number) => {
     setSelectedIdx(prev => prev === i ? null : i);
@@ -62,68 +83,71 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
   return (
     <div className="bg-card rounded-xl border border-border p-4 mb-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-2">
         <h3 className="text-base font-semibold text-foreground tracking-wide">JOURNEY MAP</h3>
         <span className="text-xs text-muted-foreground flex items-center gap-1">
-          <Lock className="w-3 h-3" /> TAP FOR DETAILS
+          🔒 TAP FOR DETAILS
         </span>
       </div>
 
-      {/* Scrollable SVG map */}
-      <div className="relative">
-        <div
-          ref={scrollRef}
-          className="overflow-x-auto pb-1"
-          style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" } as React.CSSProperties}
-        >
+      {/* Map container — fixed 200px tall */}
+      <div className="relative w-full overflow-x-auto" style={{ height: 200, WebkitOverflowScrolling: "touch" } as React.CSSProperties}>
         <svg
-          width={svgWidth}
-          height={SVG_H}
-          style={{ display: "block", minWidth: svgWidth }}
+          viewBox="0 0 430 196"
+          width="100%"
+          height="200"
+          style={{ display: "block", minWidth: 320 }}
           aria-label="Journey map"
         >
-          {/* ── Dashed upcoming route (full span) ── */}
-          <line
-            x1={nodeX(0)}
-            y1={TRACK_Y}
-            x2={nodeX(sorted.length - 1)}
-            y2={TRACK_Y}
-            stroke="hsl(var(--border))"
-            strokeWidth="2.5"
+          {/* ── Hidden path used for measurement (no stroke) ── */}
+          <path
+            ref={pathRef}
+            d={PATH_D}
+            fill="none"
+            stroke="none"
+          />
+
+          {/* ── Dashed upcoming path (full) ── */}
+          <path
+            d={PATH_D}
+            fill="none"
+            stroke="rgba(255,255,255,0.2)"
+            strokeWidth="3"
             strokeDasharray="7 5"
           />
 
-          {/* ── Solid completed route ── */}
-          {firstLockedIdx !== 0 && (
-            <line
-              x1={nodeX(0)}
-              y1={TRACK_Y}
-              x2={firstLockedIdx === -1 ? nodeX(sorted.length - 1) : Math.min(nodeX(Math.max(firstLockedIdx - 1, 0)), nodeX(Math.max(firstLockedIdx - 1, 0)))}
-              y2={TRACK_Y}
-              stroke="hsl(var(--primary))"
+          {/* ── Solid completed path segment ── */}
+          {splitLen > 0 && pathRef.current && (
+            <path
+              d={PATH_D}
+              fill="none"
+              stroke="#FFD700"
               strokeWidth="3"
               strokeLinecap="round"
+              strokeDasharray={`${splitLen} 9999`}
+              strokeDashoffset="0"
             />
           )}
 
           {/* ── Milestone nodes ── */}
-          {sorted.map((m, i) => {
+          {points.map((pt, i) => {
+            const m = sorted[i];
+            if (!m) return null;
             const isUnlocked = effectiveMiles >= m.miles;
             const isNext = i === firstLockedIdx;
-            const x = nodeX(i);
             const isSelected = selectedIdx === i;
             const miRemaining = (m.miles - effectiveMiles).toFixed(1);
 
             return (
               <g key={m.id} onClick={() => handleNodeTap(i)} style={{ cursor: "pointer" }}>
-                {/* Outer ring for "next" pulse */}
+                {/* Pulse ring for next */}
                 {isNext && (
                   <circle
-                    cx={x}
-                    cy={TRACK_Y}
+                    cx={pt.x}
+                    cy={pt.y}
                     r={rN + 5}
                     fill="none"
-                    stroke="hsl(var(--primary))"
+                    stroke="#FFD700"
                     strokeWidth="1.5"
                     strokeDasharray="4 3"
                     opacity="0.5"
@@ -132,35 +156,23 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
 
                 {/* Node circle */}
                 <circle
-                  cx={x}
-                  cy={TRACK_Y}
+                  cx={pt.x}
+                  cy={pt.y}
                   r={rN}
-                  fill={
-                    isUnlocked
-                      ? "#2d1060"
-                      : isNext
-                      ? "hsl(var(--secondary))"
-                      : "hsl(var(--secondary))"
-                  }
-                  stroke={
-                    isUnlocked
-                      ? "#FFD700"
-                      : isNext
-                      ? "hsl(var(--primary))"
-                      : "hsl(var(--border))"
-                  }
+                  fill={isUnlocked ? "#2d1060" : "hsl(var(--secondary))"}
+                  stroke={isUnlocked ? "#FFD700" : isNext ? "#FFD700" : "hsl(var(--border))"}
                   strokeWidth={isUnlocked ? "2" : isNext ? "2" : "1.5"}
                   strokeDasharray={!isUnlocked && !isNext ? "5 3" : undefined}
-                  opacity={!isUnlocked && !isNext ? 0.5 : 1}
+                  opacity={!isUnlocked && !isNext ? 0.55 : 1}
                 />
 
-                {/* Icon inside node — using foreignObject for emoji/lucide */}
+                {/* Icon / label inside node */}
                 {isUnlocked ? (
                   <text
-                    x={x}
-                    y={TRACK_Y + 6}
+                    x={pt.x}
+                    y={pt.y + 6}
                     textAnchor="middle"
-                    fontSize="16"
+                    fontSize="15"
                     fill="hsl(var(--primary-foreground))"
                     fontWeight="bold"
                   >
@@ -168,10 +180,10 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
                   </text>
                 ) : isNext ? (
                   <text
-                    x={x}
-                    y={TRACK_Y + 6}
+                    x={pt.x}
+                    y={pt.y + 6}
                     textAnchor="middle"
-                    fontSize="16"
+                    fontSize="15"
                     fill="hsl(var(--muted-foreground))"
                   >
                     ⏳
@@ -179,8 +191,8 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
                 ) : (
                   <g>
                     <text
-                      x={x}
-                      y={TRACK_Y - 2}
+                      x={pt.x}
+                      y={pt.y - 2}
                       textAnchor="middle"
                       fontSize="11"
                       fill="hsl(var(--muted-foreground))"
@@ -189,8 +201,8 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
                       🔒
                     </text>
                     <text
-                      x={x}
-                      y={TRACK_Y + 11}
+                      x={pt.x}
+                      y={pt.y + 11}
                       textAnchor="middle"
                       fontSize="7"
                       fill="hsl(var(--muted-foreground))"
@@ -203,22 +215,22 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
                   </g>
                 )}
 
-                {/* Mile label below node */}
+                {/* Mile label — above or below depending on position */}
                 <text
-                  x={x}
-                  y={LABEL_Y}
+                  x={pt.x}
+                  y={pt.y > 100 ? pt.y + rN + 13 : pt.y - rN - 5}
                   textAnchor="middle"
-                  fontSize="10"
+                  fontSize="9"
                   fill="hsl(var(--muted-foreground))"
                   fontFamily="inherit"
                 >
                   Mi {m.miles}
                 </text>
 
-                {/* Selection indicator arrow */}
+                {/* Selection caret */}
                 {isSelected && (
                   <polygon
-                    points={`${x - 5},${TRACK_Y - rN - 3} ${x + 5},${TRACK_Y - rN - 3} ${x},${TRACK_Y - rN + 4}`}
+                    points={`${pt.x - 5},${pt.y - rN - 3} ${pt.x + 5},${pt.y - rN - 3} ${pt.x},${pt.y - rN + 4}`}
                     fill="hsl(var(--primary))"
                     opacity="0.9"
                   />
@@ -227,35 +239,37 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
             );
           })}
 
-          {/* ── YOU marker ── */}
-          {milesLogged > 0 && (
+          {/* ── YOU pulsing dot ── */}
+          {youPoint && milesLogged > 0 && (
             <g>
-              {/* Vertical tick */}
-              <line
-                x1={youX}
-                y1={TRACK_Y - rN - 6}
-                x2={youX}
-                y2={TRACK_Y + rN + 6}
-                stroke="hsl(var(--foreground))"
-                strokeWidth="1.5"
-                strokeDasharray="3 2"
-                opacity="0.6"
+              <circle
+                cx={youPoint.x}
+                cy={youPoint.y}
+                r={8}
+                fill="#FFD700"
+                opacity="0.25"
               />
-              {/* Label pill */}
+              <circle
+                cx={youPoint.x}
+                cy={youPoint.y}
+                r={6}
+                fill="#FFD700"
+              />
+              {/* YOU label */}
               <rect
-                x={youX - 30}
-                y={TRACK_Y - rN - 22}
-                width={60}
-                height={16}
-                rx="8"
+                x={youPoint.x - 28}
+                y={youPoint.y - 22}
+                width={56}
+                height={14}
+                rx="7"
                 fill="hsl(var(--foreground))"
-                opacity="0.95"
+                opacity="0.9"
               />
               <text
-                x={youX}
-                y={TRACK_Y - rN - 10}
+                x={youPoint.x}
+                y={youPoint.y - 12}
                 textAnchor="middle"
-                fontSize="9"
+                fontSize="8"
                 fontWeight="bold"
                 fill="hsl(var(--background))"
                 fontFamily="inherit"
@@ -265,12 +279,6 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
             </g>
           )}
         </svg>
-        </div>
-        {/* Right-edge fade hint for scrollable content */}
-        <div
-          className="pointer-events-none absolute top-0 right-0 h-full w-10"
-          style={{ background: "linear-gradient(to right, transparent, hsl(var(--card)))" }}
-        />
       </div>
 
       {/* ── Tooltip / Detail card ── */}
@@ -311,17 +319,11 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
 
       {/* ── Legend ── */}
       <div className="mt-3 flex items-center justify-center gap-4 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1">
-          <span className="text-base leading-none">👑</span> Unlocked
-        </span>
+        <span className="flex items-center gap-1"><span className="text-base leading-none">👑</span> Unlocked</span>
         <span className="text-border">·</span>
-        <span className="flex items-center gap-1">
-          <span className="text-base leading-none">⏳</span> Next stop
-        </span>
+        <span className="flex items-center gap-1"><span className="text-base leading-none">⏳</span> Next stop</span>
         <span className="text-border">·</span>
-        <span className="flex items-center gap-1">
-          <span className="text-base leading-none">🔒</span> Locked
-        </span>
+        <span className="flex items-center gap-1"><span className="text-base leading-none">🔒</span> Locked</span>
       </div>
     </div>
   );
