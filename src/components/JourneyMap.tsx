@@ -227,7 +227,8 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
           {/* ── YOU pulsing dot ── */}
           {youPoint && milesLogged > 0 && (
             <g>
-              <circle cx={youPoint.x} cy={youPoint.y} r={8} fill="#FFD700" opacity="0.25" />
+              <style>{`@keyframes you-pulse { 0%, 100% { r: 8; opacity: 0.25; } 50% { r: 11; opacity: 0.1; } }`}</style>
+              <circle cx={youPoint.x} cy={youPoint.y} r={8} fill="#FFD700" opacity="0.25" style={{ animation: "you-pulse 1.5s ease-in-out infinite" }} />
               <circle cx={youPoint.x} cy={youPoint.y} r={6} fill="#FFD700" />
               {/* YOU label */}
               <rect
