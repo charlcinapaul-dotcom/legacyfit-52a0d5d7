@@ -203,7 +203,7 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
                 {/* Mile label — above or below depending on position */}
                 <text
                   x={pt.x}
-                  y={pt.y > 100 ? pt.y + rN + 13 : pt.y - rN - 5}
+                  y={pt.y > 100 ? pt.y + rN + 15 : pt.y - rN - 7}
                   textAnchor="middle"
                   fontSize="9"
                   fill="hsl(var(--muted-foreground))"
