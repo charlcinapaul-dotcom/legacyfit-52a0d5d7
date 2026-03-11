@@ -88,16 +88,17 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
         <span className="text-xs text-muted-foreground flex items-center gap-1">🔒 TAP FOR DETAILS</span>
       </div>
 
-      {/* Map container — fixed 200px tall */}
+      {/* Map container */}
       <div
-        className="relative w-full overflow-x-auto"
-        style={{ height: 200, WebkitOverflowScrolling: "touch" } as React.CSSProperties}
+        className="relative w-full"
+        style={{ height: 200 }}
       >
         <svg
           viewBox="0 0 620 196"
           width="100%"
-          height="200"
-          style={{ display: "block", minWidth: 500 }}
+          height="100%"
+          style={{ display: "block", width: "100%", maxWidth: "100%" }}
+          preserveAspectRatio="xMidYMid meet"
           aria-label="Journey map"
         >
           {/* ── Hidden path used for measurement (no stroke) ── */}
