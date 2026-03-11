@@ -108,7 +108,7 @@ serve(async (req: Request): Promise<Response> => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "LegacyFit <onboarding@resend.dev>",
+        from: "LegacyFit <noreply@notify.legacyfitvirtual.com>",
         to: [userEmail],
         subject: `🎽 Welcome to LegacyFit! Your BIB: ${bibNumber}`,
         html: emailHtml,
