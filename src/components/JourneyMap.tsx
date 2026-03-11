@@ -16,7 +16,7 @@ interface JourneyMapProps {
 }
 
 // The SVG path spec (bottom-left → top-right diagonal curve)
-const PATH_D = "M 30,180 C 80,160 110,130 160,110 S 240,85 300,70 S 380,52 440,38 S 490,24 530,15";
+const PATH_D = "M 55,195 C 110,172 150,148 200,128 S 280,100 340,84 S 415,62 475,48 S 525,36 565,28";
 
 // Evaluate a cubic bezier / SVG path at a given t in [0,1] by using
 // a hidden SVGPathElement to get point at length
