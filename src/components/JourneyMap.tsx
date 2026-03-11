@@ -49,7 +49,7 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
   const rN = typeof window !== "undefined" && window.innerWidth < 480 ? NODE_R_SM : NODE_R;
   const sorted = [...milestones].sort((a, b) => a.miles - b.miles);
   const effectiveMiles = Math.max(milesLogged, 1);
-  const firstLockedIdx = sorted.findIndex(m => effectiveMiles < m.miles);
+  const firstLockedIdx = sorted.findIndex((m) => effectiveMiles < m.miles);
 
   // Compute point positions once the SVG path is in DOM
   useEffect(() => {
@@ -77,7 +77,7 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
   }, [sorted.length, milesLogged, totalMiles, firstLockedIdx]);
 
   const handleNodeTap = (i: number) => {
-    setSelectedIdx(prev => prev === i ? null : i);
+    setSelectedIdx((prev) => (prev === i ? null : i));
   };
 
   return (
@@ -85,37 +85,26 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-base font-semibold text-foreground tracking-wide">JOURNEY MAP</h3>
-        <span className="text-xs text-muted-foreground flex items-center gap-1">
-          🔒 TAP FOR DETAILS
-        </span>
+        <span className="text-xs text-muted-foreground flex items-center gap-1">🔒 TAP FOR DETAILS</span>
       </div>
 
       {/* Map container — fixed 200px tall */}
-      <div className="relative w-full overflow-x-auto" style={{ height: 200, WebkitOverflowScrolling: "touch" } as React.CSSProperties}>
+      <div
+        className="relative w-full overflow-x-auto"
+        style={{ height: 200, WebkitOverflowScrolling: "touch" } as React.CSSProperties}
+      >
         <svg
-          viewBox="0 0 470 210"
+          viewBox="0 0 500 196"
           width="100%"
           height="200"
-          style={{ display: "block", minWidth: 340 }}
-          preserveAspectRatio="xMidYMid meet"
+          style={{ display: "block", minWidth: 380 }}
           aria-label="Journey map"
         >
           {/* ── Hidden path used for measurement (no stroke) ── */}
-          <path
-            ref={pathRef}
-            d={PATH_D}
-            fill="none"
-            stroke="none"
-          />
+          <path ref={pathRef} d={PATH_D} fill="none" stroke="none" />
 
           {/* ── Dashed upcoming path (full) ── */}
-          <path
-            d={PATH_D}
-            fill="none"
-            stroke="rgba(255,255,255,0.2)"
-            strokeWidth="3"
-            strokeDasharray="7 5"
-          />
+          <path d={PATH_D} fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="3" strokeDasharray="7 5" />
 
           {/* ── Solid completed path segment ── */}
           {splitLen > 0 && pathRef.current && (
@@ -180,13 +169,7 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
                     👑
                   </text>
                 ) : isNext ? (
-                  <text
-                    x={pt.x}
-                    y={pt.y + 6}
-                    textAnchor="middle"
-                    fontSize="15"
-                    fill="hsl(var(--muted-foreground))"
-                  >
+                  <text x={pt.x} y={pt.y + 6} textAnchor="middle" fontSize="15" fill="hsl(var(--muted-foreground))">
                     ⏳
                   </text>
                 ) : (
@@ -243,19 +226,8 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
           {/* ── YOU pulsing dot ── */}
           {youPoint && milesLogged > 0 && (
             <g>
-              <circle
-                cx={youPoint.x}
-                cy={youPoint.y}
-                r={8}
-                fill="#FFD700"
-                opacity="0.25"
-              />
-              <circle
-                cx={youPoint.x}
-                cy={youPoint.y}
-                r={6}
-                fill="#FFD700"
-              />
+              <circle cx={youPoint.x} cy={youPoint.y} r={8} fill="#FFD700" opacity="0.25" />
+              <circle cx={youPoint.x} cy={youPoint.y} r={6} fill="#FFD700" />
               {/* YOU label */}
               <rect
                 x={youPoint.x - 28}
@@ -283,48 +255,54 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
       </div>
 
       {/* ── Tooltip / Detail card ── */}
-      {selectedIdx !== null && sorted[selectedIdx] && (() => {
-        const m = sorted[selectedIdx];
-        const isUnlocked = effectiveMiles >= m.miles;
-        const remaining = (m.miles - effectiveMiles).toFixed(1);
-        return (
-          <div className="mt-3 rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm animate-in fade-in-0 zoom-in-95 duration-150">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <p className={cn("font-semibold", isUnlocked ? "text-primary" : "text-foreground")}>
-                  {isUnlocked ? "👑 " : "🔒 "}
-                  {m.name}
-                </p>
-                {isUnlocked ? (
-                  <p className="text-muted-foreground text-xs mt-0.5">✓ Unlocked at {m.miles} mi</p>
-                ) : (
-                  <p className="text-muted-foreground text-xs mt-0.5">
-                    <span className="text-primary font-medium">{remaining} mi</span> remaining to unlock
+      {selectedIdx !== null &&
+        sorted[selectedIdx] &&
+        (() => {
+          const m = sorted[selectedIdx];
+          const isUnlocked = effectiveMiles >= m.miles;
+          const remaining = (m.miles - effectiveMiles).toFixed(1);
+          return (
+            <div className="mt-3 rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm animate-in fade-in-0 zoom-in-95 duration-150">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className={cn("font-semibold", isUnlocked ? "text-primary" : "text-foreground")}>
+                    {isUnlocked ? "👑 " : "🔒 "}
+                    {m.name}
                   </p>
-                )}
-                {m.location && (
-                  <p className="text-muted-foreground text-xs mt-1">📍 {m.location}</p>
-                )}
+                  {isUnlocked ? (
+                    <p className="text-muted-foreground text-xs mt-0.5">✓ Unlocked at {m.miles} mi</p>
+                  ) : (
+                    <p className="text-muted-foreground text-xs mt-0.5">
+                      <span className="text-primary font-medium">{remaining} mi</span> remaining to unlock
+                    </p>
+                  )}
+                  {m.location && <p className="text-muted-foreground text-xs mt-1">📍 {m.location}</p>}
+                </div>
+                <button
+                  onClick={() => setSelectedIdx(null)}
+                  className="text-muted-foreground hover:text-foreground transition-colors shrink-0 mt-0.5"
+                  aria-label="Close"
+                >
+                  ✕
+                </button>
               </div>
-              <button
-                onClick={() => setSelectedIdx(null)}
-                className="text-muted-foreground hover:text-foreground transition-colors shrink-0 mt-0.5"
-                aria-label="Close"
-              >
-                ✕
-              </button>
             </div>
-          </div>
-        );
-      })()}
+          );
+        })()}
 
       {/* ── Legend ── */}
       <div className="mt-3 flex items-center justify-center gap-4 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1"><span className="text-base leading-none">👑</span> Unlocked</span>
+        <span className="flex items-center gap-1">
+          <span className="text-base leading-none">👑</span> Unlocked
+        </span>
         <span className="text-border">·</span>
-        <span className="flex items-center gap-1"><span className="text-base leading-none">⏳</span> Next stop</span>
+        <span className="flex items-center gap-1">
+          <span className="text-base leading-none">⏳</span> Next stop
+        </span>
         <span className="text-border">·</span>
-        <span className="flex items-center gap-1"><span className="text-base leading-none">🔒</span> Locked</span>
+        <span className="flex items-center gap-1">
+          <span className="text-base leading-none">🔒</span> Locked
+        </span>
       </div>
     </div>
   );
