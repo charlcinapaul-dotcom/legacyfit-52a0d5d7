@@ -91,7 +91,7 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
       {/* Map container */}
       <div
         className="relative w-full"
-        style={{ height: 200 }}
+        style={{ height: 230 }}
       >
         <svg
           viewBox="0 0 620 196"
