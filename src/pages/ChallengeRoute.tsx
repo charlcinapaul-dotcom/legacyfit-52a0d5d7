@@ -4,7 +4,7 @@ import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
-import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar, Volume2, VolumeX, RotateCcw, Wand2, Loader2, Sparkles, X, Footprints } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar, Volume2, VolumeX, RotateCcw, Wand2, Loader2, Sparkles, X, Footprints, Navigation } from "lucide-react";
 
 import { useMilestoneAudio } from "@/hooks/useMilestoneAudio";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ import { EnrollmentBadge } from "@/components/EnrollmentBadge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChallengePricing } from "@/components/ChallengePricing";
 import { GroupChallenge } from "@/components/GroupChallenge";
+import { GpsWalkTracker } from "@/components/GpsWalkTracker";
 import { useChallengeBySlug } from "@/hooks/useChallengeBySlug";
 import { useEnrollmentStatus } from "@/hooks/useEnrollmentStatus";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -382,12 +383,16 @@ const ChallengeRoute = () => {
             </div>
           </div>
 
-          {/* Log Miles / Steps Section */}
+          {/* Log Miles / Steps / GPS Section */}
           <div className="mt-8" ref={logMilesSectionRef}>
             <Tabs defaultValue="miles" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsList className="grid w-full grid-cols-3 mb-4">
                 <TabsTrigger value="miles">Log Miles</TabsTrigger>
                 <TabsTrigger value="steps">Log Steps</TabsTrigger>
+                <TabsTrigger value="gps" className="flex items-center gap-1.5">
+                  <Navigation className="w-3.5 h-3.5" />
+                  GPS Walk
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="miles">
                 <MileLogger 
@@ -400,6 +405,14 @@ const ChallengeRoute = () => {
               </TabsContent>
               <TabsContent value="steps">
                 <StepLogger
+                  challengeId={challenge.id}
+                  challengeSlug={slug}
+                  challengeName={challenge.name}
+                  challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
+                />
+              </TabsContent>
+              <TabsContent value="gps">
+                <GpsWalkTracker
                   challengeId={challenge.id}
                   challengeSlug={slug}
                   challengeName={challenge.name}
