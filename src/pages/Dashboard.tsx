@@ -448,6 +448,17 @@ const Dashboard = () => {
           <ReferralCard />
         </div>
 
+        {/* Group Challenge */}
+        {activeChallenge && (
+          <div className="mb-8">
+            <GroupChallenge
+              challengeId={activeChallenge.challengeId}
+              totalMiles={activeChallenge.totalMiles}
+              isEnrolled={true}
+            />
+          </div>
+        )}
+
         {/* Quick Actions */}
         <div className="grid sm:grid-cols-2 gap-4">
           <Card 
@@ -456,11 +467,11 @@ const Dashboard = () => {
           >
             <CardContent className="p-6 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Award className="w-6 h-6 text-primary" />
+                <BookOpen className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h3 className="font-medium text-foreground">Passport</h3>
-                <p className="text-sm text-muted-foreground">View your stamps</p>
+                <h3 className="font-medium text-foreground">Passport Stamp Vault</h3>
+                <p className="text-sm text-muted-foreground">All your earned stamps</p>
               </div>
             </CardContent>
           </Card>
