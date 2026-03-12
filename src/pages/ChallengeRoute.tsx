@@ -693,14 +693,6 @@ const ChallengeRoute = () => {
             </div>
           </div>
 
-          {/* Group Challenge Section */}
-          <div className="mt-8">
-            <GroupChallenge
-              challengeId={challenge.id}
-              totalMiles={challenge.totalMiles}
-              isEnrolled={enrollment?.isEnrolled ?? false}
-            />
-          </div>
 
           {/* Educational Disclaimer */}
           <div className="mt-8">
