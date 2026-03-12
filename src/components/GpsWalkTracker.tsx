@@ -167,7 +167,7 @@ export function GpsWalkTracker({
 
           {/* GPS status indicator */}
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className={`w-2 h-2 rounded-full ${gps.status === "active" ? "bg-green-500 animate-pulse" : "bg-yellow-500"}`} />
+            <span className={`w-2 h-2 rounded-full ${gps.status === "active" ? "bg-primary animate-pulse" : "bg-muted-foreground"}`} />
             {gps.status === "active" ? "GPS active — tracking movement" : "GPS paused"}
           </div>
 
