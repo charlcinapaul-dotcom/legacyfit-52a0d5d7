@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { 
   Footprints, 
@@ -16,16 +16,15 @@ import {
   Loader2,
   ChevronRight,
   Trophy,
+  BookOpen,
 } from "lucide-react";
 import type { User, Session } from "@supabase/supabase-js";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
-import { MileLogger } from "@/components/MileLogger";
-import { StepLogger } from "@/components/StepLogger";
 import { ReferralCard } from "@/components/ReferralCard";
 import { DigitalBib } from "@/components/DigitalBib";
 import { CompletionCertificate } from "@/components/CompletionCertificate";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StreakBadge } from "@/components/StreakBadge";
+import { GroupChallenge } from "@/components/GroupChallenge";
 
 interface Profile {
   id: string;
