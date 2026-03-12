@@ -307,51 +307,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Log Miles - inline if active challenge exists */}
-        {activeChallenge ? (
-          <div className="mb-8">
-            <Tabs defaultValue="miles" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="miles">Log Miles</TabsTrigger>
-                <TabsTrigger value="steps">Log Steps</TabsTrigger>
-              </TabsList>
-              <TabsContent value="miles">
-                <MileLogger 
-                  challengeId={activeChallenge.challengeId} 
-                  challengeSlug={activeChallenge.slug || undefined}
-                  challengeName={activeChallenge.title}
-                  onChallengeCompleted={(data) => {
-                    setCertChallenge(data);
-                    setCertOpen(true);
-                  }}
-                />
-              </TabsContent>
-              <TabsContent value="steps">
-                <StepLogger
-                  challengeId={activeChallenge.challengeId}
-                  challengeSlug={activeChallenge.slug || undefined}
-                  challengeName={activeChallenge.title}
-                />
-              </TabsContent>
-            </Tabs>
-          </div>
-        ) : (
-          <Card className="bg-gradient-to-br from-primary/10 via-card to-accent/10 border-border mb-8">
-            <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-center sm:text-left">
-                <h3 className="text-xl font-semibold text-foreground mb-1">Log Your Miles</h3>
-                <p className="text-muted-foreground">Join a challenge to start tracking your progress</p>
-              </div>
-              <Button 
-                className="bg-primary text-primary-foreground hover:bg-primary/90 glow-gold"
-                onClick={() => navigate("/challenges")}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Explore Challenges
-              </Button>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Active Challenges */}
         <div className="mb-8">
