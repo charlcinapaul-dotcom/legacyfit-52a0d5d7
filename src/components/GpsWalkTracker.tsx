@@ -204,7 +204,7 @@ export function GpsWalkTracker({
       <Card className="border-accent/20">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <CheckCircle className="w-5 h-5 text-green-500" />
+            <CheckCircle className="w-5 h-5 text-primary" />
             Walk Completed
           </CardTitle>
         </CardHeader>
