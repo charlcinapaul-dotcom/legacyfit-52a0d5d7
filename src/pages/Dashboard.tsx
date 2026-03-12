@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { 
   Footprints, 
@@ -16,16 +16,15 @@ import {
   Loader2,
   ChevronRight,
   Trophy,
+  BookOpen,
 } from "lucide-react";
 import type { User, Session } from "@supabase/supabase-js";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
-import { MileLogger } from "@/components/MileLogger";
-import { StepLogger } from "@/components/StepLogger";
 import { ReferralCard } from "@/components/ReferralCard";
 import { DigitalBib } from "@/components/DigitalBib";
 import { CompletionCertificate } from "@/components/CompletionCertificate";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StreakBadge } from "@/components/StreakBadge";
+import { GroupChallenge } from "@/components/GroupChallenge";
 
 interface Profile {
   id: string;
@@ -308,51 +307,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Log Miles - inline if active challenge exists */}
-        {activeChallenge ? (
-          <div className="mb-8">
-            <Tabs defaultValue="miles" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="miles">Log Miles</TabsTrigger>
-                <TabsTrigger value="steps">Log Steps</TabsTrigger>
-              </TabsList>
-              <TabsContent value="miles">
-                <MileLogger 
-                  challengeId={activeChallenge.challengeId} 
-                  challengeSlug={activeChallenge.slug || undefined}
-                  challengeName={activeChallenge.title}
-                  onChallengeCompleted={(data) => {
-                    setCertChallenge(data);
-                    setCertOpen(true);
-                  }}
-                />
-              </TabsContent>
-              <TabsContent value="steps">
-                <StepLogger
-                  challengeId={activeChallenge.challengeId}
-                  challengeSlug={activeChallenge.slug || undefined}
-                  challengeName={activeChallenge.title}
-                />
-              </TabsContent>
-            </Tabs>
-          </div>
-        ) : (
-          <Card className="bg-gradient-to-br from-primary/10 via-card to-accent/10 border-border mb-8">
-            <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-center sm:text-left">
-                <h3 className="text-xl font-semibold text-foreground mb-1">Log Your Miles</h3>
-                <p className="text-muted-foreground">Join a challenge to start tracking your progress</p>
-              </div>
-              <Button 
-                className="bg-primary text-primary-foreground hover:bg-primary/90 glow-gold"
-                onClick={() => navigate("/challenges")}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Explore Challenges
-              </Button>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Active Challenges */}
         <div className="mb-8">
@@ -494,6 +448,17 @@ const Dashboard = () => {
           <ReferralCard />
         </div>
 
+        {/* Group Challenge */}
+        {activeChallenge && (
+          <div className="mb-8">
+            <GroupChallenge
+              challengeId={activeChallenge.challengeId}
+              totalMiles={activeChallenge.totalMiles}
+              isEnrolled={true}
+            />
+          </div>
+        )}
+
         {/* Quick Actions */}
         <div className="grid sm:grid-cols-2 gap-4">
           <Card 
@@ -502,11 +467,11 @@ const Dashboard = () => {
           >
             <CardContent className="p-6 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Award className="w-6 h-6 text-primary" />
+                <BookOpen className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h3 className="font-medium text-foreground">Passport</h3>
-                <p className="text-sm text-muted-foreground">View your stamps</p>
+                <h3 className="font-medium text-foreground">Passport Stamp Vault</h3>
+                <p className="text-sm text-muted-foreground">All your earned stamps</p>
               </div>
             </CardContent>
           </Card>
