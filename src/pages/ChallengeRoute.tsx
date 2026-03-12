@@ -383,12 +383,16 @@ const ChallengeRoute = () => {
             </div>
           </div>
 
-          {/* Log Miles / Steps Section */}
+          {/* Log Miles / Steps / GPS Section */}
           <div className="mt-8" ref={logMilesSectionRef}>
             <Tabs defaultValue="miles" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsList className="grid w-full grid-cols-3 mb-4">
                 <TabsTrigger value="miles">Log Miles</TabsTrigger>
                 <TabsTrigger value="steps">Log Steps</TabsTrigger>
+                <TabsTrigger value="gps" className="flex items-center gap-1.5">
+                  <Navigation className="w-3.5 h-3.5" />
+                  GPS Walk
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="miles">
                 <MileLogger 
@@ -401,6 +405,14 @@ const ChallengeRoute = () => {
               </TabsContent>
               <TabsContent value="steps">
                 <StepLogger
+                  challengeId={challenge.id}
+                  challengeSlug={slug}
+                  challengeName={challenge.name}
+                  challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
+                />
+              </TabsContent>
+              <TabsContent value="gps">
+                <GpsWalkTracker
                   challengeId={challenge.id}
                   challengeSlug={slug}
                   challengeName={challenge.name}
