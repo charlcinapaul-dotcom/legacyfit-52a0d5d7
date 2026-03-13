@@ -187,7 +187,7 @@ const Auth = () => {
           toast.error(error.message);
         }
       } else {
-        toast.success("Account created successfully! Welcome to LegacyFit.");
+        navigate("/onboarding");
       }
     } catch (err) {
       toast.error("An unexpected error occurred. Please try again.");
