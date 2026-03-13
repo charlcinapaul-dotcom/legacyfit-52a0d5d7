@@ -171,13 +171,26 @@ const Auth = () => {
     try {
       const redirectUrl = `${window.location.origin}/dashboard`;
 
-      const { error } = await supabase.auth.signUp({
+      // Check username uniqueness before creating account
+      const { data: existingProfile } = await supabase
+        .from("profiles")
+        .select("id")
+        .ilike("display_name", displayName.trim())
+        .maybeSingle();
+
+      if (existingProfile) {
+        setErrors({ displayName: "This username is already taken. Please choose another." });
+        setLoading(false);
+        return;
+      }
+
+      const { error, data: signupData } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: redirectUrl,
           data: {
-            full_name: displayName || undefined,
+            full_name: displayName.trim(),
           },
         },
       });
@@ -192,6 +205,13 @@ const Auth = () => {
           toast.error(error.message);
         }
       } else {
+        // Save display_name to profile (trigger creates profile from metadata, but ensure it's set)
+        if (signupData.user) {
+          await supabase
+            .from("profiles")
+            .update({ display_name: displayName.trim() })
+            .eq("user_id", signupData.user.id);
+        }
         toast.success("Account created successfully! Welcome to LegacyFit.");
       }
     } catch (err) {
