@@ -62,7 +62,7 @@ export const DigitalBib = ({ displayName, bibNumber, challengeName }: DigitalBib
           {/* Participant Name */}
           <div className="border-t border-border pt-3 w-full max-w-xs">
             <p className="text-lg md:text-xl font-semibold text-foreground">
-              {displayName || "Explorer"}
+              {displayName || ""}
             </p>
           </div>
 

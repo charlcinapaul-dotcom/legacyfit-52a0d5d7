@@ -389,17 +389,18 @@ const Auth = () => {
                   )}
                   <form onSubmit={handleSignup} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="signup-name">Display Name (optional)</Label>
+                      <Label htmlFor="signup-name">Username</Label>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
                           id="signup-name"
                           type="text"
-                          placeholder="Your name"
+                          placeholder="Choose a username"
                           value={displayName}
                           onChange={(e) => setDisplayName(e.target.value)}
                           className="pl-10"
                           disabled={loading}
+                          required
                         />
                       </div>
                       {errors.displayName && (
