@@ -119,10 +119,14 @@ const Auth = () => {
       newErrors.password = passwordResult.error.errors[0].message;
     }
 
-    if (isSignup && displayName) {
-      const nameResult = displayNameSchema.safeParse(displayName);
-      if (!nameResult.success) {
-        newErrors.displayName = nameResult.error.errors[0].message;
+    if (isSignup) {
+      if (!displayName.trim()) {
+        newErrors.displayName = "Please choose a username.";
+      } else {
+        const nameResult = displayNameSchema.safeParse(displayName.trim());
+        if (!nameResult.success) {
+          newErrors.displayName = nameResult.error.errors[0].message;
+        }
       }
     }
 
