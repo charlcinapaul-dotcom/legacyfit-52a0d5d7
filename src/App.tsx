@@ -63,6 +63,7 @@ const App = () => (
             <Route path="/free-walk" element={<FreeWalk />} />
             <Route path="/admin/validate" element={<AdminValidate />} />
             <Route path="/export" element={<Export />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
