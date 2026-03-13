@@ -13,7 +13,7 @@ import { z } from "zod";
 // Validation schemas
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
-const displayNameSchema = z.string().min(2, "Name must be at least 2 characters").optional();
+const displayNameSchema = z.string().min(1, "Please choose a username.").min(2, "Name must be at least 2 characters");
 
 const Auth = () => {
   const navigate = useNavigate();
