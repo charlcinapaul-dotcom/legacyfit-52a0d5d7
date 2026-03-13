@@ -117,6 +117,11 @@ const Dashboard = () => {
         console.error("Error fetching profile:", error);
       } else {
         setProfile(data);
+        // Guard: redirect to onboarding if no display_name set yet
+        if (!data?.display_name) {
+          navigate("/onboarding");
+          return;
+        }
       }
     } catch (err) {
       console.error("Error:", err);
@@ -270,7 +275,7 @@ const Dashboard = () => {
 
           <div className="relative z-20 p-6 md:p-10">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-              Welcome back, {profile?.display_name || "Explorer"}!
+              Welcome back, {profile?.display_name}!
             </h1>
             <p className="text-muted-foreground max-w-xl mb-8">
               Ready to unlock more history today?

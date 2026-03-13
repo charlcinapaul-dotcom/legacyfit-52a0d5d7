@@ -7,13 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Footprints, Mail, Lock, User, ArrowLeft, Loader2 } from "lucide-react";
+import { Footprints, Mail, Lock, ArrowLeft, Loader2 } from "lucide-react";
 import { z } from "zod";
 
 // Validation schemas
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
-const displayNameSchema = z.string().min(2, "Name must be at least 2 characters").optional();
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -26,8 +25,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [errors, setErrors] = useState<{ email?: string; password?: string; displayName?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
   useEffect(() => {
     // Check if already logged in
@@ -106,8 +104,8 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate, referralCode]);
 
-  const validateForm = (isSignup: boolean): boolean => {
-    const newErrors: { email?: string; password?: string; displayName?: string } = {};
+  const validateForm = (): boolean => {
+    const newErrors: { email?: string; password?: string } = {};
 
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
@@ -119,20 +117,13 @@ const Auth = () => {
       newErrors.password = passwordResult.error.errors[0].message;
     }
 
-    if (isSignup && displayName) {
-      const nameResult = displayNameSchema.safeParse(displayName);
-      if (!nameResult.success) {
-        newErrors.displayName = nameResult.error.errors[0].message;
-      }
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm(false)) return;
+    if (!validateForm()) return;
 
     setLoading(true);
     try {
@@ -161,7 +152,7 @@ const Auth = () => {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateForm(true)) return;
+    if (!validateForm()) return;
 
     setLoading(true);
     try {
@@ -172,9 +163,6 @@ const Auth = () => {
         password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: {
-            full_name: displayName || undefined,
-          },
         },
       });
 
@@ -188,7 +176,7 @@ const Auth = () => {
           toast.error(error.message);
         }
       } else {
-        toast.success("Account created successfully! Welcome to LegacyFit.");
+        navigate("/onboarding");
       }
     } catch (err) {
       toast.error("An unexpected error occurred. Please try again.");
@@ -364,25 +352,6 @@ const Auth = () => {
                     </div>
                   )}
                   <form onSubmit={handleSignup} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-name">Display Name (optional)</Label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          id="signup-name"
-                          type="text"
-                          placeholder="Your name"
-                          value={displayName}
-                          onChange={(e) => setDisplayName(e.target.value)}
-                          className="pl-10"
-                          disabled={loading}
-                        />
-                      </div>
-                      {errors.displayName && (
-                        <p className="text-sm text-destructive">{errors.displayName}</p>
-                      )}
-                    </div>
-
                     <div className="space-y-2">
                       <Label htmlFor="signup-email">Email</Label>
                       <div className="relative">

@@ -25,6 +25,7 @@ const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 const FreeWalk = lazy(() => import("./pages/FreeWalk"));
 const AdminValidate = lazy(() => import("./pages/AdminValidate"));
 const Export = lazy(() => import("./pages/Export"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,7 @@ const App = () => (
             <Route path="/free-walk" element={<FreeWalk />} />
             <Route path="/admin/validate" element={<AdminValidate />} />
             <Route path="/export" element={<Export />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
