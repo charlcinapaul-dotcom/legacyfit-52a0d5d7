@@ -105,8 +105,8 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate, referralCode]);
 
-  const validateForm = (isSignup: boolean): boolean => {
-    const newErrors: { email?: string; password?: string; displayName?: string } = {};
+  const validateForm = (): boolean => {
+    const newErrors: { email?: string; password?: string } = {};
 
     const emailResult = emailSchema.safeParse(email);
     if (!emailResult.success) {
@@ -116,13 +116,6 @@ const Auth = () => {
     const passwordResult = passwordSchema.safeParse(password);
     if (!passwordResult.success) {
       newErrors.password = passwordResult.error.errors[0].message;
-    }
-
-    if (isSignup && displayName) {
-      const nameResult = displayNameSchema.safeParse(displayName);
-      if (!nameResult.success) {
-        newErrors.displayName = nameResult.error.errors[0].message;
-      }
     }
 
     setErrors(newErrors);
