@@ -13,7 +13,7 @@ import { z } from "zod";
 // Validation schemas
 const emailSchema = z.string().email("Please enter a valid email address");
 const passwordSchema = z.string().min(6, "Password must be at least 6 characters");
-const displayNameSchema = z.string().min(1, "Please choose a username.").min(2, "Name must be at least 2 characters");
+const displayNameSchema = z.string().min(2, "Name must be at least 2 characters").optional();
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -119,14 +119,10 @@ const Auth = () => {
       newErrors.password = passwordResult.error.errors[0].message;
     }
 
-    if (isSignup) {
-      if (!displayName.trim()) {
-        newErrors.displayName = "Please choose a username.";
-      } else {
-        const nameResult = displayNameSchema.safeParse(displayName.trim());
-        if (!nameResult.success) {
-          newErrors.displayName = nameResult.error.errors[0].message;
-        }
+    if (isSignup && displayName) {
+      const nameResult = displayNameSchema.safeParse(displayName);
+      if (!nameResult.success) {
+        newErrors.displayName = nameResult.error.errors[0].message;
       }
     }
 
@@ -171,26 +167,13 @@ const Auth = () => {
     try {
       const redirectUrl = `${window.location.origin}/dashboard`;
 
-      // Check username uniqueness before creating account
-      const { data: existingProfile } = await supabase
-        .from("profiles")
-        .select("id")
-        .ilike("display_name", displayName.trim())
-        .maybeSingle();
-
-      if (existingProfile) {
-        setErrors({ displayName: "This username is already taken. Please choose another." });
-        setLoading(false);
-        return;
-      }
-
-      const { error, data: signupData } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           emailRedirectTo: redirectUrl,
           data: {
-            full_name: displayName.trim(),
+            full_name: displayName || undefined,
           },
         },
       });
@@ -205,13 +188,6 @@ const Auth = () => {
           toast.error(error.message);
         }
       } else {
-        // Save display_name to profile (trigger creates profile from metadata, but ensure it's set)
-        if (signupData.user) {
-          await supabase
-            .from("profiles")
-            .update({ display_name: displayName.trim() })
-            .eq("user_id", signupData.user.id);
-        }
         toast.success("Account created successfully! Welcome to LegacyFit.");
       }
     } catch (err) {
@@ -389,18 +365,17 @@ const Auth = () => {
                   )}
                   <form onSubmit={handleSignup} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="signup-name">Username</Label>
+                      <Label htmlFor="signup-name">Display Name (optional)</Label>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                         <Input
                           id="signup-name"
                           type="text"
-                          placeholder="Choose a username"
+                          placeholder="Your name"
                           value={displayName}
                           onChange={(e) => setDisplayName(e.target.value)}
                           className="pl-10"
                           disabled={loading}
-                          required
                         />
                       </div>
                       {errors.displayName && (

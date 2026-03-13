@@ -270,7 +270,7 @@ const Dashboard = () => {
 
           <div className="relative z-20 p-6 md:p-10">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-              Welcome back, {profile?.display_name || user?.email?.split("@")[0] || "Walker"}!
+              Welcome back, {profile?.display_name || "Explorer"}!
             </h1>
             <p className="text-muted-foreground max-w-xl mb-8">
               Ready to unlock more history today?

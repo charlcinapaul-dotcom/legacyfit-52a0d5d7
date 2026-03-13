@@ -212,7 +212,7 @@ export function useMileLogging(challengeId?: string) {
           .eq("user_id", user.id)
           .single();
 
-        const displayName = profileData?.display_name || "";
+        const displayName = profileData?.display_name || "Explorer";
 
         // Generate certificate
         try {
