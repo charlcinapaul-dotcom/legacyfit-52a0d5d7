@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Footprints, Mail, Lock, User, ArrowLeft, Loader2 } from "lucide-react";
+import { Footprints, Mail, Lock, ArrowLeft, Loader2 } from "lucide-react";
 import { z } from "zod";
 
 // Validation schemas
