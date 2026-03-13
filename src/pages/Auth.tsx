@@ -164,9 +164,6 @@ const Auth = () => {
         password,
         options: {
           emailRedirectTo: redirectUrl,
-          data: {
-            full_name: displayName || undefined,
-          },
         },
       });
 
