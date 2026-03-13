@@ -117,6 +117,11 @@ const Dashboard = () => {
         console.error("Error fetching profile:", error);
       } else {
         setProfile(data);
+        // Guard: redirect to onboarding if no display_name set yet
+        if (!data?.display_name) {
+          navigate("/onboarding");
+          return;
+        }
       }
     } catch (err) {
       console.error("Error:", err);
