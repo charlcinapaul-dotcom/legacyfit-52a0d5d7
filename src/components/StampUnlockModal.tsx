@@ -31,26 +31,15 @@ export function StampUnlockModal({
   const [isAnimating, setIsAnimating] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const hasPlayedRef = useRef<Set<number>>(new Set());
 
   const currentStamp = stamps[currentIndex];
   const hasMore = currentIndex < stamps.length - 1;
 
-  // Auto-play audio when stamp appears
-  useEffect(() => {
-    if (!currentStamp?.audioUrl) return;
-    if (hasPlayedRef.current.has(currentIndex)) return;
-
-    const timer = setTimeout(() => {
-      hasPlayedRef.current.add(currentIndex);
-      if (audioRef.current) {
-        audioRef.current.src = currentStamp.audioUrl!;
-        audioRef.current.play().catch(console.error);
-      }
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, [currentIndex, currentStamp]);
+  const handlePlayAudio = () => {
+    if (!audioRef.current || !currentStamp?.audioUrl) return;
+    audioRef.current.src = currentStamp.audioUrl;
+    audioRef.current.play().catch(console.error);
+  };
 
   // Cleanup audio on unmount
   useEffect(() => {
@@ -191,24 +180,27 @@ export function StampUnlockModal({
               <div className="relative bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
                 <div className="flex items-center gap-3">
                   <button
+                    onClick={handlePlayAudio}
+                    className="shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/20 hover:bg-amber-500/30 transition-colors text-amber-400 text-sm font-medium"
+                    aria-label="Hear her story"
+                  >
+                    <Volume2 className="w-4 h-4" />
+                    🔊 Hear her story
+                  </button>
+                  <button
                     onClick={toggleNarration}
-                    className="shrink-0 w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center hover:bg-amber-500/30 transition-colors"
-                    aria-label={isPlaying ? "Stop narration" : "Play narration"}
+                    className="shrink-0 w-8 h-8 rounded-full bg-amber-500/10 flex items-center justify-center hover:bg-amber-500/20 transition-colors"
+                    aria-label={isPlaying ? "Stop narration" : "Mute narration"}
                   >
                     {isPlaying ? (
                       <VolumeX className="w-4 h-4 text-amber-400" />
                     ) : (
-                      <Volume2 className="w-4 h-4 text-amber-400" />
+                      <Volume2 className="w-4 h-4 text-amber-400/50" />
                     )}
                   </button>
-                  <div className="flex-1">
-                    <p className="text-xs font-medium text-amber-400/80 uppercase tracking-wide">
-                      Legacy Guide · {currentStamp.stampTitle}
-                    </p>
-                  </div>
                 </div>
                 {isPlaying && (
-                  <div className="absolute bottom-2 left-14 right-4 flex gap-1">
+                  <div className="absolute bottom-2 left-4 right-4 flex gap-1 mt-2">
                     {[...Array(12)].map((_, i) => (
                       <div
                         key={i}
