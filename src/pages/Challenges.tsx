@@ -114,7 +114,7 @@ const Challenges = () => {
 
     return (
       <Wrapper key={c.id} {...(wrapperProps as any)}>
-        <h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
+        <h3 className="text-xl font-semibold text-foreground mb-2 pr-20 group-hover:text-primary transition-colors">
           {c.title}
         </h3>
         <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{c.description}</p>
