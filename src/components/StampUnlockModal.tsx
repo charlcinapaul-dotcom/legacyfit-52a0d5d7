@@ -36,21 +36,11 @@ export function StampUnlockModal({
   const currentStamp = stamps[currentIndex];
   const hasMore = currentIndex < stamps.length - 1;
 
-  // Auto-play audio when stamp appears
-  useEffect(() => {
-    if (!currentStamp?.audioUrl) return;
-    if (hasPlayedRef.current.has(currentIndex)) return;
-
-    const timer = setTimeout(() => {
-      hasPlayedRef.current.add(currentIndex);
-      if (audioRef.current) {
-        audioRef.current.src = currentStamp.audioUrl!;
-        audioRef.current.play().catch(console.error);
-      }
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, [currentIndex, currentStamp]);
+  const handlePlayAudio = () => {
+    if (!audioRef.current || !currentStamp?.audioUrl) return;
+    audioRef.current.src = currentStamp.audioUrl;
+    audioRef.current.play().catch(console.error);
+  };
 
   // Cleanup audio on unmount
   useEffect(() => {
