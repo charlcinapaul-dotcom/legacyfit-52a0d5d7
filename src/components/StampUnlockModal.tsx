@@ -31,7 +31,6 @@ export function StampUnlockModal({
   const [isAnimating, setIsAnimating] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const hasPlayedRef = useRef<Set<number>>(new Set());
 
   const currentStamp = stamps[currentIndex];
   const hasMore = currentIndex < stamps.length - 1;
