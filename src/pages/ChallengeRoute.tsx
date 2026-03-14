@@ -510,7 +510,7 @@ const ChallengeRoute = () => {
 
           {/* Next Milestone Banner */}
           {(() => {
-            const effectiveMiles = Math.max(userProgress.milesLogged, 1);
+            const effectiveMiles = userProgress.milesLogged;
             const nextMilestone = challenge.milestones
               .slice()
               .sort((a, b) => a.miles - b.miles)
