@@ -130,7 +130,15 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
             const miRemaining = (m.miles - effectiveMiles).toFixed(1);
 
             return (
-              <g key={m.id} onClick={() => handleNodeTap(i)} style={{ cursor: "pointer" }}>
+              <g
+                key={m.id}
+                onClick={() => handleNodeTap(i)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleNodeTap(i); }}
+                tabIndex={0}
+                role="button"
+                aria-label={`${m.name} milestone at ${m.miles} miles — ${isUnlocked ? 'unlocked' : isNext ? 'next stop' : 'locked'}`}
+                style={{ cursor: "pointer" }}
+              >
                 {/* Pulse ring for next */}
                 {isNext && (
                   <circle
