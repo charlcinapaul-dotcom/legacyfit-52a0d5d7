@@ -4,13 +4,20 @@
 
 .hero-boarding-bg {
   background-repeat: no-repeat;
-  background-position: right center;
+  background-position: center center;
   background-size: cover;
 }
 
 @media (min-width: 768px) {
   .hero-boarding-bg {
     background-position: center center;
+  }
+}
+
+@media (max-width: 479px) {
+  .hero-boarding-bg {
+    background-size: 160%;
+    background-position: center top;
   }
 }
 
