@@ -1,24 +1,28 @@
 
-## Problem
+## Root Cause
 
-All three card variants (`WomensHistoryCard`, `PrideCard`, `PioneersCard`) use `absolute top-6 right-6` to position the "Active" badge, "Locked" label, and `ChevronRight` icon. The card title `<h3>` has no right padding, so on mobile with long titles, the text flows under the absolutely-positioned element — hiding the badge and clipping the title.
+The `create-checkout` edge function is working correctly and returning a valid Stripe URL every time. The network logs confirm `200` responses with valid `checkout.stripe.com` URLs.
 
-**Screenshot confirms:** "Eleanor Roosevelt Human Rights Journey" title text runs directly behind the "Active" pill badge.
-
-## Fix — `src/pages/Challenges.tsx` only
-
-Add `pr-20` (right padding) to the `<h3>` title element in all three card components. This pushes the title text away from the right edge, ensuring it never flows behind the badge, lock label, or chevron.
-
-Current:
-```tsx
-<h3 className="text-xl font-semibold text-foreground mb-2 group-hover:text-[#C084FC] transition-colors">
+The bug is in `ChallengePricing.tsx` line 117:
+```ts
+window.open(data.url, "_blank");  // ← BLOCKED by popup blocker
 ```
 
-Fixed:
-```tsx
-<h3 className="text-xl font-semibold text-foreground mb-2 pr-20 group-hover:text-[#C084FC] transition-colors">
+`window.open()` to a new tab is blocked by browsers when called after an `await` inside an async function, because the browser no longer considers it a direct user gesture. The user's click event context is lost during the async `supabase.functions.invoke()` call.
+
+## Fix
+
+Change line 117 in `src/components/ChallengePricing.tsx`:
+```ts
+// FROM:
+window.open(data.url, "_blank");
+
+// TO:
+window.location.href = data.url;
 ```
 
-Apply `pr-20` to the `<h3>` in all three card components: `WomensHistoryCard`, `PrideCard`, and `PioneersCard`.
+This navigates the current tab to Stripe Checkout, which always works regardless of popup blockers. After payment, Stripe redirects back to `/payment-success?session_id=...` as configured in the edge function.
 
-No other changes. No logic, structure, or styling changes anywhere else.
+## Files to Change
+
+- `src/components/ChallengePricing.tsx` — line 117 only
