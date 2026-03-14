@@ -153,6 +153,9 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
                   />
                 )}
 
+                {/* Invisible enlarged hit area (56px diameter touch target) */}
+                <circle cx={pt.x} cy={pt.y} r={28} fill="transparent" aria-hidden="true" />
+
                 {/* Node circle */}
                 <circle
                   cx={pt.x}
