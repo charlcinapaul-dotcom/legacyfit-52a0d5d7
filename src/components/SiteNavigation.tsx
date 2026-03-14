@@ -42,7 +42,7 @@ export const SiteNavigation = () => {
         {/* Logo + Home */}
         <div className="flex items-center gap-2">
           <Link to="/" className="shrink-0">
-            <img src={legacyFitLogo} alt="LegacyFit" className="h-16 md:h-24 w-auto" />
+            <img src={legacyFitLogo} alt="LegacyFit" className="h-10 md:h-12 w-auto" />
           </Link>
           {location.pathname !== "/" && (
             <Link
