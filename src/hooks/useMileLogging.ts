@@ -252,7 +252,7 @@ export function useMileLogging(challengeId?: string) {
         challengeTotalMiles: challengeData ? Number(challengeData.total_miles) : 0,
       };
     },
-    onSuccess: (result) => {
+    onSuccess: (result, variables) => {
       // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ["total-miles"] });
       queryClient.invalidateQueries({ queryKey: ["user-passport-stamps"] });
@@ -260,6 +260,15 @@ export function useMileLogging(challengeId?: string) {
       queryClient.invalidateQueries({ queryKey: ["user-challenge"] });
 
       toast.success(`Miles logged! Total: ${result.newTotal} miles`);
+
+      // 0.5-mile motivational teaser — only for free first-mile preview users
+      // Fires when the new total crosses 0.5 but hasn't yet reached 1.0
+      const prevTotal = result.newTotal - Number(variables.miles);
+      if (result.isFirstMile && prevTotal < 0.5 && result.newTotal >= 0.5 && result.newTotal < 1) {
+        toast("You're halfway there! 🥾 Keep walking to unlock your first stamp at 1 mile.", {
+          duration: 5000,
+        });
+      }
 
       // Set newly unlocked stamps for modal display
       if (result.unlockedStamps.length > 0) {
