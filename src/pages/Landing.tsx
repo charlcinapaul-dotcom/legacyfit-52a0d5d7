@@ -44,14 +44,13 @@ const Landing = () => {
           />
         </div>
 
-        <div className="container mx-auto text-center relative z-10">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-            <span className="text-foreground">Every Mile</span><br />
-            <span className="text-gradient-gold">Unlocks History</span>
+        <div className="container mx-auto text-center relative z-10 pt-20 md:pt-0">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-gradient-gold">
+            Walk Through History
           </h1>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10">
-            Walk your way through powerful milestones, earn digital passport stamps, and build lifetime legacy miles.
+            Every milestone unlocks powerful stories from the trailblazers who changed the world.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -67,9 +66,9 @@ const Landing = () => {
               </Button>
             </Link>
             */}
-            <Link to="/about">
+            <Link to="/how-it-works">
               <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-secondary text-lg px-8 py-6">
-                Learn More
+                How It Works
               </Button>
             </Link>
           </div>
