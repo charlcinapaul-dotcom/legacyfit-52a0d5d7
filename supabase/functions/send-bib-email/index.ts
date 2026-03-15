@@ -119,6 +119,19 @@ serve(async (req: Request): Promise<Response> => {
 
     if (!response.ok) {
       console.error("Resend API error:", responseData);
+
+      // Domain not verified in Resend — treat as a soft failure so the
+      // onboarding flow can continue without showing an error to the user.
+      // The BIB was still created; the welcome email will send once the
+      // sender domain is verified in Resend.
+      if (response.status === 403 || responseData?.name === "validation_error") {
+        console.log("BIB email skipped: sender domain not yet verified in Resend.");
+        return new Response(
+          JSON.stringify({ success: false, message: "Email delivery pending domain verification" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+        );
+      }
+
       throw new Error(responseData.message || "Failed to send email");
     }
 
