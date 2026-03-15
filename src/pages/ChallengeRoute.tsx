@@ -93,7 +93,7 @@ const getDefaultDays = (totalMiles: number): number => {
 
 const ChallengeRoute = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { data, isLoading, error } = useChallengeBySlug(slug);
+  const { data, isLoading, error, isMilestonesLoading } = useChallengeBySlug(slug);
   const challengeId = data?.challenge?.id;
   const { data: enrollment } = useEnrollmentStatus(challengeId);
   const { toast } = useToast();
@@ -168,12 +168,14 @@ const ChallengeRoute = () => {
     }
   }, [toast]);
 
-  // Transform database data to component format
+  // Transform database data to component format.
+  // Challenge metadata renders immediately; milestones are populated once the
+  // second query resolves (isMilestonesLoading may still be true at this point).
   const challenge = useMemo(() => {
-    if (!data) return null;
-    
+    if (!data?.challenge) return null;
+
     const { challenge: dbChallenge, milestones: dbMilestones } = data;
-    
+
     return {
       id: dbChallenge.id,
       name: dbChallenge.title,
@@ -237,7 +239,7 @@ const ChallengeRoute = () => {
     prevUnlockedCountRef.current = unlockedMilestonesCount;
   }, [unlockedMilestonesCount, challenge, playMilestoneAudio]);
 
-  // Loading state
+  // Loading state — only block render until challenge metadata is available
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -261,17 +263,6 @@ const ChallengeRoute = () => {
             <Skeleton className="h-64 rounded-2xl mb-8" />
             <Skeleton className="h-48 rounded-xl mb-8" />
             <Skeleton className="h-32 rounded-xl mb-8" />
-            <div className="space-y-8">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="flex gap-6">
-                  <Skeleton className="w-12 h-12 rounded-full" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-5 w-32" />
-                    <Skeleton className="h-4 w-48" />
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </main>
       </div>
@@ -508,8 +499,8 @@ const ChallengeRoute = () => {
             </div>
           </div>
 
-          {/* Next Milestone Banner */}
-          {(() => {
+          {/* Next Milestone Banner — only when milestones are ready */}
+          {!isMilestonesLoading && challenge.milestones.length > 0 && (() => {
             const effectiveMiles = userProgress.milesLogged;
             const nextMilestone = challenge.milestones
               .slice()
@@ -534,7 +525,8 @@ const ChallengeRoute = () => {
             );
           })()}
 
-          {/* Journey Map */}
+          {/* Journey Map — render with empty milestones while loading so the
+              container appears; JourneyMap handles empty arrays gracefully */}
           <JourneyMap
             milestones={challenge.milestones}
             milesLogged={userProgress.milesLogged}
@@ -595,102 +587,120 @@ const ChallengeRoute = () => {
                 </Button>
               </div>
             </div>
-            
-            <div className="relative">
-              {/* Track line scoped strictly to the milestone list */}
-              <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border" />
-              <div 
-                className={cn("absolute left-6 top-0 w-0.5 transition-all duration-1000", colors.routeLine)}
-                style={{ height: `${progressPercent}%` }}
-              />
-              <div className="space-y-8">
-                {challenge.milestones.map((milestone, index) => {
-                  const isUnlocked = userProgress.milesLogged >= milestone.miles;
-                  const isNext = !isUnlocked && (index === 0 || userProgress.milesLogged >= challenge.milestones[index - 1].miles);
-                  const isLastUnlocked = isUnlocked && index === unlockedMilestonesCount - 1;
-                  
-                  return (
-                    <div key={milestone.id} className="relative flex items-start gap-6">
-                      <div className={cn(
-                        "relative z-10 w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all",
-                        isUnlocked 
-                          ? colors.bgSolid
-                          : isNext
-                            ? "bg-secondary border-border text-muted-foreground animate-pulse"
-                            : "bg-secondary border-border text-muted-foreground"
-                      )}>
-                        {isUnlocked ? (
-                          <CheckCircle2 className="w-5 h-5" />
-                        ) : (
-                          <Lock className="w-4 h-4" />
-                        )}
-                      </div>
 
-                      <div className={cn(
-                        "flex-1 pb-2",
-                        !isUnlocked && "opacity-50"
-                      )}>
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="font-semibold text-foreground">{milestone.name}</h4>
-                          <span className={cn(
-                            "text-xs px-2 py-0.5 rounded-full",
-                            isUnlocked ? colors.bgHighlight : "bg-secondary text-muted-foreground"
-                          )}>
-                            {milestone.miles} mi
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground mb-1">
-                          <MapPin className="w-3 h-3 inline mr-1" />
-                          {milestone.location}
-                        </p>
-                        {isUnlocked && milestone.description && (
-                          <p className="text-sm text-muted-foreground">
-                            {milestone.description}
-                          </p>
-                        )}
-                        {/* Audio controls — only shown on the most recently unlocked milestone */}
-                        {isLastUnlocked && (milestone.audioUrl || milestone.description) && (
-                          <div className="flex items-center gap-2 mt-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => replay()}
-                              disabled={!currentAudioUrl}
-                              className={cn("gap-1.5 text-xs", colors.text)}
-                              title="Replay narration"
-                            >
-                              <RotateCcw className="w-3 h-3" />
-                              {isPlaying ? "Playing…" : "Replay"}
-                            </Button>
-                          </div>
-                        )}
-                        {isUnlocked && (milestone.latitude || milestone.location) && (
-                          <a
-                            href={
-                              milestone.latitude && milestone.longitude
-                                ? `https://www.google.com/maps/search/?api=1&query=${milestone.latitude},${milestone.longitude}`
-                                : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(milestone.location)}`
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-2 inline-flex"
-                          >
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className={cn("gap-1.5 text-xs", colors.text)}
-                            >
-                              <MapPin className="w-3 h-3" />
-                              View on Map
-                            </Button>
-                          </a>
-                        )}
-                      </div>
+            {/* ── Milestone skeleton — shown while the second query is in-flight ── */}
+            {isMilestonesLoading && (
+              <div className="space-y-8">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex gap-6 items-start">
+                    <Skeleton className="w-12 h-12 rounded-full shrink-0" />
+                    <div className="flex-1 space-y-2 pt-1">
+                      <Skeleton className="h-4 w-40" />
+                      <Skeleton className="h-3 w-28" />
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
-            </div>
+            )}
+
+            {/* ── Actual milestone list — rendered once milestones are ready ── */}
+            {!isMilestonesLoading && (
+              <div className="relative">
+                {/* Track line scoped strictly to the milestone list */}
+                <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-border" />
+                <div
+                  className={cn("absolute left-6 top-0 w-0.5 transition-all duration-1000", colors.routeLine)}
+                  style={{ height: `${progressPercent}%` }}
+                />
+                <div className="space-y-8">
+                  {challenge.milestones.map((milestone, index) => {
+                    const isUnlocked = userProgress.milesLogged >= milestone.miles;
+                    const isNext = !isUnlocked && (index === 0 || userProgress.milesLogged >= challenge.milestones[index - 1].miles);
+                    const isLastUnlocked = isUnlocked && index === unlockedMilestonesCount - 1;
+
+                    return (
+                      <div key={milestone.id} className="relative flex items-start gap-6">
+                        <div className={cn(
+                          "relative z-10 w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all",
+                          isUnlocked
+                            ? colors.bgSolid
+                            : isNext
+                              ? "bg-secondary border-border text-muted-foreground animate-pulse"
+                              : "bg-secondary border-border text-muted-foreground"
+                        )}>
+                          {isUnlocked ? (
+                            <CheckCircle2 className="w-5 h-5" />
+                          ) : (
+                            <Lock className="w-4 h-4" />
+                          )}
+                        </div>
+
+                        <div className={cn(
+                          "flex-1 pb-2",
+                          !isUnlocked && "opacity-50"
+                        )}>
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-semibold text-foreground">{milestone.name}</h4>
+                            <span className={cn(
+                              "text-xs px-2 py-0.5 rounded-full",
+                              isUnlocked ? colors.bgHighlight : "bg-secondary text-muted-foreground"
+                            )}>
+                              {milestone.miles} mi
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-1">
+                            <MapPin className="w-3 h-3 inline mr-1" />
+                            {milestone.location}
+                          </p>
+                          {isUnlocked && milestone.description && (
+                            <p className="text-sm text-muted-foreground">
+                              {milestone.description}
+                            </p>
+                          )}
+                          {/* Audio controls — only shown on the most recently unlocked milestone */}
+                          {isLastUnlocked && (milestone.audioUrl || milestone.description) && (
+                            <div className="flex items-center gap-2 mt-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => replay()}
+                                disabled={!currentAudioUrl}
+                                className={cn("gap-1.5 text-xs", colors.text)}
+                                title="Replay narration"
+                              >
+                                <RotateCcw className="w-3 h-3" />
+                                {isPlaying ? "Playing…" : "Replay"}
+                              </Button>
+                            </div>
+                          )}
+                          {isUnlocked && (milestone.latitude || milestone.location) && (
+                            <a
+                              href={
+                                milestone.latitude && milestone.longitude
+                                  ? `https://www.google.com/maps/search/?api=1&query=${milestone.latitude},${milestone.longitude}`
+                                  : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(milestone.location)}`
+                              }
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="mt-2 inline-flex"
+                            >
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className={cn("gap-1.5 text-xs", colors.text)}
+                              >
+                                <MapPin className="w-3 h-3" />
+                                View on Map
+                              </Button>
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
 
 
