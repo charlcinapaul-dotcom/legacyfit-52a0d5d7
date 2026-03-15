@@ -239,7 +239,7 @@ const ChallengeRoute = () => {
     prevUnlockedCountRef.current = unlockedMilestonesCount;
   }, [unlockedMilestonesCount, challenge, playMilestoneAudio]);
 
-  // Loading state
+  // Loading state — only block render until challenge metadata is available
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
@@ -263,17 +263,6 @@ const ChallengeRoute = () => {
             <Skeleton className="h-64 rounded-2xl mb-8" />
             <Skeleton className="h-48 rounded-xl mb-8" />
             <Skeleton className="h-32 rounded-xl mb-8" />
-            <div className="space-y-8">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="flex gap-6">
-                  <Skeleton className="w-12 h-12 rounded-full" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-5 w-32" />
-                    <Skeleton className="h-4 w-48" />
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         </main>
       </div>
