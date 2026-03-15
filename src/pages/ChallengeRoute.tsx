@@ -93,7 +93,7 @@ const getDefaultDays = (totalMiles: number): number => {
 
 const ChallengeRoute = () => {
   const { slug } = useParams<{ slug: string }>();
-  const { data, isLoading, error } = useChallengeBySlug(slug);
+  const { data, isLoading, error, isMilestonesLoading } = useChallengeBySlug(slug);
   const challengeId = data?.challenge?.id;
   const { data: enrollment } = useEnrollmentStatus(challengeId);
   const { toast } = useToast();
