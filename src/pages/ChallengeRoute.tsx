@@ -168,12 +168,14 @@ const ChallengeRoute = () => {
     }
   }, [toast]);
 
-  // Transform database data to component format
+  // Transform database data to component format.
+  // Challenge metadata renders immediately; milestones are populated once the
+  // second query resolves (isMilestonesLoading may still be true at this point).
   const challenge = useMemo(() => {
-    if (!data) return null;
-    
+    if (!data?.challenge) return null;
+
     const { challenge: dbChallenge, milestones: dbMilestones } = data;
-    
+
     return {
       id: dbChallenge.id,
       name: dbChallenge.title,
