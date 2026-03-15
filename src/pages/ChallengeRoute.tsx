@@ -727,17 +727,19 @@ const ChallengeRoute = () => {
         </div>
       </main>
 
-      {/* Legacy Guide AI Companion */}
-      <LegacyGuide
-        challengeContext={{
-          name: challenge.name,
-          title: challenge.title,
-          totalMiles: challenge.totalMiles,
-          milestones: challenge.milestones.map((m) => ({ name: m.name, miles: m.miles })),
-          userMiles: userProgress.milesLogged,
-          days: customDays,
-        }}
-      />
+      {/* Legacy Guide AI Companion — disabled via flag; set SHOW_LEGACY_GUIDE = true to re-enable */}
+      {(() => { const SHOW_LEGACY_GUIDE = false; return SHOW_LEGACY_GUIDE; })() && (
+        <LegacyGuide
+          challengeContext={{
+            name: challenge.name,
+            title: challenge.title,
+            totalMiles: challenge.totalMiles,
+            milestones: challenge.milestones.map((m) => ({ name: m.name, miles: m.miles })),
+            userMiles: userProgress.milesLogged,
+            days: customDays,
+          }}
+        />
+      )}
 
       {/* Mobile sticky Log Miles FAB */}
       <button
