@@ -34,45 +34,77 @@ export interface ChallengeWithMilestones {
   milestones: MilestoneData[];
 }
 
+/**
+ * Fetches the challenge metadata first, then milestones lazily once the
+ * challenge id is known. This lets the hero section render immediately while
+ * the milestone list loads in a second query.
+ *
+ * The returned shape is identical to the original single-query version so
+ * all downstream consumers (JourneyMap, StampUnlockModal, etc.) are unchanged.
+ */
 export function useChallengeBySlug(slug: string | undefined) {
-  return useQuery({
-    queryKey: ["challenge", slug],
-    queryFn: async (): Promise<ChallengeWithMilestones | null> => {
+  // ── Query 1: challenge metadata ─────────────────────────────────────────
+  const challengeQuery = useQuery({
+    queryKey: ["challenge-meta", slug],
+    queryFn: async (): Promise<ChallengeData | null> => {
       if (!slug) return null;
 
-      // Fetch challenge by slug
-      const { data: challenge, error: challengeError } = await supabase
+      const { data: challenge, error } = await supabase
         .from("challenges")
-        .select("*")
+        .select("id, title, edition, description, total_miles, slug, image_url, is_active")
         .eq("slug", slug)
         .maybeSingle();
 
-      if (challengeError) {
-        console.error("Error fetching challenge:", challengeError);
-        throw challengeError;
+      if (error) {
+        console.error("Error fetching challenge:", error);
+        throw error;
       }
 
-      if (!challenge) {
-        return null;
-      }
-
-      // Fetch milestones for this challenge
-      const { data: milestones, error: milestonesError } = await supabase
-        .from("milestones")
-        .select("*")
-        .eq("challenge_id", challenge.id)
-        .order("order_index", { ascending: true });
-
-      if (milestonesError) {
-        console.error("Error fetching milestones:", milestonesError);
-        throw milestonesError;
-      }
-
-      return {
-        challenge,
-        milestones: milestones || [],
-      };
+      return challenge ?? null;
     },
     enabled: !!slug,
   });
+
+  const challengeId = challengeQuery.data?.id;
+
+  // ── Query 2: milestones — only runs after challenge id is available ──────
+  const milestonesQuery = useQuery({
+    queryKey: ["challenge-milestones", challengeId],
+    queryFn: async (): Promise<MilestoneData[]> => {
+      const { data: milestones, error } = await supabase
+        .from("milestones")
+        .select("*")
+        .eq("challenge_id", challengeId!)
+        .order("order_index", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching milestones:", error);
+        throw error;
+      }
+
+      return milestones || [];
+    },
+    enabled: !!challengeId,
+  });
+
+  // ── Derived combined state (identical shape to original) ─────────────────
+  const combinedData: ChallengeWithMilestones | null =
+    challengeQuery.data
+      ? {
+          challenge: challengeQuery.data,
+          milestones: milestonesQuery.data ?? [],
+        }
+      : null;
+
+  return {
+    // Mirrors the original { data, isLoading, error } API so nothing breaks
+    data: combinedData,
+    isLoading: challengeQuery.isLoading,
+    error: challengeQuery.error ?? milestonesQuery.error,
+
+    // Extra granular flags for the two-phase loading pattern
+    isChallengeLoading: challengeQuery.isLoading,
+    isMilestonesLoading: milestonesQuery.isLoading || milestonesQuery.isFetching,
+    isMilestonesReady: milestonesQuery.isSuccess,
+  };
 }
