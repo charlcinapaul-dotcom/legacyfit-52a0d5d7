@@ -75,13 +75,19 @@ export type Database = {
       }
       challenges: {
         Row: {
+          category: string | null
           created_at: string
           description: string | null
+          difficulty: string | null
           edition: string
+          featured: boolean | null
+          featured_quote: string | null
+          featured_quote_attribution: string | null
           id: string
           image_url: string | null
           is_active: boolean | null
           price_cents: number | null
+          release_date: string | null
           slug: string | null
           stripe_price_id: string | null
           stripe_product_id: string | null
@@ -90,13 +96,19 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          category?: string | null
           created_at?: string
           description?: string | null
+          difficulty?: string | null
           edition: string
+          featured?: boolean | null
+          featured_quote?: string | null
+          featured_quote_attribution?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
           price_cents?: number | null
+          release_date?: string | null
           slug?: string | null
           stripe_price_id?: string | null
           stripe_product_id?: string | null
@@ -105,13 +117,19 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          category?: string | null
           created_at?: string
           description?: string | null
+          difficulty?: string | null
           edition?: string
+          featured?: boolean | null
+          featured_quote?: string | null
+          featured_quote_attribution?: string | null
           id?: string
           image_url?: string | null
           is_active?: boolean | null
           price_cents?: number | null
+          release_date?: string | null
           slug?: string | null
           stripe_price_id?: string | null
           stripe_product_id?: string | null
