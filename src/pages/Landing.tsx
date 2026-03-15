@@ -32,11 +32,12 @@ const Landing = () => {
   return (
     <PageLayout>
       {/* ───── 1. Hero ───── */}
-      <section className="relative min-h-[100vh] flex flex-col justify-center pt-16 pb-20 px-4 overflow-hidden w-full max-w-full">
+      <section className="relative min-h-[100vh] flex flex-col justify-start md:justify-center pt-16 pb-20 px-4 overflow-hidden w-full max-w-full">
         <div className="absolute inset-0 overflow-hidden">
-          <div
-            className="absolute inset-0 hero-boarding-bg"
-            style={{ backgroundImage: `url(${boardingPassBg})` }}
+          <img
+            src={boardingPassBg}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover object-top md:object-center"
           />
           <div
             className="absolute inset-0 pointer-events-none"
