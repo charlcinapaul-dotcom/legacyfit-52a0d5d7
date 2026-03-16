@@ -37,7 +37,7 @@ const Landing = () => {
           <img
             src={boardingPassBg}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover object-top md:object-center"
+            className="absolute inset-0 w-full h-full object-cover object-left-top md:object-center"
           />
           <div
             className="absolute inset-0 pointer-events-none"
