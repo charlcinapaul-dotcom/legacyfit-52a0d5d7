@@ -43,6 +43,13 @@ const Landing = () => {
             className="absolute inset-0 pointer-events-none"
             style={{ backgroundColor: "rgba(0,0,0,0.65)" }}
           />
+          {/* Mobile-only text-readability gradient — stacks on top of base overlay */}
+          <div
+            className="absolute inset-0 pointer-events-none md:hidden"
+            style={{
+              background: "linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.25) 55%, transparent 100%)"
+            }}
+          />
         </div>
 
         <div className="container mx-auto text-center relative z-10 pt-20 md:pt-0">
