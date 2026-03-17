@@ -9,7 +9,9 @@ const Landing = () => {
   const navigate = useNavigate();
 
   const handleLogMiles = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) {
       navigate("/auth?mode=signup");
       return;
@@ -37,17 +39,14 @@ const Landing = () => {
           <img
             src={boardingPassBg}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover object-left-top md:object-center"
+            className="absolute inset-0 w-full h-full object-cover object-right-top md:object-center"
           />
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{ backgroundColor: "rgba(0,0,0,0.65)" }}
-          />
+          <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: "rgba(0,0,0,0.65)" }} />
           {/* Mobile-only text-readability gradient — stacks on top of base overlay */}
           <div
             className="absolute inset-0 pointer-events-none md:hidden"
             style={{
-              background: "linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.25) 55%, transparent 100%)"
+              background: "linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.25) 55%, transparent 100%)",
             }}
           />
         </div>
@@ -63,7 +62,10 @@ const Landing = () => {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/challenges">
-              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 glow-gold text-lg px-8 py-6">
+              <Button
+                size="lg"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 glow-gold text-lg px-8 py-6"
+              >
                 Start Your Journey <ChevronRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
@@ -75,7 +77,11 @@ const Landing = () => {
             </Link>
             */}
             <Link to="/how-it-works">
-              <Button size="lg" variant="outline" className="border-border text-foreground hover:bg-secondary text-lg px-8 py-6">
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-border text-foreground hover:bg-secondary text-lg px-8 py-6"
+              >
                 How It Works
               </Button>
             </Link>
@@ -94,9 +100,7 @@ const Landing = () => {
       {/* ───── 2. The Problem We're Solving ───── */}
       <section className="py-20 px-4 bg-secondary/30">
         <div className="container mx-auto max-w-3xl text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-            Seasoned. Strong. Still Moving.
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">Seasoned. Strong. Still Moving.</h2>
           <div className="space-y-4 text-lg text-muted-foreground leading-relaxed">
             <p>Too many women believe it's too late to start.</p>
             <p>Too many feel intimidated by competitive fitness culture.</p>
@@ -113,24 +117,44 @@ const Landing = () => {
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">How It Works</h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">Transform your daily walks into a journey through history</p>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Transform your daily walks into a journey through history
+            </p>
           </div>
 
           <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-6 max-w-6xl mx-auto">
             {[
-              { icon: Footprints, title: "Join a Challenge", desc: "Choose a themed virtual walking challenge.", to: "/challenges" },
-              { icon: TrendingUp, title: "Log Your Miles", desc: "Walk at your pace. Every mile counts.", action: "log" },
+              {
+                icon: Footprints,
+                title: "Join a Challenge",
+                desc: "Choose a themed virtual walking challenge.",
+                to: "/challenges",
+              },
+              {
+                icon: TrendingUp,
+                title: "Log Your Miles",
+                desc: "Walk at your pace. Every mile counts.",
+                action: "log",
+              },
               { icon: MapPin, title: "Unlock Milestones", desc: "Reveal powerful women and moments.", action: "log" },
               { icon: BookOpen, title: "Earn Stamps", desc: "Collect digital passport stamps.", to: "/passport" },
               { icon: Award, title: "Build Legacy Miles", desc: "Your miles never reset.", to: "/leaderboard" },
             ].map((step, i) => {
               const Wrapper = ({ children }: { children: React.ReactNode }) =>
                 step.action === "log" ? (
-                  <button key={i} onClick={handleLogMiles} className="relative text-center p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors cursor-pointer w-full">
+                  <button
+                    key={i}
+                    onClick={handleLogMiles}
+                    className="relative text-center p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors cursor-pointer w-full"
+                  >
                     {children}
                   </button>
                 ) : (
-                  <Link key={i} to={step.to!} className="relative text-center p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors">
+                  <Link
+                    key={i}
+                    to={step.to!}
+                    className="relative text-center p-6 rounded-xl bg-card border border-border hover:border-primary/50 transition-colors"
+                  >
                     {children}
                   </Link>
                 );
@@ -163,13 +187,16 @@ const Landing = () => {
       <section className="py-20 px-4 bg-secondary/30">
         <div className="container mx-auto max-w-3xl text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-6">
-            This Isn't a 30-Day Reset.<br />
+            This Isn't a 30-Day Reset.
+            <br />
             <span className="text-gradient-gold">It's a Lifetime Legacy.</span>
           </h2>
           <div className="space-y-4 text-lg text-muted-foreground">
             <p>Your miles follow you.</p>
             <p>Finish one challenge at 40 miles and start the next — your journey continues at 41.</p>
-            <p className="text-foreground font-medium">This is not about starting over. This is about building something that lasts.</p>
+            <p className="text-foreground font-medium">
+              This is not about starting over. This is about building something that lasts.
+            </p>
           </div>
         </div>
       </section>
@@ -178,9 +205,7 @@ const Landing = () => {
       <section className="py-20 px-4">
         <div className="container mx-auto text-center">
           <Users className="w-12 h-12 text-accent mx-auto mb-6" />
-          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-            Walk Together. Progress Together.
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">Walk Together. Progress Together.</h2>
           <p className="text-muted-foreground max-w-xl mx-auto mb-8">
             See your lifetime miles. Celebrate consistency. Move without competition.
           </p>
@@ -217,7 +242,8 @@ const Landing = () => {
             Built From Experience. Built With Purpose.
           </h2>
           <p className="text-lg text-muted-foreground mb-8">
-            At 53, after losing my father to cancer and maintaining my own weight loss journey, I created LegacyFit to prove that it's never too late to move with meaning.
+            At 53, after losing my father to cancer and maintaining my own weight loss journey, I created LegacyFit to
+            prove that it's never too late to move with meaning.
           </p>
           <Link to="/about">
             <Button variant="outline" className="border-border text-foreground hover:bg-secondary">
@@ -234,7 +260,10 @@ const Landing = () => {
             Your Legacy Starts With <span className="text-gradient-gold">One Mile</span>.
           </h2>
           <Link to="/challenges">
-            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 glow-gold text-lg px-8 py-6">
+            <Button
+              size="lg"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 glow-gold text-lg px-8 py-6"
+            >
               Start Your Journey <ChevronRight className="ml-2 w-5 h-5" />
             </Button>
           </Link>
