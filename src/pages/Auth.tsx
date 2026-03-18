@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Footprints, Mail, Lock, ArrowLeft, Loader2 } from "lucide-react";
 import { z } from "zod";
+import { SignInWithApple } from "@capacitor-community/apple-sign-in";
 
 // Validation schemas
 const emailSchema = z.string().email("Please enter a valid email address");
@@ -185,7 +186,8 @@ const Auth = () => {
     }
   };
 
-  const handleOAuthLogin = async (provider: "google" | "apple") => {
+  // Google: web OAuth redirect (unchanged)
+  const handleOAuthLogin = async (provider: "google") => {
     setLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
@@ -200,6 +202,44 @@ const Auth = () => {
       }
     } catch (err) {
       toast.error("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Apple: native Capacitor plugin → Supabase signInWithIdToken (works inside WKWebView)
+  const handleAppleLogin = async () => {
+    setLoading(true);
+    try {
+      const result = await SignInWithApple.authorize({
+        clientId: "com.legacyfit.app",
+        redirectURI: `${window.location.origin}/dashboard`,
+        scopes: "email name",
+        state: crypto.randomUUID(),
+        nonce: crypto.randomUUID(),
+      });
+
+      const identityToken = result.response?.identityToken;
+      if (!identityToken) {
+        toast.error("Apple Sign-In failed: no identity token returned.");
+        return;
+      }
+
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: "apple",
+        token: identityToken,
+      });
+
+      if (error) {
+        toast.error(error.message);
+      }
+    } catch (err: any) {
+      // User cancelled the Apple sheet — don't show an error
+      if (err?.message?.toLowerCase().includes("cancel") || err?.code === "1001") {
+        return;
+      }
+      console.error("Apple Sign-In error:", err);
+      toast.error("Apple Sign-In failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -460,7 +500,7 @@ const Auth = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => handleOAuthLogin("apple")}
+                  onClick={() => handleAppleLogin()}
                   disabled={loading}
                   className="w-full"
                 >
