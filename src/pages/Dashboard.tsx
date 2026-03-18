@@ -171,7 +171,8 @@ const Dashboard = () => {
     setStampCount(sCount ?? 0);
   };
 
-  // Check for newly completed challenges and show certificate modal
+  // Check for newly completed challenges and show certificate modal.
+  // Uses certificates.viewed_at (DB-persisted) so state survives reinstalls/device switches.
   useEffect(() => {
     if (!user) return;
     const checkCompletions = async () => {
@@ -183,27 +184,32 @@ const Dashboard = () => {
 
       if (!data || data.length === 0) return;
 
-      // Check if there's a completed challenge without a viewed certificate
-      const viewedKey = "legacyfit_cert_viewed";
-      const viewed = JSON.parse(localStorage.getItem(viewedKey) || "[]") as string[];
-      const unseen = data.find((uc) => !viewed.includes(uc.id));
-      if (!unseen || !unseen.challenge) return;
+      // Find a completed challenge whose certificate has not yet been viewed
+      for (const uc of data) {
+        if (!uc.challenge) continue;
+        const ch = uc.challenge as unknown as { id: string; title: string; total_miles: number };
 
-      const ch = unseen.challenge as unknown as { id: string; title: string; total_miles: number };
+        const { data: cert } = await supabase
+          .from("certificates")
+          .select("id, image_url, viewed_at")
+          .eq("user_id", user.id)
+          .eq("challenge_id", ch.id)
+          .maybeSingle();
 
-      // Check for existing certificate image
-      const { data: cert } = await supabase
-        .from("certificates")
-        .select("image_url")
-        .eq("user_id", user.id)
-        .eq("challenge_id", ch.id)
-        .maybeSingle();
+        // Only pop the modal for this certificate if it has never been viewed
+        if (cert && cert.viewed_at === null) {
+          setCertChallenge({ name: ch.title, miles: ch.total_miles, imageUrl: cert.image_url || null });
+          setCertOpen(true);
 
-      setCertChallenge({ name: ch.title, miles: ch.total_miles, imageUrl: cert?.image_url || null });
-      setCertOpen(true);
+          // Stamp viewed_at immediately so a reinstall/new device won't re-show it
+          await supabase
+            .from("certificates")
+            .update({ viewed_at: new Date().toISOString() })
+            .eq("id", cert.id);
 
-      // Mark as viewed
-      localStorage.setItem(viewedKey, JSON.stringify([...viewed, unseen.id]));
+          break; // show one modal at a time
+        }
+      }
     };
     checkCompletions();
   }, [user, userChallenges]);
