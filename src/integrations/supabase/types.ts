@@ -48,6 +48,7 @@ export type Database = {
           id: string
           image_url: string | null
           user_id: string
+          viewed_at: string | null
         }
         Insert: {
           challenge_id: string
@@ -55,6 +56,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           user_id: string
+          viewed_at?: string | null
         }
         Update: {
           challenge_id?: string
@@ -62,6 +64,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           user_id?: string
+          viewed_at?: string | null
         }
         Relationships: [
           {
