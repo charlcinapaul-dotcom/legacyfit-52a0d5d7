@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { Geolocation, type Position } from "@capacitor/geolocation";
 
 type WalkStatus = "idle" | "active" | "paused" | "completed";
 
@@ -39,7 +40,8 @@ export function useGpsWalk() {
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const watchIdRef = useRef<number | null>(null);
+  // Capacitor watchPosition returns a string ID (not a number)
+  const watchIdRef = useRef<string | null>(null);
   const lastCoordRef = useRef<Coordinate | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const accumulatedMilesRef = useRef(0);
@@ -62,7 +64,7 @@ export function useGpsWalk() {
     };
   }, [status]);
 
-  const processPosition = useCallback((pos: GeolocationPosition) => {
+  const processPosition = useCallback((pos: Position) => {
     if (isPausedRef.current) return;
 
     const newCoord: Coordinate = {
@@ -100,35 +102,41 @@ export function useGpsWalk() {
     lastCoordRef.current = newCoord;
   }, []);
 
-  const startWatch = useCallback(() => {
-    watchIdRef.current = navigator.geolocation.watchPosition(
-      processPosition,
-      (err) => {
-        if (err.code === err.PERMISSION_DENIED) {
-          setPermissionDenied(true);
-          setError("Location permission is required to track your walk.");
-          setStatus("idle");
-        } else {
-          setError("GPS signal lost. Please try again.");
-        }
-        stopTracking();
-      },
-      { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
-    );
-  }, [processPosition]);
-
   const stopTracking = useCallback(() => {
     if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current);
+      Geolocation.clearWatch({ id: watchIdRef.current });
       watchIdRef.current = null;
     }
   }, []);
 
-  const startWalk = useCallback(() => {
-    if (!navigator.geolocation) {
-      setError("GPS is not supported on this device.");
-      return;
+  const startWatch = useCallback(async () => {
+    try {
+      const id = await Geolocation.watchPosition(
+        { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 },
+        (position, err) => {
+          if (err) {
+            // code 1 = PERMISSION_DENIED in both browser and Capacitor
+            if ((err as any).code === 1) {
+              setPermissionDenied(true);
+              setError("Location permission is required to track your walk.");
+              setStatus("idle");
+            } else {
+              setError("GPS signal lost. Please try again.");
+            }
+            stopTracking();
+            return;
+          }
+          if (position) processPosition(position);
+        }
+      );
+      watchIdRef.current = id;
+    } catch (e: any) {
+      setError("Unable to start GPS. Please check location permissions.");
+      setStatus("idle");
     }
+  }, [processPosition, stopTracking]);
+
+  const startWalk = useCallback(() => {
     setPermissionDenied(false);
     setError(null);
     setMiles(0);
