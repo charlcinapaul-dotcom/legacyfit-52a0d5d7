@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Footprints, Mail, Lock, ArrowLeft, Loader2 } from "lucide-react";
 import { z } from "zod";
+import { SignInWithApple } from "@capacitor-community/apple-sign-in";
 
 // Validation schemas
 const emailSchema = z.string().email("Please enter a valid email address");
