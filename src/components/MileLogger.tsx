@@ -108,7 +108,14 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
       notes: pendingNotes || undefined,
     }, {
       onSettled: () => {
+        // Clear only after the full operation completes — keeps dialog+spinner
+        // visible the entire time, preventing double-taps
         refetchDaily();
+        setPendingMiles(null);
+        setPendingNotes("");
+        setMiles(1);
+        setNotes("");
+        setShowCustom(false);
       },
       onError: (error: any) => {
         const msg = error?.message || "";
@@ -117,11 +124,6 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
         }
       },
     });
-    setPendingMiles(null);
-    setPendingNotes("");
-    setMiles(1);
-    setNotes("");
-    setShowCustom(false);
   };
 
   // Loading
