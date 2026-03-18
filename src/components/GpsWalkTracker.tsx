@@ -54,7 +54,7 @@ export function GpsWalkTracker({
         miles: gps.miles,
         challengeId,
         notes: `GPS Walk — ${gps.clock}`,
-        source: "gps",
+        source: "gps" as any,
       },
       {
         onSuccess: () => {
