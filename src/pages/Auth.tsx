@@ -500,7 +500,7 @@ const Auth = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => handleOAuthLogin("apple")}
+                  onClick={() => handleAppleLogin()}
                   disabled={loading}
                   className="w-full"
                 >
