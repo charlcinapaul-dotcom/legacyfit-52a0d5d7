@@ -1,0 +1,1 @@
+ALTER TYPE public.mile_source ADD VALUE IF NOT EXISTS 'gps';
