@@ -947,6 +947,10 @@ export type Database = {
           name: string
         }[]
       }
+      get_user_challenge_payment_status: {
+        Args: { row_id: string }
+        Returns: Database["public"]["Enums"]["payment_status"]
+      }
       get_weekly_consistency: {
         Args: { p_user_ids: string[]; p_week_start: string }
         Returns: {
