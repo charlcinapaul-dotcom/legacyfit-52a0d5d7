@@ -10,6 +10,7 @@ interface UnlockRequest {
   userId: string;
   challengeId: string;
   totalMiles: number;
+  isFirstMile?: boolean;
 }
 
 interface UnlockedStamp {
@@ -37,7 +38,6 @@ serve(async (req: Request): Promise<Response> => {
     // Preserve original auth header for forwarding to other edge functions
     const originalAuthHeader = req.headers.get("Authorization");
 
-    // Verify the authenticated user matches the requested userId
     if (!originalAuthHeader) {
       return new Response(
         JSON.stringify({ error: "Missing authorization header" }),
@@ -45,6 +45,7 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
+    // Verify the authenticated user
     const userClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: originalAuthHeader } },
     });
@@ -57,7 +58,7 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    const { userId, challengeId, totalMiles }: UnlockRequest = await req.json();
+    const { userId, challengeId, totalMiles, isFirstMile = false }: UnlockRequest = await req.json();
 
     if (!userId || !challengeId || totalMiles === undefined) {
       throw new Error("Missing required fields: userId, challengeId, totalMiles");
@@ -71,7 +72,73 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    // SERVER-SIDE ENROLLMENT VALIDATION
+    // ── FREE FIRST-MILE PATH ──────────────────────────────────────────────────
+    // Award only the 1-mile milestone stamp. Intentionally skips user_milestones
+    // to preserve the preview-to-enrollment distinction.
+    if (isFirstMile) {
+      console.log(`Free first-mile stamp for user ${userId}, challenge ${challengeId}`);
+
+      const { data: firstMilestone, error: msError } = await supabase
+        .from("milestones")
+        .select("id, title, stamp_title, stamp_copy, miles_required, location_name, stamp_image_url, audio_url")
+        .eq("challenge_id", challengeId)
+        .eq("miles_required", 1)
+        .maybeSingle();
+
+      if (msError) {
+        console.error("Error fetching first milestone:", msError);
+        throw msError;
+      }
+
+      if (!firstMilestone) {
+        return new Response(
+          JSON.stringify({ unlockedStamps: [], message: "No 1-mile milestone found for this challenge" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+        );
+      }
+
+      // Guard: don't double-insert if stamp already exists
+      const { data: existing } = await supabase
+        .from("user_passport_stamps")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("milestone_id", firstMilestone.id)
+        .maybeSingle();
+
+      if (existing) {
+        return new Response(
+          JSON.stringify({ unlockedStamps: [], message: "First-mile stamp already awarded" }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+        );
+      }
+
+      const { error: insertError } = await supabase
+        .from("user_passport_stamps")
+        .insert({ user_id: userId, milestone_id: firstMilestone.id });
+
+      if (insertError) {
+        console.error("Error inserting first-mile stamp:", insertError);
+        throw insertError;
+      }
+
+      const unlockedStamp: UnlockedStamp = {
+        milestoneId: firstMilestone.id,
+        title: firstMilestone.title,
+        stampTitle: firstMilestone.stamp_title || firstMilestone.title,
+        stampCopy: firstMilestone.stamp_copy || "",
+        milesRequired: Number(firstMilestone.miles_required),
+        locationName: firstMilestone.location_name || "",
+        stampImageUrl: firstMilestone.stamp_image_url,
+        audioUrl: firstMilestone.audio_url || null,
+      };
+
+      return new Response(
+        JSON.stringify({ unlockedStamps: [unlockedStamp], message: "First-mile stamp unlocked!" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      );
+    }
+
+    // ── PAID ENROLLMENT PATH ─────────────────────────────────────────────────
     const { data: enrollment, error: enrollmentError } = await supabase
       .from("user_challenges")
       .select("id, payment_status")
@@ -95,7 +162,7 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log(`Checking milestone unlocks for user ${userId}, challenge ${challengeId}, total miles: ${totalMiles}`);
 
-    // Get all milestones for this challenge where miles_required <= totalMiles
+    // Get all milestones where miles_required <= totalMiles
     const { data: eligibleMilestones, error: milestonesError } = await supabase
       .from("milestones")
       .select("id, title, stamp_title, stamp_copy, miles_required, location_name, stamp_image_url, audio_url")
@@ -115,7 +182,7 @@ serve(async (req: Request): Promise<Response> => {
       });
     }
 
-    // Get already unlocked stamps for this user
+    // Filter out already-unlocked stamps
     const milestoneIds = eligibleMilestones.map((m) => m.id);
     const { data: existingStamps, error: existingError } = await supabase
       .from("user_passport_stamps")
@@ -140,27 +207,22 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log(`Found ${newMilestones.length} new stamps to unlock`);
 
-    const stampRecords = newMilestones.map((m) => ({
-      user_id: userId,
-      milestone_id: m.id,
-    }));
-
+    // Insert passport stamps
+    const stampRecords = newMilestones.map((m) => ({ user_id: userId, milestone_id: m.id }));
     const { error: insertError } = await supabase.from("user_passport_stamps").insert(stampRecords);
     if (insertError) {
       console.error("Error inserting stamps:", insertError);
       throw insertError;
     }
 
-    const milestoneRecords = newMilestones.map((m) => ({
-      user_id: userId,
-      milestone_id: m.id,
-    }));
+    // Insert user_milestones
+    const milestoneRecords = newMilestones.map((m) => ({ user_id: userId, milestone_id: m.id }));
     await supabase.from("user_milestones").insert(milestoneRecords).select();
 
     const { data: userData } = await supabase.auth.admin.getUserById(userId);
     const userEmail = userData?.user?.email;
 
-    const unlockedStamps = newMilestones.map((m) => ({
+    const unlockedStamps: UnlockedStamp[] = newMilestones.map((m) => ({
       milestoneId: m.id,
       title: m.title,
       stampTitle: m.stamp_title || m.title,
@@ -171,7 +233,7 @@ serve(async (req: Request): Promise<Response> => {
       audioUrl: m.audio_url || null,
     }));
 
-    // Fire-and-forget email sending using user's auth context
+    // Fire-and-forget stamp emails
     if (userEmail && originalAuthHeader) {
       const userScopedClient = createClient(supabaseUrl, supabaseAnonKey, {
         global: { headers: { Authorization: originalAuthHeader } },
@@ -192,14 +254,8 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     return new Response(
-      JSON.stringify({
-        unlockedStamps,
-        message: `Unlocked ${unlockedStamps.length} new stamp(s)!`,
-      }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      }
+      JSON.stringify({ unlockedStamps, message: `Unlocked ${unlockedStamps.length} new stamp(s)!` }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   } catch (error: unknown) {
     console.error("Error in check-milestone-unlocks:", error);
