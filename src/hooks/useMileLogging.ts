@@ -130,35 +130,10 @@ export function useMileLogging(challengeId?: string) {
 
       let unlockedStampsResult: UnlockedStamp[] = [];
 
-      if (isFirstMile) {
-        // FREE FIRST MILE PATH: fetch the 1-mile milestone directly and unlock it client-side
-        const { data: firstMilestone } = await supabase
-          .from("milestones")
-          .select("id, title, stamp_title, stamp_copy, miles_required, location_name, stamp_image_url, audio_url")
-          .eq("challenge_id", challengeId)
-          .eq("miles_required", 1)
-          .maybeSingle();
-
-        if (firstMilestone) {
-          // Insert passport stamp (RLS allows this)
-          await supabase.from("user_passport_stamps").insert({
-            user_id: user.id,
-            milestone_id: firstMilestone.id,
-          }).select();
-
-          unlockedStampsResult = [{
-            milestoneId: firstMilestone.id,
-            title: firstMilestone.title,
-            stampTitle: firstMilestone.stamp_title || firstMilestone.title,
-            stampCopy: firstMilestone.stamp_copy || "",
-            milesRequired: Number(firstMilestone.miles_required),
-            locationName: firstMilestone.location_name || "",
-            stampImageUrl: firstMilestone.stamp_image_url,
-            audioUrl: firstMilestone.audio_url || null,
-          }];
-        }
-      } else if (isEnrolledPaid) {
-        // ENROLLED PATH: use the edge function for full milestone unlock logic
+      if (isFirstMile || isEnrolledPaid) {
+        // Both paths go through the edge function (service role key).
+        // isFirstMile=true  → free preview: awards only the 1-mile stamp, skips user_milestones.
+        // isFirstMile=false → paid path:    full milestone unlock logic.
         const { data: unlockResult, error: unlockError } = await supabase.functions.invoke(
           "check-milestone-unlocks",
           {
@@ -166,6 +141,7 @@ export function useMileLogging(challengeId?: string) {
               userId: user.id,
               challengeId,
               totalMiles: newTotal,
+              isFirstMile,
             },
           }
         );
