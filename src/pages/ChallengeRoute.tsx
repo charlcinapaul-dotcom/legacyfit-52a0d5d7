@@ -98,6 +98,20 @@ const ChallengeRoute = () => {
   const challengeId = data?.challenge?.id;
   const { data: enrollment } = useEnrollmentStatus(challengeId);
   const { toast } = useToast();
+
+  // Community miles counter
+  const { data: communityMiles } = useQuery({
+    queryKey: ["community-miles", challengeId],
+    queryFn: async (): Promise<number> => {
+      const { data, error } = await supabase
+        .from("user_challenges")
+        .select("miles_logged")
+        .eq("challenge_id", challengeId!);
+      if (error) throw error;
+      return data.reduce((sum, row) => sum + Number(row.miles_logged ?? 0), 0);
+    },
+    enabled: !!challengeId,
+  });
   const [showReEngagementBanner, setShowReEngagementBanner] = useState(false);
   const logMilesSectionRef = useRef<HTMLDivElement>(null);
 
