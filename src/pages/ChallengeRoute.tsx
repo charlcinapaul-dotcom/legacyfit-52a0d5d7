@@ -22,6 +22,7 @@ import { useEnrollmentStatus } from "@/hooks/useEnrollmentStatus";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 
 // Color styling helper for challenge themes
 const getColorStyles = (color: string) => {
@@ -97,6 +98,20 @@ const ChallengeRoute = () => {
   const challengeId = data?.challenge?.id;
   const { data: enrollment } = useEnrollmentStatus(challengeId);
   const { toast } = useToast();
+
+  // Community miles counter
+  const { data: communityMiles } = useQuery({
+    queryKey: ["community-miles", challengeId],
+    queryFn: async (): Promise<number> => {
+      const { data, error } = await supabase
+        .from("user_challenges")
+        .select("miles_logged")
+        .eq("challenge_id", challengeId!);
+      if (error) throw error;
+      return data.reduce((sum, row) => sum + Number(row.miles_logged ?? 0), 0);
+    },
+    enabled: !!challengeId,
+  });
   const [showReEngagementBanner, setShowReEngagementBanner] = useState(false);
   const logMilesSectionRef = useRef<HTMLDivElement>(null);
 
@@ -333,9 +348,19 @@ const ChallengeRoute = () => {
                 </h2>
                 {enrollment && <EnrollmentBadge status={enrollment.status} />}
               </div>
-              <p className="text-muted-foreground max-w-xl mb-8">
+              <p className="text-muted-foreground max-w-xl mb-4">
                 {challenge.description}
               </p>
+
+              {/* Community miles counter */}
+              {communityMiles != null && communityMiles > 0 && (
+                <p className="text-sm text-muted-foreground mb-8">
+                  <span className="font-semibold text-foreground">
+                    {communityMiles.toLocaleString()}
+                  </span>{" "}
+                  miles walked by this community for {challenge.name}.
+                </p>
+              )}
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
