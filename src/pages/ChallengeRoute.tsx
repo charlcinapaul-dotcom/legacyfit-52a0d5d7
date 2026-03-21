@@ -348,9 +348,19 @@ const ChallengeRoute = () => {
                 </h2>
                 {enrollment && <EnrollmentBadge status={enrollment.status} />}
               </div>
-              <p className="text-muted-foreground max-w-xl mb-8">
+              <p className="text-muted-foreground max-w-xl mb-4">
                 {challenge.description}
               </p>
+
+              {/* Community miles counter */}
+              {communityMiles != null && communityMiles > 0 && (
+                <p className="text-sm text-muted-foreground mb-8">
+                  <span className="font-semibold text-foreground">
+                    {communityMiles.toLocaleString()}
+                  </span>{" "}
+                  miles walked by this community for {challenge.name}.
+                </p>
+              )}
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
