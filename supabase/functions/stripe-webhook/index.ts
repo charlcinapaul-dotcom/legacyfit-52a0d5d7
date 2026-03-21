@@ -58,7 +58,65 @@ serve(async (req) => {
 
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
+    const userId = session.metadata?.user_id;
+    const tier = session.metadata?.tier;
 
+    // ── Subscription checkout ────────────────────────────────────────────
+    if (tier === "subscription") {
+      if (!userId) {
+        console.error(`[stripe-webhook] Missing user_id metadata for subscription session ${session.id}`);
+        return new Response(JSON.stringify({ error: "Missing user_id" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const stripeSubscriptionId = session.subscription as string;
+      const stripeCustomerId = session.customer as string;
+
+      // Retrieve subscription details from Stripe for period dates
+      let periodStart: string | null = null;
+      let periodEnd: string | null = null;
+      if (stripeSubscriptionId) {
+        try {
+          const sub = await stripe.subscriptions.retrieve(stripeSubscriptionId);
+          periodStart = new Date(sub.current_period_start * 1000).toISOString();
+          periodEnd = new Date(sub.current_period_end * 1000).toISOString();
+        } catch (e) {
+          console.warn(`[stripe-webhook] Could not retrieve subscription details: ${e}`);
+        }
+      }
+
+      const { error: subError } = await supabaseAdmin
+        .from("subscriptions")
+        .upsert(
+          {
+            user_id: userId,
+            status: "active",
+            plan_type: "monthly",
+            stripe_subscription_id: stripeSubscriptionId,
+            stripe_customer_id: stripeCustomerId,
+            current_period_start: periodStart,
+            current_period_end: periodEnd,
+          },
+          { onConflict: "user_id" }
+        );
+
+      if (subError) {
+        console.error(`[stripe-webhook] Failed to upsert subscription:`, subError);
+        return new Response(JSON.stringify({ error: "Failed to record subscription" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      console.log(`[stripe-webhook] Subscription upserted for user ${userId}`);
+
+      return new Response(JSON.stringify({ received: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // ── One-time payment checkout ────────────────────────────────────────
     // Only process paid sessions
     if (session.payment_status !== "paid") {
       console.log(`[stripe-webhook] Session ${session.id} not paid yet, skipping`);
@@ -68,7 +126,6 @@ serve(async (req) => {
     }
 
     const challengeId = session.metadata?.challenge_id;
-    const userId = session.metadata?.user_id;
 
     if (!challengeId || !userId) {
       console.error(`[stripe-webhook] Missing metadata on session ${session.id}:`, session.metadata);

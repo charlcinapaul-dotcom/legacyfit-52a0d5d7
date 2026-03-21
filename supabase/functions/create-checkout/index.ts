@@ -9,8 +9,9 @@ const corsHeaders = {
 };
 
 const PRICE_IDS: Record<string, string> = {
-  digital: "price_1T8emA3JzkAB6gcFRznutdsG",       // $12.99 Digital Collection
-  boarding_pass: "price_1T8emZ3JzkAB6gcFwP7KsM2F", // $29.00 Collector's Edition
+  digital: "price_1T8emA3JzkAB6gcFRznutdsG",           // $12.99 Digital Collection
+  boarding_pass: "price_1T8emZ3JzkAB6gcFwP7KsM2F",     // $29.00 Collector's Edition
+  subscription: "price_1TDYDK3JzkAB6gcF7h5ponZf",      // $9.99/mo LegacyFit Digital Pass
 };
 
 serve(async (req) => {
@@ -43,7 +44,10 @@ serve(async (req) => {
     }
 
     const { challengeId, tier, slug } = await req.json();
-    if (!challengeId) {
+
+    // Subscription tier does not require a challengeId
+    const isSubscription = tier === "subscription";
+    if (!challengeId && !isSubscription) {
       return new Response(JSON.stringify({ error: "Missing challengeId" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 400,
@@ -65,19 +69,38 @@ serve(async (req) => {
 
     const origin = req.headers.get("origin") || "https://legacyfitvirtual.lovable.app";
 
-    const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      customer_email: customerId ? undefined : user.email,
-      line_items: [{ price: priceId, quantity: 1 }],
-      mode: "payment",
-      success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&challenge_id=${challengeId}`,
-      cancel_url: `${origin}/challenge/${slug || challengeId}`,
-      metadata: {
-        user_id: user.id,
-        challenge_id: challengeId,
-        tier,
-      },
-    });
+    let session;
+
+    if (isSubscription) {
+      // Recurring subscription checkout
+      session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        customer_email: customerId ? undefined : user.email,
+        line_items: [{ price: priceId, quantity: 1 }],
+        mode: "subscription",
+        success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&subscription=true`,
+        cancel_url: `${origin}/dashboard`,
+        metadata: {
+          user_id: user.id,
+          tier,
+        },
+      });
+    } else {
+      // One-time payment checkout
+      session = await stripe.checkout.sessions.create({
+        customer: customerId,
+        customer_email: customerId ? undefined : user.email,
+        line_items: [{ price: priceId, quantity: 1 }],
+        mode: "payment",
+        success_url: `${origin}/payment-success?session_id={CHECKOUT_SESSION_ID}&challenge_id=${challengeId}`,
+        cancel_url: `${origin}/challenge/${slug || challengeId}`,
+        metadata: {
+          user_id: user.id,
+          challenge_id: challengeId,
+          tier,
+        },
+      });
+    }
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
