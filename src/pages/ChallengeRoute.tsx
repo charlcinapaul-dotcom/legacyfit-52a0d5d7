@@ -750,6 +750,11 @@ const ChallengeRoute = () => {
               </Button>
             </Link>
           </div>
+
+          {/* Subscription upsell — only on completed challenges for enrolled users */}
+          {enrollment?.isEnrolled && progressPercent >= 100 && (
+            <SubscriptionUpsellCard />
+          )}
         </div>
       </main>
 
