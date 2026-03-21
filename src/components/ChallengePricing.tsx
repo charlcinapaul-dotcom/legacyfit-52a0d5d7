@@ -37,8 +37,7 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
         heading: "text-[#7A1E2C]",
         check: "text-[#7A1E2C]",
         primaryBtn: "bg-[#7A1E2C] hover:bg-[#9E2A3C] text-white",
-        secondaryBtn:
-          "border border-[#7A1E2C]/40 text-[#7A1E2C] hover:bg-[#7A1E2C]/5 bg-transparent",
+        secondaryBtn: "border border-[#7A1E2C]/40 text-[#7A1E2C] hover:bg-[#7A1E2C]/5 bg-transparent",
         ring: "border-2 border-[#7A1E2C]/30",
         fanBadge: "bg-[#7A1E2C]/10 text-[#7A1E2C] border-[#7A1E2C]/25",
         price: "text-[#7A1E2C]",
@@ -48,10 +47,8 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
         heading:
           "bg-gradient-to-r from-red-400 via-yellow-400 via-green-400 via-blue-400 to-purple-400 bg-clip-text text-transparent",
         check: "text-purple-400",
-        primaryBtn:
-          "bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 text-white hover:opacity-90",
-        secondaryBtn:
-          "border border-purple-500/40 text-purple-400 hover:bg-purple-500/5 bg-transparent",
+        primaryBtn: "bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 text-white hover:opacity-90",
+        secondaryBtn: "border border-purple-500/40 text-purple-400 hover:bg-purple-500/5 bg-transparent",
         ring: "border-2 border-purple-500/30",
         fanBadge: "bg-purple-500/10 text-purple-400 border-purple-500/25",
         price: "text-purple-400",
@@ -61,8 +58,7 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
         heading: "text-primary",
         check: "text-primary",
         primaryBtn: "bg-primary hover:bg-primary/90 text-primary-foreground",
-        secondaryBtn:
-          "border border-primary/40 text-primary hover:bg-primary/5 bg-transparent",
+        secondaryBtn: "border border-primary/40 text-primary hover:bg-primary/5 bg-transparent",
         ring: "border-2 border-primary/30",
         fanBadge: "bg-primary/10 text-primary border-primary/25",
         price: "text-primary",
@@ -193,11 +189,9 @@ export const ChallengePricing = ({
     <div className="space-y-6 w-full max-w-full overflow-hidden">
       {/* Headline */}
       <div className="text-center space-y-1.5">
-        <h3 className={cn("text-2xl md:text-3xl font-bold", accent.heading)}>
-          Keep walking with {womanName}.
-        </h3>
+        <h3 className={cn("text-2xl md:text-3xl font-bold", accent.heading)}>Keep walking with {firstName}.</h3>
         <p className="text-muted-foreground text-sm md:text-base">
-          Unlock all 6 milestones and collect every stamp from her journey.
+          Unlock all 6 milestones and collect every stamp from their journey.
         </p>
       </div>
 
@@ -243,12 +237,7 @@ export const ChallengePricing = ({
         </div>
 
         {/* Option 2 — Collector's Edition */}
-        <div
-          className={cn(
-            "relative rounded-xl border bg-card p-5 sm:p-6 flex flex-col min-w-0",
-            accent.ring,
-          )}
-        >
+        <div className={cn("relative rounded-xl border bg-card p-5 sm:p-6 flex flex-col min-w-0", accent.ring)}>
           {/* Fan Favorite label */}
           <span
             className={cn(
@@ -324,12 +313,10 @@ export const ChallengePricing = ({
 
       {/* Donation Transparency */}
       <div className="max-w-2xl mx-auto text-center space-y-1.5 pt-4 border-t border-border">
-        <h5 className="text-xs font-semibold text-foreground tracking-wide uppercase">
-          Donation Transparency
-        </h5>
+        <h5 className="text-xs font-semibold text-foreground tracking-wide uppercase">Donation Transparency</h5>
         <p className="text-xs text-muted-foreground leading-relaxed">
-          A portion of every registration supports breast cancer awareness initiatives. Our mission
-          is movement with meaning — every challenge contributes to something bigger.
+          A portion of every registration supports breast cancer awareness initiatives. Our mission is movement with
+          meaning — every challenge contributes to something bigger.
         </p>
       </div>
     </div>
