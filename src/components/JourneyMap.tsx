@@ -206,7 +206,7 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
                       fontFamily="inherit"
                       fontWeight="600"
                     >
-                      {miRemaining}mi
+                      {m.miles}mi
                     </text>
                   </g>
                 )}
