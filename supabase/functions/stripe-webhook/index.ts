@@ -62,7 +62,8 @@ serve(async (req) => {
     const tier = session.metadata?.tier;
 
     // ── Subscription checkout ────────────────────────────────────────────
-    if (tier === "subscription") {
+    // Use session.mode as the primary check; tier metadata is a secondary guard
+    if (session.mode === "subscription" || tier === "subscription") {
       if (!userId) {
         console.error(`[stripe-webhook] Missing user_id metadata for subscription session ${session.id}`);
         return new Response(JSON.stringify({ error: "Missing user_id" }), {
@@ -74,6 +75,8 @@ serve(async (req) => {
       const stripeSubscriptionId = session.subscription as string;
       const stripeCustomerId = session.customer as string;
 
+      console.log(`[stripe-webhook] Processing subscription — userId: ${userId}, subId: ${stripeSubscriptionId}`);
+
       // Retrieve subscription details from Stripe for period dates
       let periodStart: string | null = null;
       let periodEnd: string | null = null;
@@ -82,6 +85,7 @@ serve(async (req) => {
           const sub = await stripe.subscriptions.retrieve(stripeSubscriptionId);
           periodStart = new Date(sub.current_period_start * 1000).toISOString();
           periodEnd = new Date(sub.current_period_end * 1000).toISOString();
+          console.log(`[stripe-webhook] Subscription period: ${periodStart} → ${periodEnd}`);
         } catch (e) {
           console.warn(`[stripe-webhook] Could not retrieve subscription details: ${e}`);
         }
