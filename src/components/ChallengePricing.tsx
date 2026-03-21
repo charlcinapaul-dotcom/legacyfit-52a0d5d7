@@ -27,7 +27,7 @@ const collectorFeatures = [
   "6 Physical Boarding Passes",
   "6 Digital Stamps",
   "Full Challenge Access",
-  "Printed. Mailed to you. Built to last.",
+  "The Collector's Edition — because some legacies deserve to be held.",
 ];
 
 const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
