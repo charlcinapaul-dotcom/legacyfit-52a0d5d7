@@ -110,12 +110,7 @@ export function FirstMileGateModal({
                 </div>
               )}
 
-              <Button
-                size="lg"
-                variant="outline"
-                className="w-full max-w-xs"
-                onClick={handleContinue}
-              >
+              <Button size="lg" variant="outline" className="w-full max-w-xs" onClick={handleContinue}>
                 <ArrowRight className="w-4 h-4 mr-2" />
                 Continue Challenge
               </Button>
@@ -124,28 +119,16 @@ export function FirstMileGateModal({
         ) : screen === "bridge" ? (
           <div className="flex flex-col items-center justify-center py-16 space-y-10 text-center px-6">
             <p className="text-2xl md:text-3xl font-semibold text-foreground leading-snug max-w-xs">
-              {firstName} never stopped.<br />Neither should you.
+              {firstName} never stopped.
+              <br />
+              Neither should you.
             </p>
-            <Button
-              size="lg"
-              variant="outline"
-              className="px-10"
-              onClick={() => setScreen("purchase")}
-            >
+            <Button size="lg" variant="outline" className="px-10" onClick={() => setScreen("purchase")}>
               Continue
             </Button>
           </div>
         ) : (
           <>
-            <DialogHeader>
-              <DialogTitle className="text-center text-xl font-bold text-foreground">
-                Walk the rest of {firstName}'s story.
-              </DialogTitle>
-              <p className="text-center text-sm text-muted-foreground pt-1">
-                You've taken your first step. Keep the momentum going.
-              </p>
-            </DialogHeader>
-
             <div className="py-4">
               <ChallengePricing
                 challengeName={challengeName}
