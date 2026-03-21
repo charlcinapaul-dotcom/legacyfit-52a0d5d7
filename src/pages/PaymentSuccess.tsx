@@ -22,20 +22,27 @@ const PaymentSuccess = () => {
         return;
       }
 
-      // Subscription checkout — just check the DB for an active subscription record
+      // Subscription checkout — poll DB up to 5 times (1500ms apart) for active record
       if (isSubscription) {
         try {
-          // Give the webhook a moment to write the record
-          await new Promise((r) => setTimeout(r, 1500));
           const { data: { user } } = await supabase.auth.getUser();
           if (!user) { setStatus("error"); return; }
-          const { data: sub } = await supabase
-            .from("subscriptions")
-            .select("status")
-            .eq("user_id", user.id)
-            .eq("status", "active")
-            .maybeSingle();
-          setStatus(sub ? "success" : "error");
+
+          const MAX_ATTEMPTS = 5;
+          for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+            await new Promise((r) => setTimeout(r, 1500));
+            const { data: sub } = await supabase
+              .from("subscriptions")
+              .select("status")
+              .eq("user_id", user.id)
+              .eq("status", "active")
+              .maybeSingle();
+            if (sub) {
+              setStatus("success");
+              return;
+            }
+          }
+          setStatus("error");
         } catch {
           setStatus("error");
         }
