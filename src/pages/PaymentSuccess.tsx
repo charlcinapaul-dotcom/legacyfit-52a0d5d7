@@ -120,10 +120,21 @@ const PaymentSuccess = () => {
         {status === "success" && (
           <>
             <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto" />
-            <h1 className="text-2xl font-bold text-foreground">You're Enrolled! 🎉</h1>
-            <p className="text-muted-foreground">
-              Your challenge enrollment is confirmed. Start logging miles and collecting stamps!
-            </p>
+            {isSubscription ? (
+              <>
+                <h1 className="text-2xl font-bold text-foreground">Your Journey Pass is Active! 🎉</h1>
+                <p className="text-muted-foreground">
+                  One new legend, every month. Your next challenge is ready and waiting.
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className="text-2xl font-bold text-foreground">You're Enrolled! 🎉</h1>
+                <p className="text-muted-foreground">
+                  Your challenge enrollment is confirmed. Start logging miles and collecting stamps!
+                </p>
+              </>
+            )}
             <div className="flex flex-col gap-3">
               {challengeSlug && (
                 <Link to={`/challenge/${challengeSlug}`}>
