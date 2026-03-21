@@ -15,6 +15,7 @@ import { StepLogger } from "@/components/StepLogger";
 import { EnrollmentBadge } from "@/components/EnrollmentBadge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChallengePricing } from "@/components/ChallengePricing";
+import { SubscriptionUpsellCard } from "@/components/SubscriptionUpsellCard";
 
 import { GpsWalkTracker } from "@/components/GpsWalkTracker";
 import { useChallengeBySlug } from "@/hooks/useChallengeBySlug";
