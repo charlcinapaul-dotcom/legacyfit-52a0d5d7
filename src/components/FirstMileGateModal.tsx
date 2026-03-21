@@ -4,7 +4,19 @@ import { Button } from "@/components/ui/button";
 import { Share2, ArrowRight } from "lucide-react";
 import { ChallengePricing } from "@/components/ChallengePricing";
 
-type GateScreen = "share" | "purchase";
+type GateScreen = "share" | "bridge" | "purchase";
+
+/** Pull just the first name from a full historical name, e.g. "Fannie Lou Hamer" → "Fannie" */
+function extractFirstName(challengeName: string): string {
+  // Strip trailing descriptor words first (mirrors ChallengePricing helper)
+  const cleaned = challengeName
+    .replace(
+      /\s+(equality|freedom|courage|legacy|justice|peace|hope|pride|strength|trail|walk|run|journey|challenge|mile)s?(\s+.*)?$/i,
+      "",
+    )
+    .trim();
+  return cleaned.split(" ")[0] ?? challengeName;
+}
 
 interface FirstMileGateModalProps {
   open: boolean;
