@@ -11,6 +11,7 @@ const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const challengeId = searchParams.get("challenge_id");
+  const isSubscription = searchParams.get("subscription") === "true";
   const [status, setStatus] = useState<"verifying" | "success" | "error">("verifying");
   const [challengeSlug, setChallengeSlug] = useState<string>("");
 
@@ -18,6 +19,26 @@ const PaymentSuccess = () => {
     const verify = async () => {
       if (!sessionId) {
         setStatus("error");
+        return;
+      }
+
+      // Subscription checkout — just check the DB for an active subscription record
+      if (isSubscription) {
+        try {
+          // Give the webhook a moment to write the record
+          await new Promise((r) => setTimeout(r, 1500));
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) { setStatus("error"); return; }
+          const { data: sub } = await supabase
+            .from("subscriptions")
+            .select("status")
+            .eq("user_id", user.id)
+            .eq("status", "active")
+            .maybeSingle();
+          setStatus(sub ? "success" : "error");
+        } catch {
+          setStatus("error");
+        }
         return;
       }
 
