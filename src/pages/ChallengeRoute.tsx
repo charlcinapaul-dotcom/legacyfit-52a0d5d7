@@ -751,8 +751,11 @@ const ChallengeRoute = () => {
             </Link>
           </div>
 
-          {/* Subscription upsell — only on completed challenges for enrolled users */}
-          {enrollment?.isEnrolled && progressPercent >= 100 && (
+          {/* Subscription upsell — show when enrolled and journey is complete */}
+          {enrollment?.isEnrolled && (
+            progressPercent >= 100 ||
+            (challenge.milestones.length > 0 && unlockedMilestones.length === challenge.milestones.length)
+          ) && (
             <SubscriptionUpsellCard />
           )}
         </div>
