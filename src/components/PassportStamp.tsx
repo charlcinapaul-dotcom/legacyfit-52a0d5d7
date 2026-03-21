@@ -62,8 +62,8 @@ export function PassportStamp({ stamp, onClick }: PassportStampProps) {
                 className="max-w-full max-h-full object-contain rounded-lg blur-sm opacity-80"
               />
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-1">
-                <Lock className="w-6 h-6 text-muted-foreground drop-shadow-md" />
-                <span className="text-muted-foreground text-xs font-medium drop-shadow-md">
+                <Lock className="w-6 h-6 text-[#1a1a1a] drop-shadow-[0_1px_2px_rgba(255,255,255,0.6)]" />
+                <span className="text-[#1a1a1a] text-xs font-bold drop-shadow-[0_1px_2px_rgba(255,255,255,0.6)]">
                   {displayMiles}
                 </span>
               </div>
