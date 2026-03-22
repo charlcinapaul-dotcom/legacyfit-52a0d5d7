@@ -74,13 +74,14 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
 
 /** Extract the woman's name from a challenge title like "Ruth Bader Ginsburg Equality Journey".
  *  Strips trailing descriptive words so only the proper name remains. */
-function extractWomanName(challengeName: string): string {
+function extractFigureName(challengeName: string): string {
   return challengeName
     .replace(
       /\s+(equality|freedom|courage|legacy|justice|peace|hope|pride|strength|trail|walk|run|journey|challenge|mile)s?(\s+.*)?$/i,
       "",
     )
-    .trim();
+    .trim()
+    .split(' ')[0];
 }
 
 export const ChallengePricing = ({
@@ -96,7 +97,7 @@ export const ChallengePricing = ({
   const [isRestoring, setIsRestoring] = useState(false);
   const [isSubscriber, setIsSubscriber] = useState(false);
 
-  const womanName = extractWomanName(challengeName);
+  const figureName = extractFigureName(challengeName);
 
   // Check if the current user has an active subscription
   useEffect(() => {
@@ -220,7 +221,7 @@ export const ChallengePricing = ({
     <div className="space-y-6 w-full max-w-full overflow-hidden">
       {/* Headline */}
       <div className="text-center space-y-1.5">
-        <h3 className={cn("text-2xl md:text-3xl font-bold", accent.heading)}>Walk the rest of {womanName}'s story.</h3>
+        <h3 className={cn("text-2xl md:text-3xl font-bold", accent.heading)}>Walk the rest of {figureName}'s story.</h3>
         <p className="text-muted-foreground text-sm md:text-base">
           Unlock all 6 milestones and collect every stamp from their journey.
         </p>
