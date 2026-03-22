@@ -27,11 +27,12 @@ interface MileLoggerProps {
   challengeEditionColor?: "gold" | "burgundy" | "pride";
   onChallengeCompleted?: (data: { name: string; miles: number; imageUrl: string | null }) => void;
   onMaybeLater?: () => void;
+  onScrollToPricing?: () => void;
 }
 
 const QUICK_MILES = [1, 3, 5, 7];
 
-export function MileLogger({ challengeId, challengeSlug, challengeName, totalMilestones = 6, challengeEditionColor = "gold", onChallengeCompleted, onMaybeLater }: MileLoggerProps) {
+export function MileLogger({ challengeId, challengeSlug, challengeName, totalMilestones = 6, challengeEditionColor = "gold", onChallengeCompleted, onMaybeLater, onScrollToPricing }: MileLoggerProps) {
   const [miles, setMiles] = useState<number>(1);
   const [notes, setNotes] = useState("");
   const [showCustom, setShowCustom] = useState(false);
@@ -190,11 +191,12 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
               <p className="text-muted-foreground text-sm">
                 Enroll in this challenge to start logging miles and earning passport stamps.
               </p>
-              <Link to={challengeSlug ? `/challenge/${challengeSlug}` : '/challenges'}>
-                <Button className="w-full h-auto py-3 text-sm font-bold leading-tight whitespace-normal bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-                  Enroll in This Challenge
-                </Button>
-              </Link>
+              <Button
+                className="w-full h-auto py-3 text-sm font-bold leading-tight whitespace-normal bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                onClick={onScrollToPricing}
+              >
+                Enroll in This Challenge
+              </Button>
             </div>
           ) : (
             <Link to={`/auth?redirect=${encodeURIComponent(challengeSlug ? `/challenge/${challengeSlug}` : '/challenges')}`}>

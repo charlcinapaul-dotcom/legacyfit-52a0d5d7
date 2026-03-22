@@ -115,6 +115,11 @@ const ChallengeRoute = () => {
   });
   const [showReEngagementBanner, setShowReEngagementBanner] = useState(false);
   const logMilesSectionRef = useRef<HTMLDivElement>(null);
+  const pricingSectionRef = useRef<HTMLDivElement>(null);
+
+  const scrollToPricing = () => {
+    pricingSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   // Auto-dismiss banner the moment enrollment is confirmed
   useEffect(() => {
@@ -451,6 +456,7 @@ const ChallengeRoute = () => {
                       challengeName={challenge.name}
                       challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
                       onMaybeLater={() => setShowReEngagementBanner(true)}
+                      onScrollToPricing={scrollToPricing}
                     />
                   </TabsContent>
                   <TabsContent value="steps">
@@ -609,7 +615,7 @@ const ChallengeRoute = () => {
 
           {/* Pricing Section — only shown to unenrolled users */}
           {!enrollment?.isEnrolled && (
-            <div className="bg-card rounded-xl border border-border p-6 md:p-8 mb-8">
+            <div ref={pricingSectionRef} className="bg-card rounded-xl border border-border p-6 md:p-8 mb-8">
               <ChallengePricing
                 challengeName={challenge.name}
                 challengeId={challenge.id}
