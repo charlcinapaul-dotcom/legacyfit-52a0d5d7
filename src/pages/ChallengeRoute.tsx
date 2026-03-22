@@ -348,7 +348,14 @@ const ChallengeRoute = () => {
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground">
                   {challenge.name}
                 </h2>
-                {enrollment && <EnrollmentBadge status={enrollment.status} />}
+                {isCompleted ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold uppercase tracking-wide bg-yellow-500/15 border-yellow-500/30 text-yellow-500">
+                    <Trophy className="w-3.5 h-3.5" />
+                    Completed
+                  </span>
+                ) : (
+                  enrollment && <EnrollmentBadge status={enrollment.status} />
+                )}
               </div>
               <p className="text-muted-foreground max-w-xl mb-4">
                 {challenge.description}
