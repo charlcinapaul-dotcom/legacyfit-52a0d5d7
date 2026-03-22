@@ -19,7 +19,7 @@ interface ChallengePricingProps {
 const digitalFeatures = [
   "6 Digital Stamps",
   "Full Challenge Access",
-  "Every milestone. Her complete story.",
+  "Every milestone. Their complete story.",
   "Yours to keep.",
 ];
 
