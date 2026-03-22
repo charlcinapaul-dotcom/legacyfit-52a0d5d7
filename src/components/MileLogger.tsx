@@ -191,11 +191,12 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
               <p className="text-muted-foreground text-sm">
                 Enroll in this challenge to start logging miles and earning passport stamps.
               </p>
-              <Link to={challengeSlug ? `/challenge/${challengeSlug}` : '/challenges'}>
-                <Button className="w-full h-auto py-3 text-sm font-bold leading-tight whitespace-normal bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
-                  Enroll in This Challenge
-                </Button>
-              </Link>
+              <Button
+                className="w-full h-auto py-3 text-sm font-bold leading-tight whitespace-normal bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                onClick={onScrollToPricing}
+              >
+                Enroll in This Challenge
+              </Button>
             </div>
           ) : (
             <Link to={`/auth?redirect=${encodeURIComponent(challengeSlug ? `/challenge/${challengeSlug}` : '/challenges')}`}>
