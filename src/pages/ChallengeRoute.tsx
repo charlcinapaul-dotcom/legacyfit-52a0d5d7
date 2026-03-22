@@ -24,6 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { PastDueWarningBanner } from "@/components/PastDueWarningBanner";
 
 // Color styling helper for challenge themes
 const getColorStyles = (color: string) => {
