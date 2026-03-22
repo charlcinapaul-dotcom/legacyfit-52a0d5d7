@@ -17,6 +17,7 @@ import {
   ChevronRight,
   Trophy,
   BookOpen,
+  CreditCard,
 } from "lucide-react";
 import type { User, Session } from "@supabase/supabase-js";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
@@ -25,6 +26,7 @@ import { DigitalBib } from "@/components/DigitalBib";
 import { CompletionCertificate } from "@/components/CompletionCertificate";
 import { StreakBadge } from "@/components/StreakBadge";
 import { GroupChallenge } from "@/components/GroupChallenge";
+import { useQuery } from "@tanstack/react-query";
 
 interface Profile {
   id: string;
