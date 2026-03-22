@@ -491,6 +491,9 @@ const Dashboard = () => {
           </div>
         )}
 
+        {/* Subscription Management */}
+        <ManageSubscriptionSection />
+
         {/* Quick Actions */}
         <div className="grid sm:grid-cols-2 gap-4">
           <Card 
