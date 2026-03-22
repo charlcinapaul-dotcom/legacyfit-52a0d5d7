@@ -24,6 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { PastDueWarningBanner } from "@/components/PastDueWarningBanner";
 
 // Color styling helper for challenge themes
 const getColorStyles = (color: string) => {
@@ -154,11 +155,13 @@ const ChallengeRoute = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
   const [audioGenProgress, setAudioGenProgress] = useState<{ generated: number; remaining: number } | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Check if current user is admin
+  // Check if current user is admin and capture userId for banners
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
+      setCurrentUserId(user.id);
       supabase
         .from("user_roles")
         .select("role")
@@ -347,6 +350,8 @@ const ChallengeRoute = () => {
       </header>
 
       <main className="pt-24 pb-12 px-4">
+        {/* Past-due payment warning */}
+        <PastDueWarningBanner userId={currentUserId} />
         <div className="container mx-auto max-w-4xl">
           {/* Hero Card */}
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary via-card to-secondary border border-border mb-8">
