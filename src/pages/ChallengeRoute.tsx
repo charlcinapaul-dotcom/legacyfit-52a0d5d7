@@ -422,7 +422,7 @@ const ChallengeRoute = () => {
 
               {isCompleted ? (
                 <div className="flex flex-col items-center gap-4 py-6 text-center">
-                  <Trophy className="w-8 h-8 text-yellow-500" />
+                  <Trophy className="w-8 h-8 text-primary" />
                   <p className="text-sm text-muted-foreground">
                     You've completed this journey. View your stamps in your Passport.
                   </p>
