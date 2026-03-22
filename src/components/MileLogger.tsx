@@ -11,6 +11,7 @@ import type { UnlockedStamp } from "@/hooks/useMileLogging";
 import { useEnrollmentStatus } from "@/hooks/useEnrollmentStatus";
 import { useDailyMilesLogged } from "@/hooks/useDailyMilesLogged";
 import { useRateLimitCountdown } from "@/hooks/useRateLimitCountdown";
+import { useHasClaimedFreePreview } from "@/hooks/useHasClaimedFreePreview";
 import { StampUnlockModal } from "./StampUnlockModal";
 import { FirstMileGateModal } from "./FirstMileGateModal";
 import { MileLogConfirmDialog } from "./MileLogConfirmDialog";

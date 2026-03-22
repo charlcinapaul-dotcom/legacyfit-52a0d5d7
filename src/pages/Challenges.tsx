@@ -7,6 +7,7 @@ import { ChevronRight, ArrowRight } from "lucide-react";
 import { useChallengesWithMeta, ChallengeWithMeta } from "@/hooks/useChallengesWithMeta";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
 import { ChallengeCard } from "@/components/challenges/ChallengeCard";
+import { useHasClaimedFreePreview } from "@/hooks/useHasClaimedFreePreview";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
