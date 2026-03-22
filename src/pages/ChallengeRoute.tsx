@@ -155,11 +155,13 @@ const ChallengeRoute = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
   const [audioGenProgress, setAudioGenProgress] = useState<{ generated: number; remaining: number } | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Check if current user is admin
+  // Check if current user is admin and capture userId for banners
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
+      setCurrentUserId(user.id);
       supabase
         .from("user_roles")
         .select("role")
