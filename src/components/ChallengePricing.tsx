@@ -74,13 +74,14 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
 
 /** Extract the woman's name from a challenge title like "Ruth Bader Ginsburg Equality Journey".
  *  Strips trailing descriptive words so only the proper name remains. */
-function extractWomanName(challengeName: string): string {
+function extractFigureName(challengeName: string): string {
   return challengeName
     .replace(
       /\s+(equality|freedom|courage|legacy|justice|peace|hope|pride|strength|trail|walk|run|journey|challenge|mile)s?(\s+.*)?$/i,
       "",
     )
-    .trim();
+    .trim()
+    .split(' ')[0];
 }
 
 export const ChallengePricing = ({
