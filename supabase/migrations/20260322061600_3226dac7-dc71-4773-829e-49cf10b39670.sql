@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN free_preview_claimed_at timestamptz NULL;
