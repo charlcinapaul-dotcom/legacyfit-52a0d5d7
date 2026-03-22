@@ -129,7 +129,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
   };
 
   // Loading
-  if (isAuthenticated === null || enrollmentLoading) {
+  if (isAuthenticated === null || enrollmentLoading || freePreviewLoading) {
     return (
       <Card className="border-primary/20">
         <CardContent className="py-8 flex items-center justify-center">
