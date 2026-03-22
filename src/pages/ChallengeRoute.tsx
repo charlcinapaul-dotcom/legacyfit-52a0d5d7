@@ -350,6 +350,8 @@ const ChallengeRoute = () => {
       </header>
 
       <main className="pt-24 pb-12 px-4">
+        {/* Past-due payment warning */}
+        <PastDueWarningBanner userId={currentUserId} />
         <div className="container mx-auto max-w-4xl">
           {/* Hero Card */}
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary via-card to-secondary border border-border mb-8">
