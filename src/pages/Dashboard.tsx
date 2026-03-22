@@ -27,6 +27,7 @@ import { DigitalBib } from "@/components/DigitalBib";
 import { CompletionCertificate } from "@/components/CompletionCertificate";
 import { StreakBadge } from "@/components/StreakBadge";
 import { GroupChallenge } from "@/components/GroupChallenge";
+import { PastDueWarningBanner } from "@/components/PastDueWarningBanner";
 import { useQuery } from "@tanstack/react-query";
 
 interface ManageSubscriptionSectionProps {
