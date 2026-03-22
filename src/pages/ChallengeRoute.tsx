@@ -113,6 +113,25 @@ const ChallengeRoute = () => {
     },
     enabled: !!challengeId,
   });
+
+  // Stamp records from DB — used to unlock Virtual Route milestones for free-preview
+  // users whose miles are never written to user_challenges.miles_logged
+  const { data: stampsFromDB = [] } = useQuery({
+    queryKey: ["user-passport-stamps", challengeId],
+    queryFn: async (): Promise<{ milestone_id: string }[]> => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user || !challengeId) return [];
+      const { data, error } = await supabase
+        .from("user_passport_stamps")
+        .select("milestone_id")
+        .eq("user_id", user.id);
+      if (error) throw error;
+      // Filter to milestones belonging to this challenge via the challenge's milestone list
+      return data ?? [];
+    },
+    enabled: !!challengeId,
+  });
+
   const [showReEngagementBanner, setShowReEngagementBanner] = useState(false);
   const logMilesSectionRef = useRef<HTMLDivElement>(null);
   const pricingSectionRef = useRef<HTMLDivElement>(null);
@@ -693,7 +712,8 @@ const ChallengeRoute = () => {
                 />
                 <div className="space-y-8">
                   {challenge.milestones.map((milestone, index) => {
-                    const isUnlocked = userProgress.milesLogged >= milestone.miles || unlockedMilestones.some(m => m.miles === milestone.miles);
+                    const isUnlocked = userProgress.milesLogged >= milestone.miles ||
+                      stampsFromDB.some(s => s.milestone_id === milestone.dbId);
                     const isNext = !isUnlocked && (index === 0 || userProgress.milesLogged >= challenge.milestones[index - 1].miles);
                     const isLastUnlocked = isUnlocked && index === unlockedMilestonesCount - 1;
 
