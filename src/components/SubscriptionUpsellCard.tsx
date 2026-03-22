@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -15,6 +15,7 @@ interface SubscriptionUpsellCardProps {
 
 export function SubscriptionUpsellCard({ className }: SubscriptionUpsellCardProps) {
   const [loading, setLoading] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
 
   // Check if user already has an active subscription
   const { data: subscriptionStatus, isLoading: checkingSubscription } = useQuery({
@@ -69,9 +70,6 @@ export function SubscriptionUpsellCard({ className }: SubscriptionUpsellCardProp
     },
   });
 
-  // Hide card if user is already subscribed
-  if (checkingSubscription || subscriptionStatus?.hasActive) return null;
-
   const handleSubscribe = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -100,6 +98,57 @@ export function SubscriptionUpsellCard({ className }: SubscriptionUpsellCardProp
       setLoading(false);
     }
   };
+
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-portal-session");
+      if (error) throw new Error(error.message || "Failed to open billing portal");
+      if (!data?.url) throw new Error("No portal URL returned. Please try again.");
+      window.location.href = data.url;
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      toast({ title: "Portal error", description: msg, variant: "destructive" });
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
+  if (checkingSubscription) return null;
+
+  // Active subscriber — show minimal management card instead of hiding entirely
+  if (subscriptionStatus?.hasActive) {
+    return (
+      <div
+        className={`mt-10 border border-primary/30 bg-primary/[0.05] rounded-xl p-6 md:p-8 flex items-center justify-between gap-4 flex-wrap ${className ?? ""}`}
+      >
+        <div className="flex items-center gap-3">
+          <Sparkles className="w-5 h-5 text-primary shrink-0" />
+          <p className="text-sm font-medium text-foreground">
+            You have an active Legacy Pass.
+          </p>
+        </div>
+        <Button
+          onClick={handleManageSubscription}
+          disabled={portalLoading}
+          variant="outline"
+          className="border-primary/40 text-primary hover:bg-primary/10 font-semibold"
+        >
+          {portalLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin mr-2" />
+              Opening…
+            </>
+          ) : (
+            <>
+              <CreditCard className="w-4 h-4 mr-2" />
+              Manage Subscription
+            </>
+          )}
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div
