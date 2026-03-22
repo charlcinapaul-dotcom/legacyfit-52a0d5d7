@@ -236,6 +236,29 @@ serve(async (req) => {
     }
   }
 
+  // ── Invoice payment failed ───────────────────────────────────────────────
+  if (event.type === "invoice.payment_failed") {
+    const invoice = event.data.object as Stripe.Invoice;
+    const stripeSubscriptionId = invoice.subscription as string | null;
+
+    if (stripeSubscriptionId) {
+      console.log(`[stripe-webhook] Payment failed for subscription: ${stripeSubscriptionId}`);
+
+      const { error } = await supabaseAdmin
+        .from("subscriptions")
+        .update({ status: "past_due" })
+        .eq("stripe_subscription_id", stripeSubscriptionId);
+
+      if (error) {
+        console.error(`[stripe-webhook] Failed to mark subscription ${stripeSubscriptionId} as past_due:`, error);
+      } else {
+        console.log(`[stripe-webhook] Subscription ${stripeSubscriptionId} marked as past_due`);
+      }
+    } else {
+      console.warn(`[stripe-webhook] invoice.payment_failed has no subscription_id, skipping`);
+    }
+  }
+
   return new Response(JSON.stringify({ received: true }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
