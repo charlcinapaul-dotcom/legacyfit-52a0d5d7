@@ -97,7 +97,7 @@ export const ChallengePricing = ({
   const [isRestoring, setIsRestoring] = useState(false);
   const [isSubscriber, setIsSubscriber] = useState(false);
 
-  const womanName = extractWomanName(challengeName);
+  const figureName = extractFigureName(challengeName);
 
   // Check if the current user has an active subscription
   useEffect(() => {
