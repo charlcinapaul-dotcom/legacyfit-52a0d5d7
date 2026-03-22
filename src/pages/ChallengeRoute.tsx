@@ -412,38 +412,53 @@ const ChallengeRoute = () => {
           <div className="mt-8" ref={logMilesSectionRef}>
             <Tabs defaultValue="miles" className="w-full">
               <TabsList className="grid w-full grid-cols-3 mb-4">
-                <TabsTrigger value="miles">Log Miles</TabsTrigger>
-                <TabsTrigger value="steps">Log Steps</TabsTrigger>
-                <TabsTrigger value="gps" className="flex items-center gap-1.5">
+                <TabsTrigger value="miles" disabled={isCompleted} className={cn(isCompleted && "opacity-40 cursor-not-allowed pointer-events-none")}>Log Miles</TabsTrigger>
+                <TabsTrigger value="steps" disabled={isCompleted} className={cn(isCompleted && "opacity-40 cursor-not-allowed pointer-events-none")}>Log Steps</TabsTrigger>
+                <TabsTrigger value="gps" disabled={isCompleted} className={cn("flex items-center gap-1.5", isCompleted && "opacity-40 cursor-not-allowed pointer-events-none")}>
                   <Navigation className="w-3.5 h-3.5" />
                   GPS Walk
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="miles">
-                <MileLogger 
-                  challengeId={challenge.id} 
-                  challengeSlug={slug}
-                  challengeName={challenge.name}
-                  challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
-                  onMaybeLater={() => setShowReEngagementBanner(true)}
-                />
-              </TabsContent>
-              <TabsContent value="steps">
-                <StepLogger
-                  challengeId={challenge.id}
-                  challengeSlug={slug}
-                  challengeName={challenge.name}
-                  challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
-                />
-              </TabsContent>
-              <TabsContent value="gps">
-                <GpsWalkTracker
-                  challengeId={challenge.id}
-                  challengeSlug={slug}
-                  challengeName={challenge.name}
-                  challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
-                />
-              </TabsContent>
+
+              {isCompleted ? (
+                <div className="flex flex-col items-center gap-4 py-6 text-center">
+                  <Trophy className="w-8 h-8 text-yellow-500" />
+                  <p className="text-sm text-muted-foreground">
+                    You've completed this journey. View your stamps in your Passport.
+                  </p>
+                  <Link to="/passport">
+                    <Button variant="outline" size="sm">View Passport</Button>
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  <TabsContent value="miles">
+                    <MileLogger 
+                      challengeId={challenge.id} 
+                      challengeSlug={slug}
+                      challengeName={challenge.name}
+                      challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
+                      onMaybeLater={() => setShowReEngagementBanner(true)}
+                    />
+                  </TabsContent>
+                  <TabsContent value="steps">
+                    <StepLogger
+                      challengeId={challenge.id}
+                      challengeSlug={slug}
+                      challengeName={challenge.name}
+                      challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
+                    />
+                  </TabsContent>
+                  <TabsContent value="gps">
+                    <GpsWalkTracker
+                      challengeId={challenge.id}
+                      challengeSlug={slug}
+                      challengeName={challenge.name}
+                      challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
+                    />
+                  </TabsContent>
+                </>
+              )}
             </Tabs>
           </div>
 
