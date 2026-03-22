@@ -37,6 +37,7 @@ interface Profile {
 interface Milestone {
   miles_required: number;
   title: string;
+  location_name: string | null;
 }
 
 interface UserChallenge {
