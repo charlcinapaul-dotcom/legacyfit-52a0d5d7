@@ -36,18 +36,18 @@ interface ManageSubscriptionSectionProps {
 function ManageSubscriptionSection({ userId }: ManageSubscriptionSectionProps) {
   const [portalLoading, setPortalLoading] = useState(false);
 
-  const { data: hasActiveSub, isLoading } = useQuery({
+  const { data: subData, isLoading } = useQuery({
     queryKey: ["dashboard-subscription-status", userId],
     enabled: !!userId,
     queryFn: async () => {
-      if (!userId) return false;
+      if (!userId) return { hasActive: false, renewalDate: null };
       const { data } = await supabase
         .from("subscriptions")
-        .select("status")
+        .select("status, current_period_end")
         .eq("user_id", userId)
         .eq("status", "active")
         .maybeSingle();
-      return !!data;
+      return { hasActive: !!data, renewalDate: data?.current_period_end ?? null };
     },
   });
 
@@ -66,7 +66,11 @@ function ManageSubscriptionSection({ userId }: ManageSubscriptionSectionProps) {
     }
   };
 
-  if (isLoading || !hasActiveSub) return null;
+  if (isLoading || !subData?.hasActive) return null;
+
+  const renewalDateFormatted = subData.renewalDate
+    ? new Date(subData.renewalDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+    : null;
 
   return (
     <div className="mb-8">
@@ -79,6 +83,9 @@ function ManageSubscriptionSection({ userId }: ManageSubscriptionSectionProps) {
             <div>
               <p className="font-medium text-foreground text-sm">Legacy Pass — Active</p>
               <p className="text-xs text-muted-foreground">Manage billing, cancel, or update payment method</p>
+              {renewalDateFormatted && (
+                <p className="text-xs text-muted-foreground">Renews on {renewalDateFormatted}</p>
+              )}
             </div>
           </div>
           <Button
