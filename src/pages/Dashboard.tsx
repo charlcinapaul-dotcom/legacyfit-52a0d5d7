@@ -37,6 +37,7 @@ interface Profile {
 interface Milestone {
   miles_required: number;
   title: string;
+  location_name: string | null;
 }
 
 interface UserChallenge {
@@ -146,7 +147,8 @@ const Dashboard = () => {
             image_url,
             milestones (
               miles_required,
-              title
+              title,
+              location_name
             )
           )
         `)
@@ -355,9 +357,26 @@ const Dashboard = () => {
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-foreground truncate">{uc.challenge?.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {uc.miles_logged || 0} / {uc.challenge?.total_miles} miles
-                        </p>
+                        {(() => {
+                          const milesLogged = uc.miles_logged || 0;
+                          const milestones = (uc.challenge as any)?.milestones as Milestone[] | undefined;
+                          // Find nearest milestone (the one with miles_required closest to milesLogged)
+                          const nearest = milestones?.length
+                            ? milestones.reduce((prev, curr) =>
+                                Math.abs(curr.miles_required - milesLogged) < Math.abs(prev.miles_required - milesLogged)
+                                  ? curr
+                                  : prev
+                              )
+                            : null;
+                          const locationName = nearest?.location_name?.trim() || null;
+                          return (
+                            <p className="text-sm text-muted-foreground">
+                              {locationName
+                                ? `Walking through ${locationName}`
+                                : `${milesLogged.toFixed(1)} miles walked`}
+                            </p>
+                          );
+                        })()}
                         <div className="mt-2 h-2 bg-secondary rounded-full overflow-hidden">
                           <div 
                             className="h-full bg-primary rounded-full transition-all"
