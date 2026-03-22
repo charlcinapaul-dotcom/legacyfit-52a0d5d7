@@ -42,6 +42,7 @@ const About = () => (
             The history we were taught left people out. The pioneers, the trailblazers, the ones who changed everything reduced to footnotes or erased entirely. Sojourner Truth. Wilma Rudolph. Katherine Johnson. Garrett Morgan. Matthew Henson. Their stories deserved more than a paragraph. They deserved to be walked with.
           <p>
             These are the stories LegacyFit carries. Not as a history lesson. As a companion for the road you're already on.
+          </p>
           <p>
             LegacyFit is what happens when movement meets meaning. When the miles you walk carry the weight of people who
             walked harder ones before you.
