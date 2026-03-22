@@ -115,6 +115,11 @@ const ChallengeRoute = () => {
   });
   const [showReEngagementBanner, setShowReEngagementBanner] = useState(false);
   const logMilesSectionRef = useRef<HTMLDivElement>(null);
+  const pricingSectionRef = useRef<HTMLDivElement>(null);
+
+  const scrollToPricing = () => {
+    pricingSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   // Auto-dismiss banner the moment enrollment is confirmed
   useEffect(() => {
