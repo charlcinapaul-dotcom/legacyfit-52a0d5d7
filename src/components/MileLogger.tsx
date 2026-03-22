@@ -11,6 +11,7 @@ import type { UnlockedStamp } from "@/hooks/useMileLogging";
 import { useEnrollmentStatus } from "@/hooks/useEnrollmentStatus";
 import { useDailyMilesLogged } from "@/hooks/useDailyMilesLogged";
 import { useRateLimitCountdown } from "@/hooks/useRateLimitCountdown";
+import { useHasClaimedFreePreview } from "@/hooks/useHasClaimedFreePreview";
 import { StampUnlockModal } from "./StampUnlockModal";
 import { FirstMileGateModal } from "./FirstMileGateModal";
 import { MileLogConfirmDialog } from "./MileLogConfirmDialog";
@@ -75,6 +76,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
   }, [completionData, onChallengeCompleted, clearCompletionData]);
 
   const { data: enrollment, isLoading: enrollmentLoading } = useEnrollmentStatus(challengeId);
+  const { hasClaimed: freePreviewClaimed, isLoading: freePreviewLoading } = useHasClaimedFreePreview();
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -127,7 +129,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
   };
 
   // Loading
-  if (isAuthenticated === null || enrollmentLoading) {
+  if (isAuthenticated === null || enrollmentLoading || freePreviewLoading) {
     return (
       <Card className="border-primary/20">
         <CardContent className="py-8 flex items-center justify-center">
@@ -158,9 +160,9 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
     );
   }
 
-  // Not enrolled (paid) — but allow free first-mile preview (totalMiles === 0)
+  // Not enrolled (paid) — but allow free first-mile preview (totalMiles === 0 AND not yet claimed on any challenge)
   const hasPendingPayment = enrollment?.status === "pending";
-  const isFirstMileFreeWindowNow = !enrollment?.isEnrolled && !hasPendingPayment && totalMiles === 0;
+  const isFirstMileFreeWindowNow = !enrollment?.isEnrolled && !hasPendingPayment && totalMiles === 0 && !freePreviewClaimed;
 
   // Latch: if we were in free-window when the user clicked log, stay in logger
   // view until the stamp modal is fully dismissed (prevents premature flip to "Enrollment Required")

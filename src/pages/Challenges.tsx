@@ -7,6 +7,7 @@ import { ChevronRight, ArrowRight } from "lucide-react";
 import { useChallengesWithMeta, ChallengeWithMeta } from "@/hooks/useChallengesWithMeta";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
 import { ChallengeCard } from "@/components/challenges/ChallengeCard";
+import { useHasClaimedFreePreview } from "@/hooks/useHasClaimedFreePreview";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -137,6 +138,7 @@ function ContinueJourneyCard() {
 const Challenges = () => {
   const { data: challenges = [], isLoading, isError, refetch } = useChallengesWithMeta();
   const { data: activeChallenge } = useActiveChallenge();
+  const { hasClaimed: freePreviewClaimed } = useHasClaimedFreePreview();
 
   const active = challenges.filter((c) => c.is_active);
   const past = challenges.filter((c) => !c.is_active);
@@ -199,7 +201,9 @@ const Challenges = () => {
       {/* Free Mile Strip */}
       <div className="w-full bg-primary py-5 px-4 text-center">
         <p className="text-lg font-bold text-primary-foreground">
-          Your first mile is always free — no credit card needed.
+          {freePreviewClaimed
+            ? "Start your journey from $12.99"
+            : "Your first mile is always free — no credit card needed."}
         </p>
       </div>
 

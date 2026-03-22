@@ -424,6 +424,7 @@ export type Database = {
           bib_number: string | null
           created_at: string
           display_name: string | null
+          free_preview_claimed_at: string | null
           id: string
           total_miles: number | null
           updated_at: string
@@ -434,6 +435,7 @@ export type Database = {
           bib_number?: string | null
           created_at?: string
           display_name?: string | null
+          free_preview_claimed_at?: string | null
           id?: string
           total_miles?: number | null
           updated_at?: string
@@ -444,6 +446,7 @@ export type Database = {
           bib_number?: string | null
           created_at?: string
           display_name?: string | null
+          free_preview_claimed_at?: string | null
           id?: string
           total_miles?: number | null
           updated_at?: string
