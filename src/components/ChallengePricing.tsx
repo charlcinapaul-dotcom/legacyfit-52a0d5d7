@@ -221,7 +221,7 @@ export const ChallengePricing = ({
     <div className="space-y-6 w-full max-w-full overflow-hidden">
       {/* Headline */}
       <div className="text-center space-y-1.5">
-        <h3 className={cn("text-2xl md:text-3xl font-bold", accent.heading)}>Walk the rest of {womanName}'s story.</h3>
+        <h3 className={cn("text-2xl md:text-3xl font-bold", accent.heading)}>Walk the rest of {figureName}'s story.</h3>
         <p className="text-muted-foreground text-sm md:text-base">
           Unlock all 6 milestones and collect every stamp from their journey.
         </p>
