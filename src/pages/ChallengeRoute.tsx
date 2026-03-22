@@ -349,7 +349,7 @@ const ChallengeRoute = () => {
                   {challenge.name}
                 </h2>
                 {isCompleted ? (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold uppercase tracking-wide bg-yellow-500/15 border-yellow-500/30 text-yellow-500">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold uppercase tracking-wide bg-primary/15 border-primary/30 text-primary">
                     <Trophy className="w-3.5 h-3.5" />
                     Completed
                   </span>
