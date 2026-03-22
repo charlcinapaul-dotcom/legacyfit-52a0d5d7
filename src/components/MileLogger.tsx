@@ -76,6 +76,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
   }, [completionData, onChallengeCompleted, clearCompletionData]);
 
   const { data: enrollment, isLoading: enrollmentLoading } = useEnrollmentStatus(challengeId);
+  const { hasClaimed: freePreviewClaimed, isLoading: freePreviewLoading } = useHasClaimedFreePreview();
 
   useEffect(() => {
     const checkAuth = async () => {
