@@ -138,6 +138,7 @@ function ContinueJourneyCard() {
 const Challenges = () => {
   const { data: challenges = [], isLoading, isError, refetch } = useChallengesWithMeta();
   const { data: activeChallenge } = useActiveChallenge();
+  const { hasClaimed: freePreviewClaimed } = useHasClaimedFreePreview();
 
   const active = challenges.filter((c) => c.is_active);
   const past = challenges.filter((c) => !c.is_active);
