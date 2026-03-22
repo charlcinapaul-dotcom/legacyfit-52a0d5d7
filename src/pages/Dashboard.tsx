@@ -570,7 +570,7 @@ const Dashboard = () => {
         )}
 
         {/* Subscription Management */}
-        <ManageSubscriptionSection />
+        <ManageSubscriptionSection userId={user?.id ?? null} />
 
         {/* Quick Actions */}
         <div className="grid sm:grid-cols-2 gap-4">
