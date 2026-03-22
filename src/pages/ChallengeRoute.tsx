@@ -411,10 +411,22 @@ const ChallengeRoute = () => {
           {/* Log Miles / Steps / GPS Section */}
           <div className="mt-8" ref={logMilesSectionRef}>
             <Tabs defaultValue="miles" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-4">
-                <TabsTrigger value="miles" disabled={isCompleted} className={cn(isCompleted && "opacity-40 cursor-not-allowed pointer-events-none")}>Log Miles</TabsTrigger>
-                <TabsTrigger value="steps" disabled={isCompleted} className={cn(isCompleted && "opacity-40 cursor-not-allowed pointer-events-none")}>Log Steps</TabsTrigger>
-                <TabsTrigger value="gps" disabled={isCompleted} className={cn("flex items-center gap-1.5", isCompleted && "opacity-40 cursor-not-allowed pointer-events-none")}>
+              <TabsList className={cn("grid w-full grid-cols-3 mb-4", isCompleted && "pointer-events-none")}>
+                <TabsTrigger
+                  value="miles"
+                  disabled={isCompleted}
+                  className={cn(isCompleted && "opacity-40 !bg-transparent !shadow-none !text-muted-foreground data-[state=active]:!bg-transparent data-[state=active]:!shadow-none data-[state=active]:!text-muted-foreground")}
+                >Log Miles</TabsTrigger>
+                <TabsTrigger
+                  value="steps"
+                  disabled={isCompleted}
+                  className={cn(isCompleted && "opacity-40 !bg-transparent !shadow-none !text-muted-foreground data-[state=active]:!bg-transparent data-[state=active]:!shadow-none data-[state=active]:!text-muted-foreground")}
+                >Log Steps</TabsTrigger>
+                <TabsTrigger
+                  value="gps"
+                  disabled={isCompleted}
+                  className={cn("flex items-center gap-1.5", isCompleted && "opacity-40 !bg-transparent !shadow-none !text-muted-foreground data-[state=active]:!bg-transparent data-[state=active]:!shadow-none data-[state=active]:!text-muted-foreground")}
+                >
                   <Navigation className="w-3.5 h-3.5" />
                   GPS Walk
                 </TabsTrigger>
