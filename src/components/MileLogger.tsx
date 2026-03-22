@@ -32,7 +32,7 @@ interface MileLoggerProps {
 
 const QUICK_MILES = [1, 3, 5, 7];
 
-export function MileLogger({ challengeId, challengeSlug, challengeName, totalMilestones = 6, challengeEditionColor = "gold", onChallengeCompleted, onMaybeLater }: MileLoggerProps) {
+export function MileLogger({ challengeId, challengeSlug, challengeName, totalMilestones = 6, challengeEditionColor = "gold", onChallengeCompleted, onMaybeLater, onScrollToPricing }: MileLoggerProps) {
   const [miles, setMiles] = useState<number>(1);
   const [notes, setNotes] = useState("");
   const [showCustom, setShowCustom] = useState(false);
