@@ -39,21 +39,11 @@ const About = () => (
           </p>
           <p>The second truth is bigger than me.</p>
           <p>
-            Our schools do not teach women's history. Not really. We get a paragraph, a footnote, a single name in a
-            chapter built around someone else. Sojourner Truth walked out of slavery and sued for her son's freedom but
-            most of us only know her name, not her story. Wilma Rudolph was told at four years old she would never walk
-            and became the fastest woman on earth. Katherine Johnson computed the orbital trajectories that sent men to
-            the moon by hand, with precision that made the astronauts refuse to launch without her confirmation. Her
-            name stayed hidden for decades.
-          </p>
-          <p>These women deserved more than a footnote. They deserved to be walked with.</p>
+            The history we were taught left people out. The pioneers, the trailblazers, the ones who changed everything reduced to footnotes or erased entirely. Sojourner Truth. Wilma Rudolph. Katherine Johnson. Garrett Morgan. Matthew Henson. Their stories deserved more than a paragraph. They deserved to be walked with.
           <p>
-            So I built something that puts their stories in your ears while you put miles under your feet. Every
-            milestone you reach unlocks a woman whose life proves what endurance, courage, and refusal look like in
-            practice. Not as a history lesson. As a companion for the road you're already on.
-          </p>
+            These are the stories LegacyFit carries. Not as a history lesson. As a companion for the road you're already on.
           <p>
-            LegacyFit is what happens when movement meets meaning. When the miles you walk carry the weight of women who
+            LegacyFit is what happens when movement meets meaning. When the miles you walk carry the weight of people who
             walked harder ones before you.
           </p>
           <blockquote className="border-l-4 border-primary pl-6 py-2 text-foreground italic text-xl">
