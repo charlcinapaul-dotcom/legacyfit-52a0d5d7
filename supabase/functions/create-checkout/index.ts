@@ -9,9 +9,10 @@ const corsHeaders = {
 };
 
 const PRICE_IDS: Record<string, string> = {
-  digital: "price_1T8emA3JzkAB6gcFRznutdsG",           // $12.99 Digital Collection
-  boarding_pass: "price_1T8emZ3JzkAB6gcFwP7KsM2F",     // $29.00 Collector's Edition
-  subscription: "price_1TDYDK3JzkAB6gcF7h5ponZf",      // $9.99/mo LegacyFit Digital Pass
+  digital: "price_1T8emA3JzkAB6gcFRznutdsG",                // $12.99 Digital Collection
+  boarding_pass: "price_1T8emZ3JzkAB6gcFwP7KsM2F",          // $29.00 Collector's Edition
+  boarding_pass_subscriber: "price_1TDb713JzkAB6gcF8IQ8FXtu", // $19.00 Collector's Edition (Subscriber Price)
+  subscription: "price_1TDYDK3JzkAB6gcF7h5ponZf",           // $9.99/mo LegacyFit Digital Pass
 };
 
 serve(async (req) => {

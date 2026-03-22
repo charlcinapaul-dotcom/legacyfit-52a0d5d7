@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check, Loader2, Package, Smartphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -41,6 +41,8 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
         ring: "border-2 border-[#7A1E2C]/30",
         fanBadge: "bg-[#7A1E2C]/10 text-[#7A1E2C] border-[#7A1E2C]/25",
         price: "text-[#7A1E2C]",
+        subscriberHint: "text-[#7A1E2C]/60",
+        subscriberApplied: "text-[#7A1E2C]",
       };
     case "pride":
       return {
@@ -52,6 +54,8 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
         ring: "border-2 border-purple-500/30",
         fanBadge: "bg-purple-500/10 text-purple-400 border-purple-500/25",
         price: "text-purple-400",
+        subscriberHint: "text-purple-400/60",
+        subscriberApplied: "text-purple-400",
       };
     default: // gold
       return {
@@ -62,6 +66,8 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
         ring: "border-2 border-primary/30",
         fanBadge: "bg-primary/10 text-primary border-primary/25",
         price: "text-primary",
+        subscriberHint: "text-primary/60",
+        subscriberApplied: "text-primary",
       };
   }
 };
@@ -69,8 +75,6 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
 /** Extract the woman's name from a challenge title like "Ruth Bader Ginsburg Equality Journey".
  *  Strips trailing descriptive words so only the proper name remains. */
 function extractWomanName(challengeName: string): string {
-  // Drop any trailing non-name words — action/theme/descriptor words that follow the name.
-  // e.g. "Ruth Bader Ginsburg Equality Journey" → "Ruth Bader Ginsburg"
   return challengeName
     .replace(
       /\s+(equality|freedom|courage|legacy|justice|peace|hope|pride|strength|trail|walk|run|journey|challenge|mile)s?(\s+.*)?$/i,
@@ -90,10 +94,32 @@ export const ChallengePricing = ({
   const navigate = useNavigate();
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
   const [isRestoring, setIsRestoring] = useState(false);
+  const [isSubscriber, setIsSubscriber] = useState(false);
 
   const womanName = extractWomanName(challengeName);
 
-  const handleCheckout = async (tier: "digital" | "boarding_pass") => {
+  // Check if the current user has an active subscription
+  useEffect(() => {
+    const checkSubscription = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from("subscriptions")
+        .select("status")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .maybeSingle();
+
+      setIsSubscriber(!!data);
+    };
+
+    checkSubscription();
+  }, []);
+
+  const handleCheckout = async (tier: "digital" | "boarding_pass" | "boarding_pass_subscriber") => {
     if (!challengeId) {
       toast({
         title: "Challenge not found",
@@ -134,6 +160,11 @@ export const ChallengePricing = ({
     }
   };
 
+  const handleCollectorCheckout = () => {
+    const tier = isSubscriber ? "boarding_pass_subscriber" : "boarding_pass";
+    handleCheckout(tier);
+  };
+
   const handleRestorePurchase = async () => {
     if (!challengeId) return;
 
@@ -152,7 +183,6 @@ export const ChallengePricing = ({
 
     setIsRestoring(true);
     try {
-      // Check if a paid enrollment already exists
       const { data, error } = await supabase
         .from("user_challenges")
         .select("payment_status")
@@ -167,7 +197,6 @@ export const ChallengePricing = ({
           title: "Purchase restored!",
           description: "Your enrollment has been found and restored. The page will refresh.",
         });
-        // Force re-query by reloading
         window.location.reload();
       } else {
         toast({
@@ -184,6 +213,8 @@ export const ChallengePricing = ({
       setIsRestoring(false);
     }
   };
+
+  const collectorLoadingKey = isSubscriber ? "boarding_pass_subscriber" : "boarding_pass";
 
   return (
     <div className="space-y-6 w-full max-w-full overflow-hidden">
@@ -256,7 +287,21 @@ export const ChallengePricing = ({
           </div>
 
           <div className="mb-5">
-            <span className={cn("text-4xl font-bold tracking-tight", accent.price)}>$29.00</span>
+            {isSubscriber ? (
+              <>
+                <span className={cn("text-4xl font-bold tracking-tight", accent.price)}>$19.00</span>
+                <p className={cn("text-xs mt-1 font-medium", accent.subscriberApplied)}>
+                  Subscriber price applied ✓
+                </p>
+              </>
+            ) : (
+              <>
+                <span className={cn("text-4xl font-bold tracking-tight", accent.price)}>$29.00</span>
+                <p className={cn("text-xs mt-1", accent.subscriberHint)}>
+                  Subscribers pay $19
+                </p>
+              </>
+            )}
           </div>
 
           <ul className="space-y-2.5 mb-8 flex-1">
@@ -271,10 +316,10 @@ export const ChallengePricing = ({
           <Button
             size="lg"
             className={cn("w-full text-sm font-semibold whitespace-normal h-auto py-3", accent.primaryBtn)}
-            disabled={loadingTier === "boarding_pass"}
-            onClick={() => handleCheckout("boarding_pass")}
+            disabled={loadingTier === collectorLoadingKey}
+            onClick={handleCollectorCheckout}
           >
-            {loadingTier === "boarding_pass" ? (
+            {loadingTier === collectorLoadingKey ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing…
               </>
