@@ -185,36 +185,22 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
                     ⏳
                   </text>
                 ) : (
-                  <g>
-                    <text
-                      x={pt.x}
-                      y={pt.y - 2}
-                      textAnchor="middle"
-                      fontSize="11"
-                      fill="hsl(var(--muted-foreground))"
-                      opacity="0.7"
-                    >
-                      🔒
-                    </text>
-                    <text
-                      x={pt.x}
-                      y={pt.y + 11}
-                      textAnchor="middle"
-                      fontSize="7"
-                      fill="hsl(var(--muted-foreground))"
-                      opacity="0.85"
-                      fontFamily="inherit"
-                      fontWeight="600"
-                    >
-                      {m.miles}mi
-                    </text>
-                  </g>
+                  <text
+                    x={pt.x}
+                    y={pt.y + 5}
+                    textAnchor="middle"
+                    fontSize="11"
+                    fill="hsl(var(--muted-foreground))"
+                    opacity="0.7"
+                  >
+                    🔒
+                  </text>
                 )}
 
-                {/* Mile label — above or below depending on position */}
+                {/* Mile label — always below circle */}
                 <text
                   x={pt.x}
-                  y={pt.y > 100 ? pt.y + rN + 15 : pt.y - rN - 7}
+                  y={pt.y + rN + 15}
                   textAnchor="middle"
                   fontSize="9"
                   fill="hsl(var(--muted-foreground))"
