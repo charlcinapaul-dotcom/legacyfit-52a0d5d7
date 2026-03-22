@@ -356,6 +356,9 @@ const Dashboard = () => {
         </div>
       </nav>
 
+      {/* Past-due payment warning */}
+      <PastDueWarningBanner userId={user?.id ?? null} />
+
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* Hero Section — matches challenge page hero layout */}
