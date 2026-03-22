@@ -121,6 +121,18 @@ serve(async (req: Request): Promise<Response> => {
         throw insertError;
       }
 
+      // Set account-wide free preview flag on profiles
+      const { error: profileUpdateError } = await supabase
+        .from("profiles")
+        .update({ free_preview_claimed_at: new Date().toISOString() })
+        .eq("user_id", userId)
+        .is("free_preview_claimed_at", null); // only set once; don't overwrite existing
+
+      if (profileUpdateError) {
+        console.error("Error setting free_preview_claimed_at:", profileUpdateError);
+        // Non-fatal — stamp was already inserted; continue
+      }
+
       const unlockedStamp: UnlockedStamp = {
         milestoneId: firstMilestone.id,
         title: firstMilestone.title,
