@@ -304,6 +304,7 @@ const ChallengeRoute = () => {
 
   const progressPercent = (userProgress.milesLogged / challenge.totalMiles) * 100;
   const unlockedMilestones = challenge.milestones.filter(m => userProgress.milesLogged >= m.miles);
+  const isCompleted = challenge.milestones.length > 0 && unlockedMilestones.length === challenge.milestones.length;
   const colors = getColorStyles(challenge.color);
 
   return (
@@ -347,7 +348,14 @@ const ChallengeRoute = () => {
                 <h2 className="text-3xl md:text-4xl font-bold text-foreground">
                   {challenge.name}
                 </h2>
-                {enrollment && <EnrollmentBadge status={enrollment.status} />}
+                {isCompleted ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-semibold uppercase tracking-wide bg-primary/15 border-primary/30 text-primary">
+                    <Trophy className="w-3.5 h-3.5" />
+                    Completed
+                  </span>
+                ) : (
+                  enrollment && <EnrollmentBadge status={enrollment.status} />
+                )}
               </div>
               <p className="text-muted-foreground max-w-xl mb-4">
                 {challenge.description}
@@ -404,38 +412,53 @@ const ChallengeRoute = () => {
           <div className="mt-8" ref={logMilesSectionRef}>
             <Tabs defaultValue="miles" className="w-full">
               <TabsList className="grid w-full grid-cols-3 mb-4">
-                <TabsTrigger value="miles">Log Miles</TabsTrigger>
-                <TabsTrigger value="steps">Log Steps</TabsTrigger>
-                <TabsTrigger value="gps" className="flex items-center gap-1.5">
+                <TabsTrigger value="miles" disabled={isCompleted} className={cn(isCompleted && "opacity-40 cursor-not-allowed pointer-events-none")}>Log Miles</TabsTrigger>
+                <TabsTrigger value="steps" disabled={isCompleted} className={cn(isCompleted && "opacity-40 cursor-not-allowed pointer-events-none")}>Log Steps</TabsTrigger>
+                <TabsTrigger value="gps" disabled={isCompleted} className={cn("flex items-center gap-1.5", isCompleted && "opacity-40 cursor-not-allowed pointer-events-none")}>
                   <Navigation className="w-3.5 h-3.5" />
                   GPS Walk
                 </TabsTrigger>
               </TabsList>
-              <TabsContent value="miles">
-                <MileLogger 
-                  challengeId={challenge.id} 
-                  challengeSlug={slug}
-                  challengeName={challenge.name}
-                  challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
-                  onMaybeLater={() => setShowReEngagementBanner(true)}
-                />
-              </TabsContent>
-              <TabsContent value="steps">
-                <StepLogger
-                  challengeId={challenge.id}
-                  challengeSlug={slug}
-                  challengeName={challenge.name}
-                  challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
-                />
-              </TabsContent>
-              <TabsContent value="gps">
-                <GpsWalkTracker
-                  challengeId={challenge.id}
-                  challengeSlug={slug}
-                  challengeName={challenge.name}
-                  challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
-                />
-              </TabsContent>
+
+              {isCompleted ? (
+                <div className="flex flex-col items-center gap-4 py-6 text-center">
+                  <Trophy className="w-8 h-8 text-primary" />
+                  <p className="text-sm text-muted-foreground">
+                    You've completed this journey. View your stamps in your Passport.
+                  </p>
+                  <Link to="/passport">
+                    <Button variant="outline" size="sm">View Passport</Button>
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  <TabsContent value="miles">
+                    <MileLogger 
+                      challengeId={challenge.id} 
+                      challengeSlug={slug}
+                      challengeName={challenge.name}
+                      challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
+                      onMaybeLater={() => setShowReEngagementBanner(true)}
+                    />
+                  </TabsContent>
+                  <TabsContent value="steps">
+                    <StepLogger
+                      challengeId={challenge.id}
+                      challengeSlug={slug}
+                      challengeName={challenge.name}
+                      challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
+                    />
+                  </TabsContent>
+                  <TabsContent value="gps">
+                    <GpsWalkTracker
+                      challengeId={challenge.id}
+                      challengeSlug={slug}
+                      challengeName={challenge.name}
+                      challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
+                    />
+                  </TabsContent>
+                </>
+              )}
             </Tabs>
           </div>
 
