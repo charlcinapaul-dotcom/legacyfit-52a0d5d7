@@ -18,6 +18,7 @@ import {
   Trophy,
   BookOpen,
   CreditCard,
+  Sparkles,
 } from "lucide-react";
 import type { User, Session } from "@supabase/supabase-js";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
@@ -27,6 +28,79 @@ import { CompletionCertificate } from "@/components/CompletionCertificate";
 import { StreakBadge } from "@/components/StreakBadge";
 import { GroupChallenge } from "@/components/GroupChallenge";
 import { useQuery } from "@tanstack/react-query";
+
+function ManageSubscriptionSection() {
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  const { data: hasActiveSub, isLoading } = useQuery({
+    queryKey: ["dashboard-subscription-status"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+      const { data } = await supabase
+        .from("subscriptions")
+        .select("status")
+        .eq("user_id", user.id)
+        .eq("status", "active")
+        .maybeSingle();
+      return !!data;
+    },
+  });
+
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("create-portal-session");
+      if (error) throw new Error(error.message || "Failed to open billing portal");
+      if (!data?.url) throw new Error("No portal URL returned.");
+      window.location.href = data.url;
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Something went wrong.";
+      toast.error(msg);
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
+  if (isLoading || !hasActiveSub) return null;
+
+  return (
+    <div className="mb-8">
+      <Card className="bg-card border-primary/30">
+        <CardContent className="p-5 flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+              <Sparkles className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <p className="font-medium text-foreground text-sm">Legacy Pass — Active</p>
+              <p className="text-xs text-muted-foreground">Manage billing, cancel, or update payment method</p>
+            </div>
+          </div>
+          <Button
+            onClick={handleManageSubscription}
+            disabled={portalLoading}
+            variant="outline"
+            size="sm"
+            className="border-primary/40 text-primary hover:bg-primary/10 font-semibold shrink-0"
+          >
+            {portalLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                Opening…
+              </>
+            ) : (
+              <>
+                <CreditCard className="w-4 h-4 mr-2" />
+                Manage Subscription
+              </>
+            )}
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 interface Profile {
   id: string;
