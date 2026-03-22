@@ -304,6 +304,7 @@ const ChallengeRoute = () => {
 
   const progressPercent = (userProgress.milesLogged / challenge.totalMiles) * 100;
   const unlockedMilestones = challenge.milestones.filter(m => userProgress.milesLogged >= m.miles);
+  const isCompleted = challenge.milestones.length > 0 && unlockedMilestones.length === challenge.milestones.length;
   const colors = getColorStyles(challenge.color);
 
   return (
