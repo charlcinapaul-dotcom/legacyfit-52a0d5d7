@@ -29,18 +29,22 @@ import { StreakBadge } from "@/components/StreakBadge";
 import { GroupChallenge } from "@/components/GroupChallenge";
 import { useQuery } from "@tanstack/react-query";
 
-function ManageSubscriptionSection() {
+interface ManageSubscriptionSectionProps {
+  userId: string | null;
+}
+
+function ManageSubscriptionSection({ userId }: ManageSubscriptionSectionProps) {
   const [portalLoading, setPortalLoading] = useState(false);
 
   const { data: hasActiveSub, isLoading } = useQuery({
-    queryKey: ["dashboard-subscription-status"],
+    queryKey: ["dashboard-subscription-status", userId],
+    enabled: !!userId,
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
+      if (!userId) return false;
       const { data } = await supabase
         .from("subscriptions")
         .select("status")
-        .eq("user_id", user.id)
+        .eq("user_id", userId)
         .eq("status", "active")
         .maybeSingle();
       return !!data;
