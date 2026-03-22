@@ -411,10 +411,22 @@ const ChallengeRoute = () => {
           {/* Log Miles / Steps / GPS Section */}
           <div className="mt-8" ref={logMilesSectionRef}>
             <Tabs defaultValue="miles" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 mb-4">
-                <TabsTrigger value="miles" disabled={isCompleted} className={cn(isCompleted && "opacity-40 cursor-not-allowed pointer-events-none")}>Log Miles</TabsTrigger>
-                <TabsTrigger value="steps" disabled={isCompleted} className={cn(isCompleted && "opacity-40 cursor-not-allowed pointer-events-none")}>Log Steps</TabsTrigger>
-                <TabsTrigger value="gps" disabled={isCompleted} className={cn("flex items-center gap-1.5", isCompleted && "opacity-40 cursor-not-allowed pointer-events-none")}>
+              <TabsList className={cn("grid w-full grid-cols-3 mb-4", isCompleted && "pointer-events-none")}>
+                <TabsTrigger
+                  value="miles"
+                  disabled={isCompleted}
+                  className={cn(isCompleted && "opacity-40 !bg-transparent !shadow-none !text-muted-foreground data-[state=active]:!bg-transparent data-[state=active]:!shadow-none data-[state=active]:!text-muted-foreground")}
+                >Log Miles</TabsTrigger>
+                <TabsTrigger
+                  value="steps"
+                  disabled={isCompleted}
+                  className={cn(isCompleted && "opacity-40 !bg-transparent !shadow-none !text-muted-foreground data-[state=active]:!bg-transparent data-[state=active]:!shadow-none data-[state=active]:!text-muted-foreground")}
+                >Log Steps</TabsTrigger>
+                <TabsTrigger
+                  value="gps"
+                  disabled={isCompleted}
+                  className={cn("flex items-center gap-1.5", isCompleted && "opacity-40 !bg-transparent !shadow-none !text-muted-foreground data-[state=active]:!bg-transparent data-[state=active]:!shadow-none data-[state=active]:!text-muted-foreground")}
+                >
                   <Navigation className="w-3.5 h-3.5" />
                   GPS Walk
                 </TabsTrigger>
@@ -486,47 +498,49 @@ const ChallengeRoute = () => {
           )}
 
           {/* Days Adjustment Section */}
-          <div className="bg-card rounded-xl border border-border p-6 mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <Calendar className={cn("w-5 h-5", colors.iconColor)} />
-              <h3 className="text-lg font-semibold text-foreground">Customize Your Challenge</h3>
-            </div>
-            
-            <p className="text-sm text-muted-foreground mb-6">
-              Adjust the number of days to complete this challenge based on your fitness level and schedule.
-            </p>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-foreground">Challenge Duration</span>
-                <span className={cn("text-lg font-bold", colors.text)}>
-                  {customDays} days
-                </span>
+          {!isCompleted && (
+            <div className="bg-card rounded-xl border border-border p-6 mb-8">
+              <div className="flex items-center gap-3 mb-4">
+                <Calendar className={cn("w-5 h-5", colors.iconColor)} />
+                <h3 className="text-lg font-semibold text-foreground">Customize Your Challenge</h3>
               </div>
               
-              <Slider
-                value={[customDays]}
-                onValueChange={(value) => setCustomDays(value[0])}
-                min={minDays}
-                max={maxDays}
-                step={1}
-                className="py-2"
-              />
-              
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Intense ({minDays} days)</span>
-                <span>Default ({defaultDays} days)</span>
-                <span>Relaxed ({maxDays} days)</span>
-              </div>
+              <p className="text-sm text-muted-foreground mb-6">
+                Adjust the number of days to complete this challenge based on your fitness level and schedule.
+              </p>
 
-              <div className={cn("mt-4 p-3 rounded-lg border", colors.bgLight)}>
-                <div className="text-sm text-muted-foreground">
-                  <span className="font-medium text-foreground">Daily goal: </span>
-                  {(challenge.totalMiles / customDays).toFixed(2)} miles/day
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-foreground">Challenge Duration</span>
+                  <span className={cn("text-lg font-bold", colors.text)}>
+                    {customDays} days
+                  </span>
+                </div>
+                
+                <Slider
+                  value={[customDays]}
+                  onValueChange={(value) => setCustomDays(value[0])}
+                  min={minDays}
+                  max={maxDays}
+                  step={1}
+                  className="py-2"
+                />
+                
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Intense ({minDays} days)</span>
+                  <span>Default ({defaultDays} days)</span>
+                  <span>Relaxed ({maxDays} days)</span>
+                </div>
+
+                <div className={cn("mt-4 p-3 rounded-lg border", colors.bgLight)}>
+                  <div className="text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground">Daily goal: </span>
+                    {(challenge.totalMiles / customDays).toFixed(2)} miles/day
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Progress Section */}
           <div className="bg-card rounded-xl border border-border p-6 mb-8">
