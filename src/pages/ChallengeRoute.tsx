@@ -456,6 +456,7 @@ const ChallengeRoute = () => {
                       challengeName={challenge.name}
                       challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
                       onMaybeLater={() => setShowReEngagementBanner(true)}
+                      onScrollToPricing={scrollToPricing}
                     />
                   </TabsContent>
                   <TabsContent value="steps">
