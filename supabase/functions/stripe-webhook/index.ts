@@ -198,6 +198,44 @@ serve(async (req) => {
     }
   }
 
+  // ── Subscription deleted ─────────────────────────────────────────────────
+  if (event.type === "customer.subscription.deleted") {
+    const sub = event.data.object as Stripe.Subscription;
+    console.log(`[stripe-webhook] Subscription deleted: ${sub.id}`);
+
+    const { error } = await supabaseAdmin
+      .from("subscriptions")
+      .update({ status: "canceled" })
+      .eq("stripe_subscription_id", sub.id);
+
+    if (error) {
+      console.error(`[stripe-webhook] Failed to cancel subscription ${sub.id}:`, error);
+    } else {
+      console.log(`[stripe-webhook] Subscription ${sub.id} marked as canceled`);
+    }
+  }
+
+  // ── Subscription updated ─────────────────────────────────────────────────
+  if (event.type === "customer.subscription.updated") {
+    const sub = event.data.object as Stripe.Subscription;
+    const periodEnd = new Date(sub.current_period_end * 1000).toISOString();
+    console.log(`[stripe-webhook] Subscription updated: ${sub.id}, status: ${sub.status}`);
+
+    const { error } = await supabaseAdmin
+      .from("subscriptions")
+      .update({
+        status: sub.status,
+        current_period_end: periodEnd,
+      })
+      .eq("stripe_subscription_id", sub.id);
+
+    if (error) {
+      console.error(`[stripe-webhook] Failed to update subscription ${sub.id}:`, error);
+    } else {
+      console.log(`[stripe-webhook] Subscription ${sub.id} updated to status "${sub.status}"`);
+    }
+  }
+
   return new Response(JSON.stringify({ received: true }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
