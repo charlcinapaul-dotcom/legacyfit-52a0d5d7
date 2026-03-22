@@ -160,9 +160,9 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
     );
   }
 
-  // Not enrolled (paid) — but allow free first-mile preview (totalMiles === 0)
+  // Not enrolled (paid) — but allow free first-mile preview (totalMiles === 0 AND not yet claimed on any challenge)
   const hasPendingPayment = enrollment?.status === "pending";
-  const isFirstMileFreeWindowNow = !enrollment?.isEnrolled && !hasPendingPayment && totalMiles === 0;
+  const isFirstMileFreeWindowNow = !enrollment?.isEnrolled && !hasPendingPayment && totalMiles === 0 && !freePreviewClaimed;
 
   // Latch: if we were in free-window when the user clicked log, stay in logger
   // view until the stamp modal is fully dismissed (prevents premature flip to "Enrollment Required")
