@@ -712,7 +712,8 @@ const ChallengeRoute = () => {
                 />
                 <div className="space-y-8">
                   {challenge.milestones.map((milestone, index) => {
-                    const isUnlocked = userProgress.milesLogged >= milestone.miles || unlockedMilestones.some(m => m.miles === milestone.miles);
+                    const isUnlocked = userProgress.milesLogged >= milestone.miles ||
+                      stampsFromDB.some(s => s.milestone_id === milestone.dbId);
                     const isNext = !isUnlocked && (index === 0 || userProgress.milesLogged >= challenge.milestones[index - 1].miles);
                     const isLastUnlocked = isUnlocked && index === unlockedMilestonesCount - 1;
 
