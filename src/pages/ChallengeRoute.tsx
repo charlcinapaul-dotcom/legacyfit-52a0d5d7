@@ -520,8 +520,18 @@ const ChallengeRoute = () => {
             />
 
             <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>
+                {(() => {
+                  const miles = userProgress.milesLogged;
+                  if (miles === 0) return "Ready to begin";
+                  const nearest = challenge.milestones
+                    .filter(m => m.miles <= miles)
+                    .sort((a, b) => b.miles - a.miles)[0];
+                  const loc = nearest?.location?.trim();
+                  return loc ? `Walking through ${loc}` : `${miles.toFixed(1)} miles walked`;
+                })()}
+              </span>
               <span>{userProgress.daysRemaining} days remaining</span>
-              <span>{Math.round(progressPercent)}% complete</span>
             </div>
           </div>
 
