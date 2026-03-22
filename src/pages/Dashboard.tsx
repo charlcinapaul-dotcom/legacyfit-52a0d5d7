@@ -147,7 +147,8 @@ const Dashboard = () => {
             image_url,
             milestones (
               miles_required,
-              title
+              title,
+              location_name
             )
           )
         `)
