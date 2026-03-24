@@ -3,11 +3,12 @@ import { Link } from "react-router-dom";
 import { PageLayout } from "@/components/PageLayout";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ChevronRight, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useChallengesWithMeta, ChallengeWithMeta } from "@/hooks/useChallengesWithMeta";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
 import { ChallengeCard } from "@/components/challenges/ChallengeCard";
 import { useHasClaimedFreePreview } from "@/hooks/useHasClaimedFreePreview";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
