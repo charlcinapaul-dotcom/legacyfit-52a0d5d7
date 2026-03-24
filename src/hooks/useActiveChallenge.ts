@@ -15,6 +15,7 @@ export interface ActiveChallenge {
 export function useActiveChallenge() {
   return useQuery({
     queryKey: ["active-challenge"],
+    staleTime: 30_000,
     queryFn: async (): Promise<ActiveChallenge | null> => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return null;
