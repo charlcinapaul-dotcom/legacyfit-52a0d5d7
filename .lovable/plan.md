@@ -1,65 +1,28 @@
-## Investigation Answers + Implementation Plan
 
-### Direct answers to your three questions
+## Create Privacy Policy Page
 
-**1. Does `profiles` or any table have a `free_preview_used` column?**
-No. The `profiles` table has only: `id, user_id, total_miles, display_name, avatar_url, bib_number, created_at, updated_at`. No boolean flag of any kind exists. No other table carries one either — confirmed by a full codebase search.
-
-**2. Is `user_challenges` written for free (unpaid) users?**
-No. The free-mile path explicitly bypasses `user_challenges`. From `useMileLogging.ts` and `check-milestone-unlocks/index.ts`: free preview records go only into `mile_entries` and `user_passport_stamps`. `user_challenges` is only written when payment is `paid` (via the Stripe webhook).
-
-**3. Cleanest place to store the flag?**
-A new column `free_preview_claimed_at timestamptz` on the `profiles` table. Reasons:
-
-- `profiles` is the canonical account-level table (one row per user, always exists after signup via the `handle_new_user` trigger)
-- A timestamp is more useful than a plain boolean — you know *when* it was claimed at no extra cost
-- Using `profiles` avoids creating a new table or polluting `user_challenges` with a concept that has nothing to do with enrollment
-- The flag is account-wide, which matches the desired behavior (one free preview total, not per-challenge)
-
----
-
-### Full implementation plan
-
-**Database migration**
-
-- Add `free_preview_claimed_at timestamptz NULL` to `profiles`
-- Users can already UPDATE their own profile row (RLS allows it), so no new policy needed
-
-**Edge function: `check-milestone-unlocks**`
-Inside the `isFirstMile` branch, after successfully inserting the stamp, set `free_preview_claimed_at = now()` on the user's `profiles` row using the service-role client.
-
-**New client hook: `useHasClaimedFreePreview**`
-A small `useQuery` hook that reads `profiles.free_preview_claimed_at` for the current user. Returns `{ hasClaimed: boolean, isLoading }`. This is the single source of truth for the UI gate.
-
-`**MileLogger.tsx` — gate the free CTA**
-Currently, `isFirstMileFreeWindow` is true when `totalMiles === 0 && !enrolled`. Add a second condition: `!hasClaimed`. So the free logger only shows if the user has zero miles *and has not already claimed the preview on any other challenge*.
-
-If `hasClaimed` is true and the user is not enrolled, show the existing "Enrollment Required" / pricing path instead of the free CTA button.
-
-`Challenges.tsx` **—**   
-Once hasClaimed is true for the current user, change the "Your first mile is always free" banner to read: "Start your journey from $12.99"
-
-**No changes needed to:**
-
-- The stamp modal
-- The Journey Map
-- The Virtual Route
-- Any Stripe or webhook logic
-- `user_challenges`
--   useMileLogging.ts
-
----
+**What we're building:** A dedicated `/privacy-policy` route with all 12 sections of the provided policy text, styled to match the existing Legal page pattern. No login required. Added to footer Legal column.
 
 ### Files to change
 
-```text
-supabase/migrations/         ← add free_preview_claimed_at to profiles
-supabase/functions/check-milestone-unlocks/index.ts  ← set flag after first stamp
-src/hooks/useHasClaimedFreePreview.ts   ← new hook
-src/components/MileLogger.tsx           ← gate isFirstMileFreeWindow on !hasClaimed
-src/pages/Challenges.tsx                ← (optional) update banner copy
-```
+**1. Create `src/pages/PrivacyPolicy.tsx`**
+- Mirror the structure of `Legal.tsx`: fixed header with Back link + LegacyFit logo, `pt-24 pb-12 px-4` main, `max-w-3xl` container
+- Hero: `Shield` icon, "Privacy Policy" h1, "Effective Date: March 22, 2026" subtitle
+- 12 numbered sections rendered as `bg-card rounded-xl border border-border p-6` cards, matching the Legal page card style
+- Each section uses `h2` for the title and `text-sm text-muted-foreground` for body text
+- Contact email as a `mailto:` link
+- "Last updated: March 22, 2026" footer note
+- No auth dependency — fully public, no `useQuery`, no Supabase calls
 
-### What does NOT change
+**2. Register route in `src/App.tsx`**
+- Add lazy import: `const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));`
+- Add route: `<Route path="/privacy-policy" element={<PrivacyPolicy />} />`
 
-- `isFirstMile` logic in `useMileLogging.ts` stays the same — the gate lives in the UI layer (MileLogger) and the server layer (edge function sets the flag). The hook already has a server-side guard against double-inserting a stamp, so no duplicate stamps are possible even without the flag, but the flag cleanly prevents the UI from offering the free CTA again.
+**3. Update `src/components/SiteFooter.tsx`**
+- In the Legal column, add a new `<Link to="/privacy-policy">` entry for "Privacy Policy" below the existing "Terms & Privacy" link
+
+### Technical notes
+- Page uses the same standalone header pattern as `Legal.tsx` (not `PageLayout`) to keep the header minimal and clean
+- Fully static — no backend calls, no auth, crawlable and indexable
+- The live URL will be `https://legacyfitvirtual.com/privacy-policy` once published
+- All 12 policy sections from the provided text will be included verbatim, organized into the card layout
