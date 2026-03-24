@@ -65,6 +65,7 @@ const App = () => (
             <Route path="/admin/validate" element={<AdminValidate />} />
             <Route path="/export" element={<Export />} />
             <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
