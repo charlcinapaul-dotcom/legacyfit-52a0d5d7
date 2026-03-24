@@ -26,6 +26,7 @@ const FreeWalk = lazy(() => import("./pages/FreeWalk"));
 const AdminValidate = lazy(() => import("./pages/AdminValidate"));
 const Export = lazy(() => import("./pages/Export"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
 
 const queryClient = new QueryClient();
 
