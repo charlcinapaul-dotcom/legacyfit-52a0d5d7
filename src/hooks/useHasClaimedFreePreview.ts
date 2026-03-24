@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 export function useHasClaimedFreePreview() {
   const { data, isLoading } = useQuery({
     queryKey: ["free-preview-claimed"],
+    staleTime: 5 * 60_000,
+    gcTime: 10 * 60_000,
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return false;

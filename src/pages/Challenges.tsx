@@ -3,11 +3,12 @@ import { Link } from "react-router-dom";
 import { PageLayout } from "@/components/PageLayout";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ChevronRight, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useChallengesWithMeta, ChallengeWithMeta } from "@/hooks/useChallengesWithMeta";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
 import { ChallengeCard } from "@/components/challenges/ChallengeCard";
 import { useHasClaimedFreePreview } from "@/hooks/useHasClaimedFreePreview";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -219,8 +220,24 @@ const Challenges = () => {
 
       {isLoading ? (
         <section className="pb-16 px-4">
-          <div className="container mx-auto max-w-5xl text-muted-foreground">
-            Loading challenges...
+          <div className="container mx-auto max-w-5xl">
+            <div className="grid md:grid-cols-2 gap-6">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="rounded-xl border border-border bg-card overflow-hidden">
+                  <Skeleton className="w-full aspect-[16/7]" />
+                  <div className="p-6 space-y-3">
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-5 w-3/4" />
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-5/6" />
+                    <div className="flex justify-between items-center pt-2">
+                      <Skeleton className="h-3 w-20" />
+                      <Skeleton className="h-8 w-32 rounded-lg" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       ) : isError ? (
