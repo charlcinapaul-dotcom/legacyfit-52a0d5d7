@@ -78,6 +78,7 @@ export function useMilestoneAudio() {
       } catch (e) {
         console.error("Audio play failed:", e);
         setIsPlaying(false);
+        setAudioError("Tap to play");
       }
     },
     [muted, resolveAudioUrl]
@@ -107,5 +108,5 @@ export function useMilestoneAudio() {
     });
   }, []);
 
-  return { playMilestoneAudio, toggleMute, replay, muted, isPlaying, currentAudioUrl };
+  return { playMilestoneAudio, toggleMute, replay, muted, isPlaying, currentAudioUrl, audioError };
 }
