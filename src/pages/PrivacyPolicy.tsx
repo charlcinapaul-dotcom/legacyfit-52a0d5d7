@@ -276,6 +276,7 @@ const PrivacyPolicy = () => (
       </div>
     </main>
   </div>
+  </>
 );
 
 export default PrivacyPolicy;
