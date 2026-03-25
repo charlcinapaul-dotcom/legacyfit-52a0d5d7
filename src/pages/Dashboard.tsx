@@ -19,6 +19,7 @@ import {
   BookOpen,
   CreditCard,
   Sparkles,
+  Flame,
 } from "lucide-react";
 import type { User, Session } from "@supabase/supabase-js";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
@@ -156,6 +157,21 @@ const Dashboard = () => {
   const [certGenerating, setCertGenerating] = useState(false);
   const { data: activeChallenge } = useActiveChallenge();
 
+  // Streak data — fetched at page level so we can conditionally swap banner vs. grid slot
+  const { data: streakData } = useQuery({
+    queryKey: ["user-streak", user?.id],
+    enabled: !!user?.id,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("user_streaks")
+        .select("current_streak, longest_streak")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return data ?? { current_streak: 0, longest_streak: 0 };
+    },
+  });
+  const hasStreak = (streakData?.current_streak ?? 0) > 0;
 
   useEffect(() => {
     // Set up auth state listener first
@@ -380,6 +396,24 @@ const Dashboard = () => {
               Ready to unlock more history today?
             </p>
 
+            {/* Streak Banner — only when user has an active streak */}
+            {hasStreak && (
+              <div
+                className="border border-primary/40 rounded-xl p-4 mb-4 flex items-center gap-4"
+                style={{ background: "linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05))" }}
+              >
+                <span className="text-3xl leading-none">🔥</span>
+                <div>
+                  <p className="text-lg font-bold text-primary leading-tight">
+                    {streakData!.current_streak}-Week Streak
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Keep it going — log miles today to protect your streak
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Stats Grid — inside hero with backdrop tiles, matching challenge page */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 border border-border">
@@ -406,7 +440,21 @@ const Dashboard = () => {
                 <div className="text-2xl font-bold text-foreground">{stampCount}</div>
               </div>
 
-              <StreakBadge />
+              {/* 4th slot: Longest Streak when banner is active, otherwise full StreakBadge */}
+              {hasStreak ? (
+                <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 border border-border">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                    <Flame className="w-4 h-4" />
+                    <span className="text-xs uppercase tracking-wide">Best Streak</span>
+                  </div>
+                  <div className="text-2xl font-bold text-foreground">
+                    {streakData?.longest_streak ?? 0}
+                    <span className="text-xs font-normal text-muted-foreground ml-1">wks</span>
+                  </div>
+                </div>
+              ) : (
+                <StreakBadge />
+              )}
             </div>
           </div>
         </div>
