@@ -38,6 +38,7 @@ const Landing = () => {
     <>
       <Helmet>
         <title>LegacyFit — Walk Through History</title>
+        <link rel="canonical" href="https://legacyfitvirtual.com/" />
         <meta name="description" content="Transform your daily walks into a journey through history. Every milestone unlocks powerful stories from the trailblazers who changed the world." />
         <meta property="og:title" content="LegacyFit — Walk Through History" />
         <meta property="og:description" content="Transform your daily walks into a journey through history. Every milestone unlocks powerful stories from the trailblazers who changed the world." />

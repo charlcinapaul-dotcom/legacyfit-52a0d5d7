@@ -1,8 +1,15 @@
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { ArrowLeft, Shield, BookOpen } from "lucide-react";
 import legacyFitLogo from "@/assets/legacyfit-logo.png";
 
 const PrivacyPolicy = () => (
+  <>
+  <Helmet>
+    <title>Privacy Policy — LegacyFit</title>
+    <link rel="canonical" href="https://legacyfitvirtual.com/privacy-policy" />
+    <meta name="description" content="LegacyFit privacy policy — how we collect, use, and protect your personal information." />
+  </Helmet>
   <div className="min-h-screen bg-background w-full max-w-full overflow-x-hidden">
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -269,6 +276,7 @@ const PrivacyPolicy = () => (
       </div>
     </main>
   </div>
+  </>
 );
 
 export default PrivacyPolicy;

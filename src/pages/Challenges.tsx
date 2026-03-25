@@ -191,6 +191,7 @@ const Challenges = () => {
     <>
       <Helmet>
         <title>Walking Challenges — LegacyFit</title>
+        <link rel="canonical" href="https://legacyfitvirtual.com/challenges" />
         <meta name="description" content="Browse all LegacyFit virtual walking challenges. Every mile unlocks powerful stories from history's greatest trailblazers. Your first mile is always free." />
         <meta property="og:title" content="Walking Challenges — LegacyFit" />
         <meta property="og:description" content="Browse all LegacyFit virtual walking challenges. Every mile unlocks powerful stories from history's greatest trailblazers. Your first mile is always free." />
