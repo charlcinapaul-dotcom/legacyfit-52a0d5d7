@@ -156,6 +156,21 @@ const Dashboard = () => {
   const [certGenerating, setCertGenerating] = useState(false);
   const { data: activeChallenge } = useActiveChallenge();
 
+  // Streak data — fetched at page level so we can conditionally swap banner vs. grid slot
+  const { data: streakData } = useQuery({
+    queryKey: ["user-streak", user?.id],
+    enabled: !!user?.id,
+    staleTime: 60_000,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("user_streaks")
+        .select("current_streak, longest_streak")
+        .eq("user_id", user!.id)
+        .maybeSingle();
+      return data ?? { current_streak: 0, longest_streak: 0 };
+    },
+  });
+  const hasStreak = (streakData?.current_streak ?? 0) > 0;
 
   useEffect(() => {
     // Set up auth state listener first
