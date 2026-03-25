@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { Helmet } from "react-helmet-async";
 import { JourneyMap } from "@/components/JourneyMap";
 import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
