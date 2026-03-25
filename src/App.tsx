@@ -40,7 +40,15 @@ const queryClient = new QueryClient({
   },
 });
 
-const App = () => (
+const App = () => {
+  useEffect(() => {
+    queryClient.prefetchQuery({
+      queryKey: ["challenges-with-meta"],
+      queryFn: fetchChallengesWithMeta,
+    });
+  }, []);
+
+  return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <Toaster />
