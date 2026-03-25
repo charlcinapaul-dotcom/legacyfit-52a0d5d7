@@ -411,6 +411,56 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Currently Walking pinned card */}
+        {activeChallenge && !activeChallenge.isCompleted && userChallenges.length > 0 && (() => {
+          const activeChallengeData = userChallenges.find(
+            (uc) => uc.challenge?.id === activeChallenge.challengeId
+          );
+          const milesLogged = activeChallenge.milesLogged ?? 0;
+          const totalMiles = activeChallenge.totalMiles ?? 1;
+          const progressPercent = Math.min(100, Math.round((milesLogged / totalMiles) * 100));
+          const milestones: { miles_required: number; title: string }[] =
+            (activeChallengeData?.challenge as any)?.milestones ?? [];
+          const nextMilestone = milestones
+            .filter((m) => m.miles_required > milesLogged)
+            .sort((a, b) => a.miles_required - b.miles_required)[0];
+          return (
+            <div className="bg-card border border-primary/30 rounded-2xl p-5 mb-6">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
+                Currently Walking
+              </p>
+              <h3 className="text-xl font-bold text-foreground mb-3">{activeChallenge.title}</h3>
+
+              {/* Progress bar */}
+              <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+                <span>{progressPercent}% complete</span>
+                <span className="text-primary font-medium">{milesLogged} / {totalMiles} miles</span>
+              </div>
+              <div className="relative h-2 w-full overflow-hidden rounded-full bg-secondary mb-3">
+                <div
+                  className="h-full bg-primary transition-all"
+                  style={{ width: `${progressPercent}%` }}
+                />
+              </div>
+
+              {/* Next milestone */}
+              {nextMilestone && (
+                <p className="text-sm text-muted-foreground mb-4">
+                  Next stop:{" "}
+                  <span className="text-foreground font-medium">{nextMilestone.title}</span>
+                  {" "}— {Math.max(0, nextMilestone.miles_required - milesLogged).toFixed(1)} mi away
+                </p>
+              )}
+
+              <Button
+                className="w-full"
+                onClick={() => navigate(`/challenge/${activeChallenge.slug}`)}
+              >
+                Continue Walking →
+              </Button>
+            </div>
+          );
+        })()}
 
         {/* Active Challenges */}
         <div className="mb-8">
