@@ -10,6 +10,7 @@ export function useMilestoneAudio() {
   const [muted, setMuted] = useState(false);
   const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
 
   // Clean up audio element on unmount
   useEffect(() => {
@@ -77,6 +78,7 @@ export function useMilestoneAudio() {
       } catch (e) {
         console.error("Audio play failed:", e);
         setIsPlaying(false);
+        setAudioError("Tap to play");
       }
     },
     [muted, resolveAudioUrl]
@@ -106,5 +108,5 @@ export function useMilestoneAudio() {
     });
   }, []);
 
-  return { playMilestoneAudio, toggleMute, replay, muted, isPlaying, currentAudioUrl };
+  return { playMilestoneAudio, toggleMute, replay, muted, isPlaying, currentAudioUrl, audioError };
 }
