@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { PageLayout } from "@/components/PageLayout";
 import { Button } from "@/components/ui/button";
@@ -136,6 +137,8 @@ function ContinueJourneyCard() {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
+const DEFAULT_OG_IMAGE = "https://mpnhugdjsechtkugnjqz.supabase.co/storage/v1/object/public/assets/social-preview.webp";
+
 const Challenges = () => {
   const { data: challenges = [], isLoading, isError, refetch } = useChallengesWithMeta();
   const { data: activeChallenge } = useActiveChallenge();
@@ -185,6 +188,19 @@ const Challenges = () => {
   });
 
   return (
+    <>
+      <Helmet>
+        <title>Walking Challenges — LegacyFit</title>
+        <meta name="description" content="Browse all LegacyFit virtual walking challenges. Every mile unlocks powerful stories from history's greatest trailblazers. Your first mile is always free." />
+        <meta property="og:title" content="Walking Challenges — LegacyFit" />
+        <meta property="og:description" content="Browse all LegacyFit virtual walking challenges. Every mile unlocks powerful stories from history's greatest trailblazers. Your first mile is always free." />
+        <meta property="og:image" content={DEFAULT_OG_IMAGE} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Walking Challenges — LegacyFit" />
+        <meta name="twitter:description" content="Browse all LegacyFit virtual walking challenges. Every mile unlocks powerful stories from history's greatest trailblazers. Your first mile is always free." />
+        <meta name="twitter:image" content={DEFAULT_OG_IMAGE} />
+      </Helmet>
     <PageLayout>
       {/* Hero */}
       <section className="py-20 px-4">
@@ -367,6 +383,7 @@ const Challenges = () => {
         </>
       )}
     </PageLayout>
+    </>
   );
 };
 

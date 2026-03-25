@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, MapPin, Award, Users, Footprints, TrendingUp, BookOpen, Heart } from "lucide-react";
 import { PageLayout } from "@/components/PageLayout";
@@ -31,8 +32,23 @@ const Landing = () => {
     }
   };
 
+  const DEFAULT_OG_IMAGE = "https://mpnhugdjsechtkugnjqz.supabase.co/storage/v1/object/public/assets/social-preview.webp";
+
   return (
-    <PageLayout>
+    <>
+      <Helmet>
+        <title>LegacyFit — Walk Through History</title>
+        <meta name="description" content="Transform your daily walks into a journey through history. Every milestone unlocks powerful stories from the trailblazers who changed the world." />
+        <meta property="og:title" content="LegacyFit — Walk Through History" />
+        <meta property="og:description" content="Transform your daily walks into a journey through history. Every milestone unlocks powerful stories from the trailblazers who changed the world." />
+        <meta property="og:image" content={DEFAULT_OG_IMAGE} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="LegacyFit — Walk Through History" />
+        <meta name="twitter:description" content="Transform your daily walks into a journey through history. Every milestone unlocks powerful stories from the trailblazers who changed the world." />
+        <meta name="twitter:image" content={DEFAULT_OG_IMAGE} />
+      </Helmet>
+      <PageLayout>
       {/* ───── 1. Hero ───── */}
       <section className="relative min-h-[100vh] flex flex-col justify-start md:justify-center pt-16 pb-20 px-4 overflow-hidden w-full max-w-full">
         <div className="absolute inset-0 overflow-hidden">
@@ -270,6 +286,7 @@ const Landing = () => {
         </div>
       </section>
     </PageLayout>
+  </>
   );
 };
 
