@@ -335,7 +335,25 @@ const ChallengeRoute = () => {
   const isCompleted = challenge.milestones.length > 0 && unlockedMilestones.length === challenge.milestones.length;
   const colors = getColorStyles(challenge.color);
 
+  const DEFAULT_OG_IMAGE = "https://mpnhugdjsechtkugnjqz.supabase.co/storage/v1/object/public/assets/social-preview.webp";
+  const ogImage = challenge.imageUrl || DEFAULT_OG_IMAGE;
+  const ogTitle = `${challenge.name} — LegacyFit Walking Challenge`;
+  const ogDescription = `Walk ${challenge.totalMiles} miles through the ${challenge.name} challenge on LegacyFit. Every mile unlocks a powerful story.`;
+
   return (
+    <>
+      <Helmet>
+        <title>{challenge.name} Challenge — LegacyFit</title>
+        <meta name="description" content={ogDescription} />
+        <meta property="og:title" content={ogTitle} />
+        <meta property="og:description" content={ogDescription} />
+        <meta property="og:image" content={ogImage} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={ogTitle} />
+        <meta name="twitter:description" content={ogDescription} />
+        <meta name="twitter:image" content={ogImage} />
+      </Helmet>
     <div className="min-h-screen bg-background w-full max-w-full overflow-x-hidden">
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">

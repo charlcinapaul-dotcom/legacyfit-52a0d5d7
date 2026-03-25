@@ -137,6 +137,8 @@ function ContinueJourneyCard() {
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
+const DEFAULT_OG_IMAGE = "https://mpnhugdjsechtkugnjqz.supabase.co/storage/v1/object/public/assets/social-preview.webp";
+
 const Challenges = () => {
   const { data: challenges = [], isLoading, isError, refetch } = useChallengesWithMeta();
   const { data: activeChallenge } = useActiveChallenge();
