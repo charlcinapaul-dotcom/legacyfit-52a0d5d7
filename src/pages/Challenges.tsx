@@ -188,6 +188,19 @@ const Challenges = () => {
   });
 
   return (
+    <>
+      <Helmet>
+        <title>Walking Challenges — LegacyFit</title>
+        <meta name="description" content="Browse all LegacyFit virtual walking challenges. Every mile unlocks powerful stories from history's greatest trailblazers. Your first mile is always free." />
+        <meta property="og:title" content="Walking Challenges — LegacyFit" />
+        <meta property="og:description" content="Browse all LegacyFit virtual walking challenges. Every mile unlocks powerful stories from history's greatest trailblazers. Your first mile is always free." />
+        <meta property="og:image" content={DEFAULT_OG_IMAGE} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Walking Challenges — LegacyFit" />
+        <meta name="twitter:description" content="Browse all LegacyFit virtual walking challenges. Every mile unlocks powerful stories from history's greatest trailblazers. Your first mile is always free." />
+        <meta name="twitter:image" content={DEFAULT_OG_IMAGE} />
+      </Helmet>
     <PageLayout>
       {/* Hero */}
       <section className="py-20 px-4">
