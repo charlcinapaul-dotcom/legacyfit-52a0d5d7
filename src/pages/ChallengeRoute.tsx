@@ -149,7 +149,7 @@ const ChallengeRoute = () => {
   }, [enrollment?.isEnrolled]);
 
   // Audio hook for milestone narration
-  const { playMilestoneAudio, toggleMute, replay, muted, isPlaying, currentAudioUrl } = useMilestoneAudio();
+  const { playMilestoneAudio, toggleMute, replay, muted, isPlaying, currentAudioUrl, audioError } = useMilestoneAudio();
 
   // Admin: pre-generate audio state
   const [isAdmin, setIsAdmin] = useState(false);

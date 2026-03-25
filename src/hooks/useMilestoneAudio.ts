@@ -10,6 +10,7 @@ export function useMilestoneAudio() {
   const [muted, setMuted] = useState(false);
   const [currentAudioUrl, setCurrentAudioUrl] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
 
   // Clean up audio element on unmount
   useEffect(() => {
