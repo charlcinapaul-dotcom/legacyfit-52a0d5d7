@@ -19,6 +19,7 @@ import {
   BookOpen,
   CreditCard,
   Sparkles,
+  Flame,
 } from "lucide-react";
 import type { User, Session } from "@supabase/supabase-js";
 import { useActiveChallenge } from "@/hooks/useActiveChallenge";
