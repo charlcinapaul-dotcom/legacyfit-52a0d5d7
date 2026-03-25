@@ -10,6 +10,10 @@ const navItems = [
   { label: "How It Works", to: "/how-it-works" },
   { label: "Leaderboard", to: "/leaderboard" },
   { label: "About", to: "/about" },
+];
+
+const mobileNavItems = [
+  ...navItems,
   { label: "Why We Give", to: "/why-we-give" },
 ];
 
