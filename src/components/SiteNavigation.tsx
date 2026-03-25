@@ -10,6 +10,10 @@ const navItems = [
   { label: "How It Works", to: "/how-it-works" },
   { label: "Leaderboard", to: "/leaderboard" },
   { label: "About", to: "/about" },
+];
+
+const mobileNavItems = [
+  ...navItems,
   { label: "Why We Give", to: "/why-we-give" },
 ];
 
@@ -118,7 +122,7 @@ export const SiteNavigation = () => {
                 Home
               </Link>
             )}
-            {navItems.map((item) => (
+            {mobileNavItems.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
