@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { PageLayout } from "@/components/PageLayout";
 import { Link } from "react-router-dom";
 import { Mail, MessageCircle, FileText } from "lucide-react";
