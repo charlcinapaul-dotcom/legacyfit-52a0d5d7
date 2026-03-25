@@ -21,10 +21,7 @@ export interface ChallengeWithMeta {
   first_stamp_image?: string | null;
 }
 
-export function useChallengesWithMeta() {
-  return useQuery({
-    queryKey: ["challenges-with-meta"],
-    queryFn: async (): Promise<ChallengeWithMeta[]> => {
+export async function fetchChallengesWithMeta(): Promise<ChallengeWithMeta[]> {
       // Fire both queries in parallel to eliminate the sequential waterfall
       const [challengesResult, milestonesResult] = await Promise.all([
         supabase
