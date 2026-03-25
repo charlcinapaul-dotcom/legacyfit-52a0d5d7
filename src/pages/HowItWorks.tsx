@@ -39,6 +39,16 @@ const steps = [
 
 const HowItWorks = () => (
   <PageLayout>
+    <Helmet>
+      <title>How It Works — LegacyFit Virtual Walking Challenges</title>
+      <meta name="description" content="Join a themed walking challenge, log your miles, unlock historical milestones, earn passport stamps, and build Lifetime Legacy Miles that never reset." />
+      <meta property="og:title" content="How LegacyFit Works — Walk Through History" />
+      <meta property="og:description" content="Transform your daily walks into a journey through history. Log miles, unlock milestones, earn stamps, and build your walking legacy." />
+      <meta property="og:type" content="website" />
+      <meta name="twitter:card" content="summary" />
+      <meta name="twitter:title" content="How LegacyFit Works — Walk Through History" />
+      <link rel="canonical" href={typeof window !== "undefined" ? window.location.href : "https://legacyfitvirtual.com/how-it-works"} />
+    </Helmet>
     <section className="py-20 px-4">
       <div className="container mx-auto max-w-4xl text-center mb-16">
         <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">

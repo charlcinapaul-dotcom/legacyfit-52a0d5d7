@@ -48,6 +48,16 @@ const faqs = [
 
 const FAQ = () => (
   <PageLayout>
+    <Helmet>
+      <title>FAQ — LegacyFit Virtual Walking Challenges</title>
+      <meta name="description" content="Answers to common questions about LegacyFit: how miles work, passport stamps, lifetime legacy miles, refunds, and more." />
+      <meta property="og:title" content="FAQ — LegacyFit Virtual Walking Challenges" />
+      <meta property="og:description" content="Find answers to common questions about LegacyFit walking challenges, milestone stamps, and lifetime legacy miles." />
+      <meta property="og:type" content="website" />
+      <meta name="twitter:card" content="summary" />
+      <meta name="twitter:title" content="FAQ — LegacyFit Virtual Walking Challenges" />
+      <link rel="canonical" href={typeof window !== "undefined" ? window.location.href : "https://legacyfitvirtual.com/faq"} />
+    </Helmet>
     <section className="py-20 px-4">
       <div className="container mx-auto max-w-3xl">
         <div className="text-center mb-12">
