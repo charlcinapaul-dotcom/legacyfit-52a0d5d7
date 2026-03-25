@@ -895,6 +895,7 @@ const ChallengeRoute = () => {
         Log Miles
       </button>
     </div>
+    </>
   );
 };
 

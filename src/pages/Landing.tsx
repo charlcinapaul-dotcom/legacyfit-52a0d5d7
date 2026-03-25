@@ -286,6 +286,7 @@ const Landing = () => {
         </div>
       </section>
     </PageLayout>
+  </>
   );
 };
 
