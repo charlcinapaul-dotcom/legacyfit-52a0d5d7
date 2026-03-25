@@ -776,7 +776,12 @@ const ChallengeRoute = () => {
                                 {isPlaying ? "Playing…" : "Replay"}
                               </Button>
                               {audioError && (
-                                <span className="text-xs text-amber-500">{audioError}</span>
+                                <button
+                                  onClick={() => replay()}
+                                  className="text-xs text-amber-500 hover:text-amber-400 underline underline-offset-2 transition-colors"
+                                >
+                                  {audioError}
+                                </button>
                               )}
                             </div>
                           )}
