@@ -344,6 +344,7 @@ const ChallengeRoute = () => {
     <>
       <Helmet>
         <title>{challenge.name} Challenge — LegacyFit</title>
+        <link rel="canonical" href={`https://legacyfitvirtual.com/challenge/${slug}`} />
         <meta name="description" content={ogDescription} />
         <meta property="og:title" content={ogTitle} />
         <meta property="og:description" content={ogDescription} />
