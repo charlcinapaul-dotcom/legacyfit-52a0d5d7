@@ -336,7 +336,7 @@ const ChallengeRoute = () => {
   const colors = getColorStyles(challenge.color);
 
   const DEFAULT_OG_IMAGE = "https://mpnhugdjsechtkugnjqz.supabase.co/storage/v1/object/public/assets/social-preview.webp";
-  const ogImage = challenge.imageUrl || DEFAULT_OG_IMAGE;
+  const ogImage = challenge.image || DEFAULT_OG_IMAGE;
   const ogTitle = `${challenge.name} — LegacyFit Walking Challenge`;
   const ogDescription = `Walk ${challenge.totalMiles} miles through the ${challenge.name} challenge on LegacyFit. Every mile unlocks a powerful story.`;
 
