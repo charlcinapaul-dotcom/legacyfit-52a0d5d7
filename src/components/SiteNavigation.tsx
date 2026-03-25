@@ -122,7 +122,7 @@ export const SiteNavigation = () => {
                 Home
               </Link>
             )}
-            {navItems.map((item) => (
+            {mobileNavItems.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
