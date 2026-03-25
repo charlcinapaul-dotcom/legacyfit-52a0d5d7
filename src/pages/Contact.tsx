@@ -1,9 +1,20 @@
+import { Helmet } from "react-helmet-async";
 import { PageLayout } from "@/components/PageLayout";
 import { Link } from "react-router-dom";
 import { Mail, MessageCircle, FileText } from "lucide-react";
 
 const Contact = () => (
   <PageLayout>
+    <Helmet>
+      <title>Contact LegacyFit — Get Support</title>
+      <meta name="description" content="Reach out to the LegacyFit team for support, questions about challenges, or content inquiries. We're here to help." />
+      <meta property="og:title" content="Contact LegacyFit — Get Support" />
+      <meta property="og:description" content="Get in touch with the LegacyFit team for support, billing questions, or general inquiries." />
+      <meta property="og:type" content="website" />
+      <meta name="twitter:card" content="summary" />
+      <meta name="twitter:title" content="Contact LegacyFit — Get Support" />
+      <link rel="canonical" href={typeof window !== "undefined" ? window.location.href : "https://legacyfitvirtual.com/contact"} />
+    </Helmet>
     <section className="py-20 px-4">
       <div className="container mx-auto max-w-3xl">
         <div className="text-center mb-12">

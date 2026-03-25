@@ -1,10 +1,22 @@
+import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { ArrowLeft, BookOpen, Shield, FileText, Mail } from "lucide-react";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
 
+
 const Legal = () => {
   return (
     <div className="min-h-screen bg-background w-full max-w-full overflow-x-hidden">
+      <Helmet>
+        <title>Legal Information — LegacyFit Terms & Policies</title>
+        <meta name="description" content="LegacyFit legal information including terms of use, content attribution, and contact details for legal inquiries." />
+        <meta property="og:title" content="Legal Information — LegacyFit" />
+        <meta property="og:description" content="Review LegacyFit's terms of use, content attribution policy, and legal contact information." />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="Legal Information — LegacyFit" />
+        <link rel="canonical" href={typeof window !== "undefined" ? window.location.href : "https://legacyfitvirtual.com/legal"} />
+      </Helmet>
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
