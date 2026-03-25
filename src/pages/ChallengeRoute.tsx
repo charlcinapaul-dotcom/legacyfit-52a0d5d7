@@ -763,7 +763,7 @@ const ChallengeRoute = () => {
                           )}
                           {/* Audio controls — only shown on the most recently unlocked milestone */}
                           {isLastUnlocked && (milestone.audioUrl || milestone.description) && (
-                            <div className="flex items-center gap-2 mt-2">
+                            <div className="flex items-center gap-2 mt-2 flex-wrap">
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -775,6 +775,9 @@ const ChallengeRoute = () => {
                                 <RotateCcw className="w-3 h-3" />
                                 {isPlaying ? "Playing…" : "Replay"}
                               </Button>
+                              {audioError && (
+                                <span className="text-xs text-amber-500">{audioError}</span>
+                              )}
                             </div>
                           )}
                           {isUnlocked && (milestone.latitude || milestone.location) && (
