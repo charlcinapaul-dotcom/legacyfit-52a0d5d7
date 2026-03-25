@@ -69,7 +69,7 @@ export function useMilestoneAudio() {
       const audio = new Audio(url);
       audioRef.current = audio;
 
-      audio.onplay = () => setIsPlaying(true);
+      audio.onplay = () => { setIsPlaying(true); setAudioError(null); };
       audio.onended = () => setIsPlaying(false);
       audio.onerror = () => setIsPlaying(false);
 
