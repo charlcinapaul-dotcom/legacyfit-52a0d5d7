@@ -274,6 +274,14 @@ export default function Passport() {
                     Unlocked: {new Date(selectedStamp.unlockedAt).toLocaleDateString()}
                   </p>
                 )}
+                {selectedStamp.isUnlocked && (
+                  <div className="w-full mt-4">
+                    <ShareMenu
+                      stampName={selectedStamp.stamp_title || selectedStamp.title}
+                      stampImageUrl={selectedStamp.stamp_image_url}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           )}
