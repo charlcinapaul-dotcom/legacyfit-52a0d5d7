@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PassportStamp } from "@/components/PassportStamp";
 import { usePassportStamps, useChallenges, type StampWithMilestone } from "@/hooks/usePassportStamps";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ShareMenu } from "@/components/ShareMenu";
 
 export default function Passport() {
   const navigate = useNavigate();
@@ -272,6 +273,14 @@ export default function Passport() {
                   <p className="text-xs text-muted-foreground mt-4">
                     Unlocked: {new Date(selectedStamp.unlockedAt).toLocaleDateString()}
                   </p>
+                )}
+                {selectedStamp.isUnlocked && (
+                  <div className="w-full mt-4">
+                    <ShareMenu
+                      stampName={selectedStamp.stamp_title || selectedStamp.title}
+                      stampImageUrl={selectedStamp.stamp_image_url}
+                    />
+                  </div>
                 )}
               </div>
             </div>
