@@ -29,26 +29,6 @@ export const CompletionCertificate = ({
     link.click();
   };
 
-  const handleShare = async () => {
-    if (!certificateImageUrl) return;
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: `I completed the ${challengeName} challenge!`,
-          text: `I walked ${totalMiles} miles and completed the ${challengeName} LegacyFit challenge! 🏆`,
-          url: window.location.href,
-        });
-      } else {
-        await navigator.clipboard.writeText(
-          `I walked ${totalMiles} miles and completed the ${challengeName} LegacyFit challenge! 🏆`
-        );
-        toast.success("Copied to clipboard!");
-      }
-    } catch {
-      // User cancelled share
-    }
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
@@ -98,14 +78,9 @@ export const CompletionCertificate = ({
               <Download className="w-4 h-4 mr-2" />
               Download
             </Button>
-            <Button
-              variant="outline"
-              onClick={handleShare}
-              className="flex-1"
-            >
-              <Share2 className="w-4 h-4 mr-2" />
-              Share
-            </Button>
+            <div className="flex-1">
+              <ShareMenu stampName={challengeName} stampImageUrl={certificateImageUrl} />
+            </div>
           </div>
         </div>
       </DialogContent>
