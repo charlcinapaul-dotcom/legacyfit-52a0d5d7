@@ -1,5 +1,6 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { ArrowLeft, Book, MapPin, Lock, ExternalLink } from "lucide-react";
+import { ShareMenu } from "@/components/ShareMenu";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -281,6 +282,15 @@ export default function ChallengePassport() {
                   </p>
                 )}
               </div>
+
+              {selectedStamp.isUnlocked && (
+                <div className="w-full mt-2">
+                  <ShareMenu
+                    stampName={selectedStamp.stamp_title || selectedStamp.title}
+                    stampImageUrl={selectedStamp.stamp_image_url}
+                  />
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
