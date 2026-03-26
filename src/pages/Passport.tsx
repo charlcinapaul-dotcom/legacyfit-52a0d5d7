@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PassportStamp } from "@/components/PassportStamp";
 import { usePassportStamps, useChallenges, type StampWithMilestone } from "@/hooks/usePassportStamps";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ShareMenu } from "@/components/ShareMenu";
 
 export default function Passport() {
   const navigate = useNavigate();
