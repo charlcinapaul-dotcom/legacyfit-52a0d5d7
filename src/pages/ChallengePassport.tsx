@@ -282,6 +282,15 @@ export default function ChallengePassport() {
                   </p>
                 )}
               </div>
+
+              {selectedStamp.isUnlocked && (
+                <div className="w-full mt-2">
+                  <ShareMenu
+                    stampName={selectedStamp.stamp_title || selectedStamp.title}
+                    stampImageUrl={selectedStamp.stamp_image_url}
+                  />
+                </div>
+              )}
             </div>
           )}
         </DialogContent>
