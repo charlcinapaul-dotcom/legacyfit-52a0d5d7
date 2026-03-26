@@ -36,6 +36,32 @@ export function ShareMenu({ stampName, stampImageUrl }: ShareMenuProps) {
 
   const caption = `I just earned the ${stampName} stamp on LegacyFit! Every Mile Unlocks History. 👟 ${BASE_URL}`;
 
+  const handleNativeShare = async () => {
+    try {
+      const shareData: ShareData = {
+        title: "LegacyFit",
+        text: caption,
+        url: BASE_URL,
+      };
+      // Attach image file if available and the API supports it
+      if (stampImageUrl && navigator.canShare) {
+        try {
+          const response = await fetch(stampImageUrl);
+          const blob = await response.blob();
+          const file = new File([blob], `legacyfit-${stampName.replace(/\s+/g, "-").toLowerCase()}-stamp.png`, { type: blob.type });
+          if (navigator.canShare({ files: [file] })) {
+            shareData.files = [file];
+          }
+        } catch {
+          // image attachment best-effort
+        }
+      }
+      await navigator.share(shareData);
+    } catch {
+      // user cancelled or share failed — silent
+    }
+  };
+
   const handleFacebook = () => {
     const quote = encodeURIComponent(`I just earned the ${stampName} stamp on LegacyFit! Every Mile Unlocks History.`);
     const url = encodeURIComponent(BASE_URL);
@@ -50,7 +76,6 @@ export function ShareMenu({ stampName, stampImageUrl }: ShareMenuProps) {
   };
 
   const handleInstagramTikTok = async () => {
-    // Download stamp image if available
     if (stampImageUrl) {
       try {
         const response = await fetch(stampImageUrl);
@@ -65,7 +90,6 @@ export function ShareMenu({ stampName, stampImageUrl }: ShareMenuProps) {
         // silent — image download best-effort
       }
     }
-    // Copy caption
     try {
       await navigator.clipboard.writeText(caption);
     } catch {
@@ -75,12 +99,21 @@ export function ShareMenu({ stampName, stampImageUrl }: ShareMenuProps) {
     setOpen(false);
   };
 
+  // On mobile with Web Share API available, skip the popover entirely
+  const handleShareButtonClick = () => {
+    if (typeof navigator !== "undefined" && navigator.share) {
+      handleNativeShare();
+    } else {
+      setOpen((v) => !v);
+    }
+  };
+
   return (
     <div className="relative w-full" ref={menuRef}>
       <Button
         variant="outline"
         className="w-full border-primary/40 text-primary hover:bg-primary/10 gap-2"
-        onClick={() => setOpen((v) => !v)}
+        onClick={handleShareButtonClick}
       >
         <Share2 className="w-4 h-4" />
         Share
