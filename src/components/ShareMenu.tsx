@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { Share2, Facebook, Twitter, Instagram } from "lucide-react";
+import { Share2, Facebook, Twitter, Instagram, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 interface ShareMenuProps {
   stampName: string;
   stampImageUrl?: string | null;
+  shareUrl?: string;
 }
 
 // TikTok icon (not in lucide)
@@ -19,7 +20,8 @@ function TikTokIcon({ className }: { className?: string }) {
 
 const BASE_URL = "https://legacyfitvirtual.com";
 
-export function ShareMenu({ stampName, stampImageUrl }: ShareMenuProps) {
+export function ShareMenu({ stampName, stampImageUrl, shareUrl }: ShareMenuProps) {
+  const resolvedUrl = shareUrl || BASE_URL;
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -148,6 +150,21 @@ export function ShareMenu({ stampName, stampImageUrl }: ShareMenuProps) {
           >
             <TikTokIcon className="w-4 h-4 flex-shrink-0" />
             <span>Share on TikTok</span>
+          </button>
+          <button
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(resolvedUrl);
+                toast.success("Link copied to clipboard!");
+              } catch {
+                toast.error("Could not copy link");
+              }
+              setOpen(false);
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-primary/10 transition-colors text-foreground"
+          >
+            <Link className="w-4 h-4 flex-shrink-0 text-primary" />
+            <span>Copy Link</span>
           </button>
         </div>
       )}
