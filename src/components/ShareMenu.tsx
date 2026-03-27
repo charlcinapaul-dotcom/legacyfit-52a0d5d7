@@ -6,6 +6,7 @@ import { toast } from "sonner";
 interface ShareMenuProps {
   stampName: string;
   stampImageUrl?: string | null;
+  shareUrl?: string;
 }
 
 // TikTok icon (not in lucide)
@@ -19,7 +20,8 @@ function TikTokIcon({ className }: { className?: string }) {
 
 const BASE_URL = "https://legacyfitvirtual.com";
 
-export function ShareMenu({ stampName, stampImageUrl }: ShareMenuProps) {
+export function ShareMenu({ stampName, stampImageUrl, shareUrl }: ShareMenuProps) {
+  const resolvedUrl = shareUrl || BASE_URL;
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
