@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Share2, Facebook, Twitter, Instagram } from "lucide-react";
+import { Share2, Facebook, Twitter, Instagram, Link } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
