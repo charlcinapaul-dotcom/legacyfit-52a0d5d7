@@ -271,7 +271,7 @@ export default function ChallengePassport() {
                     "{selectedStamp.stamp_copy}"
                   </p>
                 )}
-                {selectedStamp.historical_event && (
+                {selectedStamp.historical_event && selectedStamp.historical_event !== selectedStamp.stamp_copy && (
                   <p className="text-sm text-muted-foreground mt-4">
                     {selectedStamp.historical_event}
                   </p>
