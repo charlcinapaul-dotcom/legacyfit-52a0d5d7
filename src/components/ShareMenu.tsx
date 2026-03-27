@@ -151,6 +151,21 @@ export function ShareMenu({ stampName, stampImageUrl, shareUrl }: ShareMenuProps
             <TikTokIcon className="w-4 h-4 flex-shrink-0" />
             <span>Share on TikTok</span>
           </button>
+          <button
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(resolvedUrl);
+                toast.success("Link copied to clipboard!");
+              } catch {
+                toast.error("Could not copy link");
+              }
+              setOpen(false);
+            }}
+            className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-primary/10 transition-colors text-foreground"
+          >
+            <Link className="w-4 h-4 flex-shrink-0 text-primary" />
+            <span>Copy Link</span>
+          </button>
         </div>
       )}
     </div>

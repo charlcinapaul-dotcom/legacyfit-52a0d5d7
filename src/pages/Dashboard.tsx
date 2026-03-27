@@ -396,20 +396,28 @@ const Dashboard = () => {
               Ready to unlock more history today?
             </p>
 
-            {/* Streak Banner — only when user has an active streak */}
+            {/* Streak Banner + Share — only when user has an active streak */}
             {hasStreak && (
-              <div
-                className="border border-primary/40 rounded-xl p-4 mb-4 flex items-center gap-4"
-                style={{ background: "linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05))" }}
-              >
-                <span className="text-3xl leading-none">🔥</span>
-                <div>
-                  <p className="text-lg font-bold text-primary leading-tight">
-                    {streakData!.current_streak}-Week Streak
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Keep it going — log miles today to protect your streak
-                  </p>
+              <div className="flex gap-3 mb-4">
+                <div
+                  className="flex-1 border border-primary/20 rounded-lg p-3 flex items-center gap-4"
+                  style={{ background: "linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05))" }}
+                >
+                  <span className="text-3xl leading-none">🔥</span>
+                  <div>
+                    <p className="text-lg font-bold text-primary leading-tight">
+                      {streakData!.current_streak}-Week Streak
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Keep it going — log miles today to protect your streak
+                    </p>
+                  </div>
+                </div>
+                <div className="border border-primary/20 rounded-lg p-3 flex items-center">
+                  <ShareMenu
+                    stampName={activeChallengeData?.challenge?.title || "LegacyFit"}
+                    shareUrl="https://legacyfitvirtual.com"
+                  />
                 </div>
               </div>
             )}
