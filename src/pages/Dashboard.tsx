@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { ShareMenu } from "@/components/ShareMenu";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -415,7 +416,7 @@ const Dashboard = () => {
                 </div>
                 <div className="border border-primary/20 rounded-lg p-3 flex items-center">
                   <ShareMenu
-                    stampName={activeChallengeData?.challenge?.title || "LegacyFit"}
+                    stampName={activeChallenge?.slug || "LegacyFit"}
                     shareUrl="https://legacyfitvirtual.com"
                   />
                 </div>
