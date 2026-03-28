@@ -320,15 +320,6 @@ const Dashboard = () => {
     checkCompletions();
   }, [user, userChallenges]);
 
-  const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error("Error signing out");
-    } else {
-      toast.success("Signed out successfully");
-      navigate("/");
-    }
-  };
 
   if (loading) {
     return (
