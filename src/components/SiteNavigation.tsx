@@ -17,7 +17,12 @@ const mobileNavItems = [
   { label: "Why We Give", to: "/why-we-give" },
 ];
 
-export const SiteNavigation = () => {
+interface SiteNavigationProps {
+  variant?: 'default' | 'dashboard';
+  bibNumber?: string | null;
+}
+
+export const SiteNavigation = ({ variant = 'default', bibNumber }: SiteNavigationProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const location = useLocation();
