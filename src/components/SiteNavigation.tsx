@@ -82,7 +82,19 @@ export const SiteNavigation = ({ variant = 'default', bibNumber }: SiteNavigatio
 
         {/* Desktop auth buttons */}
         <div className="hidden lg:flex items-center gap-3">
-          {user ? (
+          {variant === 'dashboard' ? (
+            <>
+              {bibNumber && (
+                <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-secondary border border-border">
+                  <span className="text-xs text-muted-foreground">BIB</span>
+                  <span className="text-sm font-mono text-primary">{bibNumber}</span>
+                </div>
+              )}
+              <Button variant="outline" size="sm" onClick={handleSignOut}>
+                Sign Out
+              </Button>
+            </>
+          ) : user ? (
             <>
               <Link to="/dashboard">
                 <Button variant="ghost" size="sm">Dashboard</Button>
@@ -141,7 +153,19 @@ export const SiteNavigation = ({ variant = 'default', bibNumber }: SiteNavigatio
               </Link>
             ))}
             <div className="border-t border-border mt-2 pt-3 flex flex-col gap-2">
-              {user ? (
+              {variant === 'dashboard' ? (
+                <>
+                  {bibNumber && (
+                    <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-secondary border border-border w-fit">
+                      <span className="text-xs text-muted-foreground">BIB</span>
+                      <span className="text-sm font-mono text-primary">{bibNumber}</span>
+                    </div>
+                  )}
+                  <Button variant="outline" className="w-full" onClick={handleSignOut}>
+                    Sign Out
+                  </Button>
+                </>
+              ) : user ? (
                 <>
                   <Link to="/dashboard">
                     <Button variant="ghost" className="w-full justify-start">Dashboard</Button>
