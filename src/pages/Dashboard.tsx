@@ -345,33 +345,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-gold flex items-center justify-center">
-                <Footprints className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="text-xl font-bold text-gradient-gold">LegacyFit</span>
-            </Link>
-            <Link to="/" className="px-3 py-2 rounded-md text-sm font-medium text-primary hover:text-primary/80 hover:bg-secondary/50 transition-colors">
-              Home
-            </Link>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            {profile?.bib_number && (
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-secondary border border-border">
-                <span className="text-xs text-muted-foreground">BIB</span>
-                <span className="text-sm font-mono text-primary">{profile.bib_number}</span>
-              </div>
-            )}
-            <Button variant="ghost" size="icon" onClick={handleSignOut}>
-              <LogOut className="w-5 h-5" />
-            </Button>
-          </div>
-        </div>
-      </nav>
+      <SiteNavigation variant="dashboard" bibNumber={profile?.bib_number} />
 
       {/* Past-due payment warning */}
       <PastDueWarningBanner userId={user?.id ?? null} />
