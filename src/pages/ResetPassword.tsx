@@ -19,27 +19,21 @@ const ResetPassword = () => {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (event === "PASSWORD_RECOVERY" && session) {
+      (event) => {
+        if (event === "PASSWORD_RECOVERY") {
           setSessionValid(true);
           setChecking(false);
         }
       }
     );
 
-    // Also check if we already have a session (user might have landed with tokens already exchanged)
-    const checkSession = async () => {
-      // Give the auth state change listener a moment to fire first
-      await new Promise((r) => setTimeout(r, 1500));
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        setSessionValid(true);
-      }
-      setChecking(false);
-    };
-    checkSession();
+    // Timeout fallback — if PASSWORD_RECOVERY never fires, show invalid link
+    const timer = setTimeout(() => setChecking(false), 4000);
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timer);
+    };
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
