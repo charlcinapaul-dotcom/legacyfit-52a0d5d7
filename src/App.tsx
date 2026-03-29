@@ -28,6 +28,7 @@ const AdminValidate = lazy(() => import("./pages/AdminValidate"));
 const Export = lazy(() => import("./pages/Export"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -84,6 +85,7 @@ const App = () => {
             <Route path="/export" element={<Export />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
