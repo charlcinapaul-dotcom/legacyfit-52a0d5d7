@@ -157,10 +157,7 @@ export default function ChallengePassport() {
                 </Card>
               ) : (
                 stamps.map((stamp, index) => {
-                  const mapsUrl =
-                    stamp.latitude && stamp.longitude
-                      ? `https://www.google.com/maps/search/?api=1&query=${stamp.latitude},${stamp.longitude}`
-                      : null;
+                  const hasCoords = !!(stamp.latitude && stamp.longitude);
 
                   return (
                     <Card
@@ -189,13 +186,16 @@ export default function ChallengePassport() {
                           </p>
                         </div>
                         <div className="flex-shrink-0">
-                          {stamp.isUnlocked && mapsUrl ? (
-                            <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
-                              <Button size="sm" variant="outline" className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10 gap-1.5">
-                                <ExternalLink className="w-3.5 h-3.5" />
-                                View on Map
-                              </Button>
-                            </a>
+                          {stamp.isUnlocked && hasCoords ? (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10 gap-1.5"
+                              onClick={() => openMap(stamp.latitude!, stamp.longitude!, stamp.location_name || stamp.stamp_title || stamp.title)}
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                              View on Map
+                            </Button>
                           ) : (
                             <div className="flex items-center gap-1.5 text-muted-foreground text-xs">
                               <Lock className="w-3.5 h-3.5" />
