@@ -10,6 +10,7 @@ const navItems = [
   { label: "How It Works", to: "/how-it-works" },
   { label: "Leaderboard", to: "/leaderboard" },
   { label: "About", to: "/about" },
+  { label: "Why We Give", to: "/why-we-give" },
 ];
 
 const mobileNavItems = [
