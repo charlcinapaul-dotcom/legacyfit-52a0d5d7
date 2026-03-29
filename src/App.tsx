@@ -28,6 +28,7 @@ const AdminValidate = lazy(() => import("./pages/AdminValidate"));
 const Export = lazy(() => import("./pages/Export"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
