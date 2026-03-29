@@ -1,4 +1,5 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
+import { openMap } from "@/utils/openMap";
 import { ArrowLeft, Book, MapPin, Lock, ExternalLink } from "lucide-react";
 import { ShareMenu } from "@/components/ShareMenu";
 import { Button } from "@/components/ui/button";

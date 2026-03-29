@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { openMap, openMapByQuery } from "@/utils/openMap";
 import { Helmet } from "react-helmet-async";
 import { JourneyMap } from "@/components/JourneyMap";
 import { useParams, Link } from "react-router-dom";
@@ -812,7 +813,7 @@ const ChallengeRoute = () => {
                               className={cn("gap-1.5 text-xs mt-2", colors.text)}
                               onClick={() => {
                                 if (milestone.latitude && milestone.longitude) {
-                                  openMap(milestone.latitude, milestone.longitude, milestone.location_name || milestone.location);
+                                  openMap(milestone.latitude, milestone.longitude, milestone.location);
                                 } else {
                                   openMapByQuery(milestone.location);
                                 }
