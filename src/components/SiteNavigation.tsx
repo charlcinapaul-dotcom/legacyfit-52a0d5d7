@@ -13,24 +13,21 @@ const navItems = [
   { label: "Why We Give", to: "/why-we-give" },
 ];
 
-const mobileNavItems = [
-  ...navItems,
-  { label: "Why We Give", to: "/why-we-give" },
-];
-
 interface SiteNavigationProps {
-  variant?: 'default' | 'dashboard';
+  variant?: "default" | "dashboard";
   bibNumber?: string | null;
 }
 
-export const SiteNavigation = ({ variant = 'default', bibNumber }: SiteNavigationProps) => {
+export const SiteNavigation = ({ variant = "default", bibNumber }: SiteNavigationProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
     });
     supabase.auth.getSession().then(({ data: { session } }) => setUser(session?.user ?? null));
@@ -83,7 +80,7 @@ export const SiteNavigation = ({ variant = 'default', bibNumber }: SiteNavigatio
 
         {/* Desktop auth buttons */}
         <div className="hidden lg:flex items-center gap-3">
-          {variant === 'dashboard' ? (
+          {variant === "dashboard" ? (
             <>
               {bibNumber && (
                 <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-secondary border border-border">
@@ -98,7 +95,9 @@ export const SiteNavigation = ({ variant = 'default', bibNumber }: SiteNavigatio
           ) : user ? (
             <>
               <Link to="/dashboard">
-                <Button variant="ghost" size="sm">Dashboard</Button>
+                <Button variant="ghost" size="sm">
+                  Dashboard
+                </Button>
               </Link>
               <Button variant="outline" size="sm" onClick={handleSignOut}>
                 Sign Out
@@ -107,7 +106,9 @@ export const SiteNavigation = ({ variant = 'default', bibNumber }: SiteNavigatio
           ) : (
             <>
               <Link to="/auth">
-                <Button variant="ghost" size="sm">Sign In</Button>
+                <Button variant="ghost" size="sm">
+                  Sign In
+                </Button>
               </Link>
               <Link to="/auth?mode=signup">
                 <Button size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90">
@@ -154,7 +155,7 @@ export const SiteNavigation = ({ variant = 'default', bibNumber }: SiteNavigatio
               </Link>
             ))}
             <div className="border-t border-border mt-2 pt-3 flex flex-col gap-2">
-              {variant === 'dashboard' ? (
+              {variant === "dashboard" ? (
                 <>
                   {bibNumber && (
                     <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-secondary border border-border w-fit">
@@ -169,7 +170,9 @@ export const SiteNavigation = ({ variant = 'default', bibNumber }: SiteNavigatio
               ) : user ? (
                 <>
                   <Link to="/dashboard">
-                    <Button variant="ghost" className="w-full justify-start">Dashboard</Button>
+                    <Button variant="ghost" className="w-full justify-start">
+                      Dashboard
+                    </Button>
                   </Link>
                   <Button variant="outline" className="w-full" onClick={handleSignOut}>
                     Sign Out
@@ -178,12 +181,12 @@ export const SiteNavigation = ({ variant = 'default', bibNumber }: SiteNavigatio
               ) : (
                 <>
                   <Link to="/auth">
-                    <Button variant="ghost" className="w-full justify-start">Sign In</Button>
+                    <Button variant="ghost" className="w-full justify-start">
+                      Sign In
+                    </Button>
                   </Link>
                   <Link to="/auth?mode=signup">
-                    <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                      Join
-                    </Button>
+                    <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">Join</Button>
                   </Link>
                 </>
               )}
