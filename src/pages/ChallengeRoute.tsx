@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { openMap, openMapByQuery } from "@/utils/openMap";
 import { Helmet } from "react-helmet-async";
 import { JourneyMap } from "@/components/JourneyMap";
 import { useParams, Link } from "react-router-dom";
@@ -806,25 +807,21 @@ const ChallengeRoute = () => {
                             </div>
                           )}
                           {isUnlocked && (milestone.latitude || milestone.location) && (
-                            <a
-                              href={
-                                milestone.latitude && milestone.longitude
-                                  ? `https://www.google.com/maps/search/?api=1&query=${milestone.latitude},${milestone.longitude}`
-                                  : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(milestone.location)}`
-                              }
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="mt-2 inline-flex"
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className={cn("gap-1.5 text-xs mt-2", colors.text)}
+                              onClick={() => {
+                                if (milestone.latitude && milestone.longitude) {
+                                  openMap(milestone.latitude, milestone.longitude, milestone.location);
+                                } else {
+                                  openMapByQuery(milestone.location);
+                                }
+                              }}
                             >
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className={cn("gap-1.5 text-xs", colors.text)}
-                              >
-                                <MapPin className="w-3 h-3" />
-                                View on Map
-                              </Button>
-                            </a>
+                              <MapPin className="w-3 h-3" />
+                              View on Map
+                            </Button>
                           )}
                         </div>
                       </div>
