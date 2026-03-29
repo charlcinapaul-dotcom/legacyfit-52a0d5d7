@@ -141,7 +141,7 @@ export const SiteNavigation = ({ variant = "default", bibNumber }: SiteNavigatio
                 Home
               </Link>
             )}
-            {mobileNavItems.map((item) => (
+            {navItems.map((item) => (
               <Link
                 key={item.to}
                 to={item.to}
