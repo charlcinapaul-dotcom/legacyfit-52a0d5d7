@@ -1103,7 +1103,117 @@ export default function AdminValidate() {
             </div>
           )}
         </div>
-      </main>
+
+        {/* ── Generate Missing Audio ──────────────────────────────────── */}
+        <div className="mt-12 pt-8 border-t border-border">
+          <div className="flex items-center gap-2 mb-2">
+            <Volume2 className="w-5 h-5 text-primary" />
+            <h2 className="text-xl font-bold text-foreground">Generate Missing Audio</h2>
+          </div>
+          <p className="text-muted-foreground text-sm leading-relaxed mb-1">
+            Generates ElevenLabs audio narration for all milestones missing an{" "}
+            <code className="text-primary bg-primary/10 px-1 py-0.5 rounded text-xs">audio_url</code>.
+            Runs in batches of 10 — click multiple times to complete all milestones.
+            Already-generated audio is skipped.
+          </p>
+          {audioMissingCount && (
+            <p className="text-xs text-muted-foreground mb-5">
+              <strong className="text-foreground">{audioMissingCount.missing}</strong> of{" "}
+              <strong className="text-foreground">{audioMissingCount.total}</strong> missing
+            </p>
+          )}
+
+          <div className="flex flex-wrap items-center gap-3">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  disabled={resetAudioLoading || audioGenLoading}
+                  variant="destructive"
+                  className="gap-2"
+                >
+                  {resetAudioLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <XCircle className="w-4 h-4" />
+                  )}
+                  {resetAudioLoading ? "Resetting…" : "Reset Audio URLs"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reset all audio URLs?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will clear the audio_url for every milestone in the database.
+                    You will need to regenerate all audio files afterwards. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={resetAudioUrls}>
+                    Yes, reset all audio
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <Button
+              onClick={generateMissingAudio}
+              disabled={audioGenLoading || resetAudioLoading}
+              className="gap-2 bg-[#D4AF37] text-black hover:bg-[#C4A030]"
+            >
+              {audioGenLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Volume2 className="w-4 h-4" />
+              )}
+              {audioGenLoading ? "Generating audio…" : "Generate Missing Audio (batch of 10)"}
+            </Button>
+          </div>
+
+          {audioGenResults && (
+            <div className="mt-6 bg-card border border-border rounded-lg overflow-hidden">
+              <div className="px-4 py-3 bg-secondary/40 border-b border-border flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">
+                  Results — {audioGenResults.filter((r) => r.success).length}/{audioGenResults.length} successful
+                </span>
+              </div>
+              <ul className="divide-y divide-border">
+                {audioGenResults.map((r) => (
+                  <li key={r.milestoneId} className="px-4 py-3 flex items-center justify-between gap-3 text-sm">
+                    <div className="flex items-center gap-2.5">
+                      {r.success ? (
+                        <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-destructive flex-shrink-0" />
+                      )}
+                      <span className="text-foreground">{r.title}</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {r.success && r.url ? (
+                        <a
+                          href={r.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary underline underline-offset-2 truncate max-w-[180px]"
+                        >
+                          Listen
+                        </a>
+                      ) : r.error ? (
+                        <span className="text-xs text-destructive truncate max-w-[220px]">{r.error}</span>
+                      ) : null}
+                      <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm font-semibold ${
+                        r.success ? "bg-green-500/15 text-green-500" : "bg-destructive/15 text-destructive"
+                      }`}>
+                        {r.success ? "OK" : "FAIL"}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
     </div>
   );
 }
