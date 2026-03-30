@@ -1074,20 +1074,6 @@ export default function AdminValidate() {
             </Button>
           </div>
 
-            <Button
-              onClick={generateStamps}
-              disabled={stampGenLoading || resetStampsLoading}
-              className="gap-2"
-            >
-              {stampGenLoading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Award className="w-4 h-4" />
-              )}
-              {stampGenLoading ? "Generating stamps…" : "Generate Missing Stamps (batch of 10)"}
-            </Button>
-          </div>
-
           {stampGenResults && (
             <div className="mt-6 bg-card border border-border rounded-lg overflow-hidden">
               <div className="px-4 py-3 bg-secondary/40 border-b border-border flex items-center gap-2">
