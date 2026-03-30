@@ -330,43 +330,102 @@ export default function AdminValidate() {
     } catch (e) {
       toast.error("Reset failed.");
     } finally {
-      setResetStampsLoading(false);
+    setResetStampsLoading(false);
     }
   };
 
-  // ── generate passport stamps ───────────────────────────────────────────────
-  const generateStamps = async () => {
-    setStampGenLoading(true);
-    setStampGenResults(null);
+  // ── load audio missing count ──────────────────────────────────────────────
+  const loadAudioMissingCount = async () => {
+    const { data: all } = await supabase.from("milestones").select("id, audio_url");
+    if (!all) return;
+    const missing = all.filter((m) => !m.audio_url).length;
+    setAudioMissingCount({ missing, total: all.length });
+  };
+
+  // ── reset audio URLs ──────────────────────────────────────────────────────
+  const resetAudioUrls = async () => {
+    setResetAudioLoading(true);
+    try {
+      const { data: withAudio, error: fetchErr } = await supabase
+        .from("milestones")
+        .select("id")
+        .not("audio_url", "is", null);
+      if (fetchErr) { toast.error(`Fetch failed: ${fetchErr.message}`); return; }
+      if (!withAudio?.length) { toast.info("No milestones have audio URLs to reset."); return; }
+
+      const ids = withAudio.map((m) => m.id);
+      const { error: updateErr } = await supabase
+        .from("milestones")
+        .update({ audio_url: null })
+        .in("id", ids);
+      if (updateErr) { toast.error(`Reset failed: ${updateErr.message}`); return; }
+
+      toast.success(`Reset ${ids.length} milestone audio URLs.`);
+      await Promise.all([loadAudioMissingCount(), loadReadiness()]);
+    } catch {
+      toast.error("Reset failed.");
+    } finally {
+      setResetAudioLoading(false);
+    }
+  };
+
+  // ── generate missing audio (batch) ────────────────────────────────────────
+  const generateMissingAudio = async () => {
+    setAudioGenLoading(true);
+    setAudioGenResults(null);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
       const token = sessionData.session?.access_token;
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const url = `https://${projectId}.supabase.co/functions/v1/generate-all-stamps`;
 
-      toast.info("Stamp generation started — this may take several minutes…");
+      // Fetch milestones missing audio
+      const { data: missing } = await supabase
+        .from("milestones")
+        .select("id, title, audio_url")
+        .is("audio_url", null)
+        .order("challenge_id")
+        .order("order_index")
+        .limit(10);
 
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ limit: 10 }),
-      });
-
-      const json = await res.json();
-      if (!res.ok) {
-        toast.error(json.error ?? "Stamp generation failed.");
+      if (!missing?.length) {
+        toast.info("All milestones already have audio!");
+        setAudioGenLoading(false);
         return;
       }
-      setStampGenResults(json.results ?? []);
-      const successCount = (json.results ?? []).filter((r: ImageGenResult) => r.success).length;
-      toast.success(`Done! ${successCount} stamp(s) generated.`);
+
+      toast.info(`Generating audio for ${missing.length} milestones…`);
+
+      const results: ImageGenResult[] = [];
+      for (const ms of missing) {
+        try {
+          const url = `https://${projectId}.supabase.co/functions/v1/generate-milestone-audio`;
+          const res = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ milestoneId: ms.id }),
+          });
+          const json = await res.json();
+          if (json.audioUrl || json.success) {
+            results.push({ milestoneId: ms.id, title: ms.title, success: true, url: json.audioUrl });
+          } else {
+            results.push({ milestoneId: ms.id, title: ms.title, success: false, error: json.error || json.warning || "Unknown" });
+          }
+        } catch (e) {
+          results.push({ milestoneId: ms.id, title: ms.title, success: false, error: e instanceof Error ? e.message : "Unknown" });
+        }
+      }
+
+      setAudioGenResults(results);
+      const successCount = results.filter((r) => r.success).length;
+      toast.success(`Done! ${successCount}/${results.length} audio files generated.`);
+      await Promise.all([loadAudioMissingCount(), loadReadiness()]);
     } catch {
-      toast.error("Failed to reach stamp generation function.");
+      toast.error("Audio generation failed.");
     } finally {
-      setStampGenLoading(false);
+      setAudioGenLoading(false);
     }
   };
 
