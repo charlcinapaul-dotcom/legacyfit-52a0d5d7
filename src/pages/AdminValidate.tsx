@@ -143,6 +143,7 @@ export default function AdminValidate() {
   const [stampGenLoading, setStampGenLoading] = useState(false);
   const [stampGenResults, setStampGenResults] = useState<ImageGenResult[] | null>(null);
   const [resetStampsLoading, setResetStampsLoading] = useState(false);
+  const [stampMissingCount, setStampMissingCount] = useState<{ missing: number; total: number } | null>(null);
   const [readiness, setReadiness] = useState<ReadinessRow[]>([]);
   const [readinessLoading, setReadinessLoading] = useState(false);
   const [audioGenLoading, setAudioGenLoading] = useState(false);
@@ -214,6 +215,7 @@ export default function AdminValidate() {
         supabase.from("challenges").select("id, title, slug, is_active").order("created_at", { ascending: false }),
         loadReadiness(),
         loadAudioMissingCount(),
+        loadStampMissingCount(),
       ]);
       setChallenges((ch as typeof challenges) ?? []);
     });
@@ -286,30 +288,25 @@ export default function AdminValidate() {
     }
   };
 
-  const PIONEERS_SLUGS = [
-    "madam-cj-walker","charles-drew","mae-jemison","daniel-hale-williams",
-    "patricia-bath","harriet-pickens","benjamin-o-davis-sr","willa-brown",
-    "cornelius-coffey","jane-bolin","constance-baker-motley","garrett-morgan","matthew-henson",
-  ];
+  // ── load stamp missing count ───────────────────────────────────────────────
+  const loadStampMissingCount = async () => {
+    const { data: all } = await supabase.from("milestones").select("id, stamp_image_url");
+    if (!all) return;
+    const missing = all.filter((m) => !m.stamp_image_url).length;
+    setStampMissingCount({ missing, total: all.length });
+  };
 
-  // ── reset Black Pioneers stamps (null out so they can be regenerated) ──────
-  const resetPioneersStamps = async () => {
+  // ── reset ALL stamps (null out so they can be regenerated) ────────────────
+  const resetAllStamps = async () => {
     setResetStampsLoading(true);
     try {
-      // Get challenge IDs for the 13 Pioneers
-      const { data: chs, error: chErr } = await supabase
-        .from("challenges")
-        .select("id")
-        .in("slug", PIONEERS_SLUGS);
-      if (chErr || !chs?.length) { toast.error("Could not find Pioneer challenges."); return; }
-      const challengeIds = chs.map((c) => c.id);
-
-      // Get milestone IDs for those challenges
+      // Get all milestone IDs that have a stamp
       const { data: ms, error: msErr } = await supabase
         .from("milestones")
         .select("id")
-        .in("challenge_id", challengeIds);
-      if (msErr || !ms?.length) { toast.error("No milestones found."); return; }
+        .not("stamp_image_url", "is", null);
+      if (msErr) { toast.error(`Fetch failed: ${msErr.message}`); return; }
+      if (!ms?.length) { toast.info("No milestones have stamp images to reset."); return; }
       const milestoneIds = ms.map((m) => m.id);
 
       // 1. Null out stamp_image_url on milestones
@@ -327,11 +324,11 @@ export default function AdminValidate() {
       if (deleteErr) { toast.error(`Stamp image delete failed: ${deleteErr.message}`); return; }
 
       toast.success(`Reset ${milestoneIds.length} milestone stamps — ready to regenerate!`);
-      await loadReadiness();
+      await Promise.all([loadReadiness(), loadStampMissingCount()]);
     } catch (e) {
       toast.error("Reset failed.");
     } finally {
-    setResetStampsLoading(false);
+      setResetStampsLoading(false);
     }
   };
 
@@ -459,6 +456,7 @@ export default function AdminValidate() {
       setStampGenResults(json.results ?? []);
       const successCount = (json.results ?? []).filter((r: ImageGenResult) => r.success).length;
       toast.success(`Done! ${successCount} stamp(s) generated.`);
+      await Promise.all([loadReadiness(), loadStampMissingCount()]);
     } catch {
       toast.error("Failed to reach stamp generation function.");
     } finally {
@@ -1022,28 +1020,59 @@ export default function AdminValidate() {
             <h2 className="text-xl font-bold text-foreground">Generate Passport Stamps</h2>
           </div>
           <p className="text-muted-foreground text-sm leading-relaxed mb-1">
-            Generates AI vintage parchment passport stamps for all 13 Black Pioneers challenge milestones.
-            Each stamp is unique: pioneer name, mileage banner, and historical location — navy/burgundy distressed ink on aged parchment (#F5EDD8).
+            Generates AI vintage parchment passport stamps for all challenge milestones missing a stamp image.
+            Runs in batches of 10 — click multiple times to complete all milestones.
+            Already-stamped milestones are skipped. Use <strong>Reset</strong> to force-regenerate.
           </p>
-          <p className="text-muted-foreground text-xs mb-5">
-            Runs in batches of 10 — click multiple times to complete all 78 milestones.
-            Already-stamped milestones are skipped. Use <strong>Reset</strong> first to force-regenerate with the new parchment style.
-          </p>
+          {stampMissingCount && (
+            <p className="text-sm font-medium text-primary mb-5">
+              {stampMissingCount.missing} of {stampMissingCount.total} missing
+            </p>
+          )}
 
           <div className="flex flex-wrap items-center gap-3">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  disabled={resetStampsLoading || stampGenLoading}
+                  variant="destructive"
+                  className="gap-2"
+                >
+                  {resetStampsLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <XCircle className="w-4 h-4" />
+                  )}
+                  {resetStampsLoading ? "Resetting…" : "Reset All Stamps"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reset All Stamp Images?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will clear stamp_image_url for ALL milestones across every challenge and delete all passport_stamp_images rows. You'll need to regenerate them afterwards.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={resetAllStamps}>Reset All</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
             <Button
-              onClick={resetPioneersStamps}
-              disabled={resetStampsLoading || stampGenLoading}
-              variant="destructive"
+              onClick={generateStamps}
+              disabled={stampGenLoading || resetStampsLoading}
               className="gap-2"
             >
-              {resetStampsLoading ? (
+              {stampGenLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <XCircle className="w-4 h-4" />
+                <Award className="w-4 h-4" />
               )}
-              {resetStampsLoading ? "Resetting…" : "Reset Pioneers Stamps"}
+              {stampGenLoading ? "Generating stamps…" : "Generate Missing Stamps (batch of 10)"}
             </Button>
+          </div>
 
             <Button
               onClick={generateStamps}
