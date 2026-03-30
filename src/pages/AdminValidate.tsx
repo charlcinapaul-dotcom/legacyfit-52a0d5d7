@@ -215,6 +215,7 @@ export default function AdminValidate() {
         supabase.from("challenges").select("id, title, slug, is_active").order("created_at", { ascending: false }),
         loadReadiness(),
         loadAudioMissingCount(),
+        loadStampMissingCount(),
       ]);
       setChallenges((ch as typeof challenges) ?? []);
     });
@@ -455,6 +456,7 @@ export default function AdminValidate() {
       setStampGenResults(json.results ?? []);
       const successCount = (json.results ?? []).filter((r: ImageGenResult) => r.success).length;
       toast.success(`Done! ${successCount} stamp(s) generated.`);
+      await Promise.all([loadReadiness(), loadStampMissingCount()]);
     } catch {
       toast.error("Failed to reach stamp generation function.");
     } finally {
@@ -1018,28 +1020,59 @@ export default function AdminValidate() {
             <h2 className="text-xl font-bold text-foreground">Generate Passport Stamps</h2>
           </div>
           <p className="text-muted-foreground text-sm leading-relaxed mb-1">
-            Generates AI vintage parchment passport stamps for all 13 Black Pioneers challenge milestones.
-            Each stamp is unique: pioneer name, mileage banner, and historical location — navy/burgundy distressed ink on aged parchment (#F5EDD8).
+            Generates AI vintage parchment passport stamps for all challenge milestones missing a stamp image.
+            Runs in batches of 10 — click multiple times to complete all milestones.
+            Already-stamped milestones are skipped. Use <strong>Reset</strong> to force-regenerate.
           </p>
-          <p className="text-muted-foreground text-xs mb-5">
-            Runs in batches of 10 — click multiple times to complete all 78 milestones.
-            Already-stamped milestones are skipped. Use <strong>Reset</strong> first to force-regenerate with the new parchment style.
-          </p>
+          {stampMissingCount && (
+            <p className="text-sm font-medium text-primary mb-5">
+              {stampMissingCount.missing} of {stampMissingCount.total} missing
+            </p>
+          )}
 
           <div className="flex flex-wrap items-center gap-3">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  disabled={resetStampsLoading || stampGenLoading}
+                  variant="destructive"
+                  className="gap-2"
+                >
+                  {resetStampsLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <XCircle className="w-4 h-4" />
+                  )}
+                  {resetStampsLoading ? "Resetting…" : "Reset All Stamps"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reset All Stamp Images?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will clear stamp_image_url for ALL milestones across every challenge and delete all passport_stamp_images rows. You'll need to regenerate them afterwards.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={resetAllStamps}>Reset All</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
             <Button
-              onClick={resetPioneersStamps}
-              disabled={resetStampsLoading || stampGenLoading}
-              variant="destructive"
+              onClick={generateStamps}
+              disabled={stampGenLoading || resetStampsLoading}
               className="gap-2"
             >
-              {resetStampsLoading ? (
+              {stampGenLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
-                <XCircle className="w-4 h-4" />
+                <Award className="w-4 h-4" />
               )}
-              {resetStampsLoading ? "Resetting…" : "Reset Pioneers Stamps"}
+              {stampGenLoading ? "Generating stamps…" : "Generate Missing Stamps (batch of 10)"}
             </Button>
+          </div>
 
             <Button
               onClick={generateStamps}
