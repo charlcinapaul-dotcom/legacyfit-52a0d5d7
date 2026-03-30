@@ -143,6 +143,7 @@ export default function AdminValidate() {
   const [stampGenLoading, setStampGenLoading] = useState(false);
   const [stampGenResults, setStampGenResults] = useState<ImageGenResult[] | null>(null);
   const [resetStampsLoading, setResetStampsLoading] = useState(false);
+  const [stampMissingCount, setStampMissingCount] = useState<{ missing: number; total: number } | null>(null);
   const [readiness, setReadiness] = useState<ReadinessRow[]>([]);
   const [readinessLoading, setReadinessLoading] = useState(false);
   const [audioGenLoading, setAudioGenLoading] = useState(false);

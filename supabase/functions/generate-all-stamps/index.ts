@@ -107,10 +107,10 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     if (!milestones || milestones.length === 0) {
-      console.log("No milestones found without stamp images for the 13 new challenges");
+      console.log("No milestones found without stamp images");
       return new Response(
         JSON.stringify({
-          message: "All milestones for the 13 new challenges already have stamp images",
+          message: "All milestones already have stamp images",
           generated: 0,
           results: [],
         }),
