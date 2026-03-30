@@ -21,6 +21,17 @@ import {
   Radio,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 // ── types ────────────────────────────────────────────────────────────────────
@@ -134,6 +145,10 @@ export default function AdminValidate() {
   const [resetStampsLoading, setResetStampsLoading] = useState(false);
   const [readiness, setReadiness] = useState<ReadinessRow[]>([]);
   const [readinessLoading, setReadinessLoading] = useState(false);
+  const [audioGenLoading, setAudioGenLoading] = useState(false);
+  const [audioGenResults, setAudioGenResults] = useState<ImageGenResult[] | null>(null);
+  const [resetAudioLoading, setResetAudioLoading] = useState(false);
+  const [audioMissingCount, setAudioMissingCount] = useState<{ missing: number; total: number } | null>(null);
 
   // ── readiness loader ───────────────────────────────────────────────────────
   const loadReadiness = async () => {
