@@ -287,30 +287,25 @@ export default function AdminValidate() {
     }
   };
 
-  const PIONEERS_SLUGS = [
-    "madam-cj-walker","charles-drew","mae-jemison","daniel-hale-williams",
-    "patricia-bath","harriet-pickens","benjamin-o-davis-sr","willa-brown",
-    "cornelius-coffey","jane-bolin","constance-baker-motley","garrett-morgan","matthew-henson",
-  ];
+  // ── load stamp missing count ───────────────────────────────────────────────
+  const loadStampMissingCount = async () => {
+    const { data: all } = await supabase.from("milestones").select("id, stamp_image_url");
+    if (!all) return;
+    const missing = all.filter((m) => !m.stamp_image_url).length;
+    setStampMissingCount({ missing, total: all.length });
+  };
 
-  // ── reset Black Pioneers stamps (null out so they can be regenerated) ──────
-  const resetPioneersStamps = async () => {
+  // ── reset ALL stamps (null out so they can be regenerated) ────────────────
+  const resetAllStamps = async () => {
     setResetStampsLoading(true);
     try {
-      // Get challenge IDs for the 13 Pioneers
-      const { data: chs, error: chErr } = await supabase
-        .from("challenges")
-        .select("id")
-        .in("slug", PIONEERS_SLUGS);
-      if (chErr || !chs?.length) { toast.error("Could not find Pioneer challenges."); return; }
-      const challengeIds = chs.map((c) => c.id);
-
-      // Get milestone IDs for those challenges
+      // Get all milestone IDs that have a stamp
       const { data: ms, error: msErr } = await supabase
         .from("milestones")
         .select("id")
-        .in("challenge_id", challengeIds);
-      if (msErr || !ms?.length) { toast.error("No milestones found."); return; }
+        .not("stamp_image_url", "is", null);
+      if (msErr) { toast.error(`Fetch failed: ${msErr.message}`); return; }
+      if (!ms?.length) { toast.info("No milestones have stamp images to reset."); return; }
       const milestoneIds = ms.map((m) => m.id);
 
       // 1. Null out stamp_image_url on milestones
@@ -328,11 +323,11 @@ export default function AdminValidate() {
       if (deleteErr) { toast.error(`Stamp image delete failed: ${deleteErr.message}`); return; }
 
       toast.success(`Reset ${milestoneIds.length} milestone stamps — ready to regenerate!`);
-      await loadReadiness();
+      await Promise.all([loadReadiness(), loadStampMissingCount()]);
     } catch (e) {
       toast.error("Reset failed.");
     } finally {
-    setResetStampsLoading(false);
+      setResetStampsLoading(false);
     }
   };
 
