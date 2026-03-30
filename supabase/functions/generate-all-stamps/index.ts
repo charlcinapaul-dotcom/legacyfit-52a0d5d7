@@ -6,21 +6,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const NEW_CHALLENGE_SLUGS = [
-  "madam-cj-walker",
-  "charles-drew",
-  "mae-jemison",
-  "daniel-hale-williams",
-  "patricia-bath",
-  "harriet-pickens",
-  "benjamin-o-davis-sr",
-  "willa-brown",
-  "cornelius-coffey",
-  "jane-bolin",
-  "constance-baker-motley",
-  "garrett-morgan",
-  "matthew-henson",
-];
 
 interface Milestone {
   id: string;
@@ -98,9 +83,9 @@ serve(async (req: Request): Promise<Response> => {
       // No body or invalid JSON — use default
     }
 
-    console.log(`Starting stamp generation for 13 new challenges, batch limit: ${limit}`);
+    console.log(`Starting stamp generation for all challenges, batch limit: ${limit}`);
 
-    // Query milestones for the 13 new challenges that are missing a stamp image
+    // Query milestones across ALL challenges that are missing a stamp image
     const { data: milestones, error: queryError } = await supabase
       .from("milestones")
       .select(`
@@ -110,11 +95,11 @@ serve(async (req: Request): Promise<Response> => {
         location_name,
         miles_required,
         stamp_copy,
-        stamp_image_url,
-        challenges!inner(slug)
+        stamp_image_url
       `)
       .is("stamp_image_url", null)
-      .in("challenges.slug", NEW_CHALLENGE_SLUGS)
+      .order("challenge_id")
+      .order("order_index")
       .limit(limit);
 
     if (queryError) {
