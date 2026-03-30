@@ -213,6 +213,7 @@ export default function AdminValidate() {
       const [{ data: ch }] = await Promise.all([
         supabase.from("challenges").select("id, title, slug, is_active").order("created_at", { ascending: false }),
         loadReadiness(),
+        loadAudioMissingCount(),
       ]);
       setChallenges((ch as typeof challenges) ?? []);
     });
