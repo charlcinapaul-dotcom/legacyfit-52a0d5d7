@@ -21,6 +21,17 @@ import {
   Radio,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 // ── types ────────────────────────────────────────────────────────────────────
@@ -134,6 +145,10 @@ export default function AdminValidate() {
   const [resetStampsLoading, setResetStampsLoading] = useState(false);
   const [readiness, setReadiness] = useState<ReadinessRow[]>([]);
   const [readinessLoading, setReadinessLoading] = useState(false);
+  const [audioGenLoading, setAudioGenLoading] = useState(false);
+  const [audioGenResults, setAudioGenResults] = useState<ImageGenResult[] | null>(null);
+  const [resetAudioLoading, setResetAudioLoading] = useState(false);
+  const [audioMissingCount, setAudioMissingCount] = useState<{ missing: number; total: number } | null>(null);
 
   // ── readiness loader ───────────────────────────────────────────────────────
   const loadReadiness = async () => {
@@ -198,6 +213,7 @@ export default function AdminValidate() {
       const [{ data: ch }] = await Promise.all([
         supabase.from("challenges").select("id, title, slug, is_active").order("created_at", { ascending: false }),
         loadReadiness(),
+        loadAudioMissingCount(),
       ]);
       setChallenges((ch as typeof challenges) ?? []);
     });
@@ -315,7 +331,102 @@ export default function AdminValidate() {
     } catch (e) {
       toast.error("Reset failed.");
     } finally {
-      setResetStampsLoading(false);
+    setResetStampsLoading(false);
+    }
+  };
+
+  // ── load audio missing count ──────────────────────────────────────────────
+  const loadAudioMissingCount = async () => {
+    const { data: all } = await supabase.from("milestones").select("id, audio_url");
+    if (!all) return;
+    const missing = all.filter((m) => !m.audio_url).length;
+    setAudioMissingCount({ missing, total: all.length });
+  };
+
+  // ── reset audio URLs ──────────────────────────────────────────────────────
+  const resetAudioUrls = async () => {
+    setResetAudioLoading(true);
+    try {
+      const { data: withAudio, error: fetchErr } = await supabase
+        .from("milestones")
+        .select("id")
+        .not("audio_url", "is", null);
+      if (fetchErr) { toast.error(`Fetch failed: ${fetchErr.message}`); return; }
+      if (!withAudio?.length) { toast.info("No milestones have audio URLs to reset."); return; }
+
+      const ids = withAudio.map((m) => m.id);
+      const { error: updateErr } = await supabase
+        .from("milestones")
+        .update({ audio_url: null })
+        .in("id", ids);
+      if (updateErr) { toast.error(`Reset failed: ${updateErr.message}`); return; }
+
+      toast.success(`Reset ${ids.length} milestone audio URLs.`);
+      await Promise.all([loadAudioMissingCount(), loadReadiness()]);
+    } catch {
+      toast.error("Reset failed.");
+    } finally {
+      setResetAudioLoading(false);
+    }
+  };
+
+  // ── generate missing audio (batch) ────────────────────────────────────────
+  const generateMissingAudio = async () => {
+    setAudioGenLoading(true);
+    setAudioGenResults(null);
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData.session?.access_token;
+      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+
+      // Fetch milestones missing audio
+      const { data: missing } = await supabase
+        .from("milestones")
+        .select("id, title, audio_url")
+        .is("audio_url", null)
+        .order("challenge_id")
+        .order("order_index")
+        .limit(10);
+
+      if (!missing?.length) {
+        toast.info("All milestones already have audio!");
+        setAudioGenLoading(false);
+        return;
+      }
+
+      toast.info(`Generating audio for ${missing.length} milestones…`);
+
+      const results: ImageGenResult[] = [];
+      for (const ms of missing) {
+        try {
+          const url = `https://${projectId}.supabase.co/functions/v1/generate-milestone-audio`;
+          const res = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ milestoneId: ms.id }),
+          });
+          const json = await res.json();
+          if (json.audioUrl || json.success) {
+            results.push({ milestoneId: ms.id, title: ms.title, success: true, url: json.audioUrl });
+          } else {
+            results.push({ milestoneId: ms.id, title: ms.title, success: false, error: json.error || json.warning || "Unknown" });
+          }
+        } catch (e) {
+          results.push({ milestoneId: ms.id, title: ms.title, success: false, error: e instanceof Error ? e.message : "Unknown" });
+        }
+      }
+
+      setAudioGenResults(results);
+      const successCount = results.filter((r) => r.success).length;
+      toast.success(`Done! ${successCount}/${results.length} audio files generated.`);
+      await Promise.all([loadAudioMissingCount(), loadReadiness()]);
+    } catch {
+      toast.error("Audio generation failed.");
+    } finally {
+      setAudioGenLoading(false);
     }
   };
 
@@ -355,7 +466,7 @@ export default function AdminValidate() {
     }
   };
 
-  if (authChecking) {
+
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -976,6 +1087,117 @@ export default function AdminValidate() {
                           className="text-xs text-primary underline underline-offset-2 truncate max-w-[180px]"
                         >
                           View stamp
+                        </a>
+                      ) : r.error ? (
+                        <span className="text-xs text-destructive truncate max-w-[220px]">{r.error}</span>
+                      ) : null}
+                      <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-sm font-semibold ${
+                        r.success ? "bg-green-500/15 text-green-500" : "bg-destructive/15 text-destructive"
+                      }`}>
+                        {r.success ? "OK" : "FAIL"}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        {/* ── Generate Missing Audio ──────────────────────────────────── */}
+        <div className="mt-12 pt-8 border-t border-border">
+          <div className="flex items-center gap-2 mb-2">
+            <Volume2 className="w-5 h-5 text-primary" />
+            <h2 className="text-xl font-bold text-foreground">Generate Missing Audio</h2>
+          </div>
+          <p className="text-muted-foreground text-sm leading-relaxed mb-1">
+            Generates ElevenLabs audio narration for all milestones missing an{" "}
+            <code className="text-primary bg-primary/10 px-1 py-0.5 rounded text-xs">audio_url</code>.
+            Runs in batches of 10 — click multiple times to complete all milestones.
+            Already-generated audio is skipped.
+          </p>
+          {audioMissingCount && (
+            <p className="text-xs text-muted-foreground mb-5">
+              <strong className="text-foreground">{audioMissingCount.missing}</strong> of{" "}
+              <strong className="text-foreground">{audioMissingCount.total}</strong> missing
+            </p>
+          )}
+
+          <div className="flex flex-wrap items-center gap-3">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  disabled={resetAudioLoading || audioGenLoading}
+                  variant="destructive"
+                  className="gap-2"
+                >
+                  {resetAudioLoading ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <XCircle className="w-4 h-4" />
+                  )}
+                  {resetAudioLoading ? "Resetting…" : "Reset Audio URLs"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reset all audio URLs?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will clear the audio_url for every milestone in the database.
+                    You will need to regenerate all audio files afterwards. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={resetAudioUrls}>
+                    Yes, reset all audio
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <Button
+              onClick={generateMissingAudio}
+              disabled={audioGenLoading || resetAudioLoading}
+              className="gap-2 bg-[#D4AF37] text-black hover:bg-[#C4A030]"
+            >
+              {audioGenLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Volume2 className="w-4 h-4" />
+              )}
+              {audioGenLoading ? "Generating audio…" : "Generate Missing Audio (batch of 10)"}
+            </Button>
+          </div>
+
+          {audioGenResults && (
+            <div className="mt-6 bg-card border border-border rounded-lg overflow-hidden">
+              <div className="px-4 py-3 bg-secondary/40 border-b border-border flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">
+                  Results — {audioGenResults.filter((r) => r.success).length}/{audioGenResults.length} successful
+                </span>
+              </div>
+              <ul className="divide-y divide-border">
+                {audioGenResults.map((r) => (
+                  <li key={r.milestoneId} className="px-4 py-3 flex items-center justify-between gap-3 text-sm">
+                    <div className="flex items-center gap-2.5">
+                      {r.success ? (
+                        <CheckCircle2 className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      ) : (
+                        <XCircle className="w-4 h-4 text-destructive flex-shrink-0" />
+                      )}
+                      <span className="text-foreground">{r.title}</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {r.success && r.url ? (
+                        <a
+                          href={r.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-primary underline underline-offset-2 truncate max-w-[180px]"
+                        >
+                          Listen
                         </a>
                       ) : r.error ? (
                         <span className="text-xs text-destructive truncate max-w-[220px]">{r.error}</span>
