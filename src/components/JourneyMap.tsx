@@ -48,8 +48,8 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
 
   const rN = typeof window !== "undefined" && window.innerWidth < 480 ? NODE_R_SM : NODE_R;
   const sorted = [...milestones].sort((a, b) => a.miles - b.miles);
-  const effectiveMiles = Math.max(milesLogged, 1);
-  const firstLockedIdx = sorted.findIndex((m) => effectiveMiles < m.miles);
+  
+  const firstLockedIdx = sorted.findIndex((m) => milesLogged < m.miles);
 
   // Compute point positions once the SVG path is in DOM
   useEffect(() => {
@@ -124,10 +124,10 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
           {points.map((pt, i) => {
             const m = sorted[i];
             if (!m) return null;
-            const isUnlocked = effectiveMiles >= m.miles;
+            const isUnlocked = milesLogged >= m.miles;
             const isNext = i === firstLockedIdx;
             const isSelected = selectedIdx === i;
-            const miRemaining = (m.miles - effectiveMiles).toFixed(1);
+            const miRemaining = (m.miles - milesLogged).toFixed(1);
 
             return (
               <g
@@ -258,8 +258,8 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
         sorted[selectedIdx] &&
         (() => {
           const m = sorted[selectedIdx];
-          const isUnlocked = effectiveMiles >= m.miles;
-          const remaining = (m.miles - effectiveMiles).toFixed(1);
+          const isUnlocked = milesLogged >= m.miles;
+          const remaining = (m.miles - milesLogged).toFixed(1);
           return (
             <div className="mt-3 rounded-lg border border-border bg-secondary/40 px-4 py-3 text-sm animate-in fade-in-0 zoom-in-95 duration-150">
               <div className="flex items-start justify-between gap-2">
