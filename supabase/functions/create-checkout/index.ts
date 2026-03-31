@@ -84,6 +84,7 @@ serve(async (req) => {
         metadata: {
           user_id: user.id,
           tier,
+          ...(shippingOrderId ? { shipping_order_id: shippingOrderId } : {}),
         },
       });
     } else {
