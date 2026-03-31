@@ -19,6 +19,7 @@ import {
   FileText,
   Stamp,
   Radio,
+  Package,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -150,6 +151,19 @@ export default function AdminValidate() {
   const [audioGenResults, setAudioGenResults] = useState<ImageGenResult[] | null>(null);
   const [resetAudioLoading, setResetAudioLoading] = useState(false);
   const [audioMissingCount, setAudioMissingCount] = useState<{ missing: number; total: number } | null>(null);
+  const [shippingOrders, setShippingOrders] = useState<any[]>([]);
+  const [shippingLoading, setShippingLoading] = useState(false);
+
+  // ── shipping orders loader ─────────────────────────────────────────────────
+  const loadShippingOrders = async () => {
+    setShippingLoading(true);
+    const { data } = await supabase
+      .from("shipping_orders")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setShippingOrders(data ?? []);
+    setShippingLoading(false);
+  };
 
   // ── readiness loader ───────────────────────────────────────────────────────
   const loadReadiness = async () => {
@@ -216,6 +230,7 @@ export default function AdminValidate() {
         loadReadiness(),
         loadAudioMissingCount(),
         loadStampMissingCount(),
+        loadShippingOrders(),
       ]);
       setChallenges((ch as typeof challenges) ?? []);
     });
@@ -1226,6 +1241,68 @@ export default function AdminValidate() {
                   </li>
                 ))}
               </ul>
+            </div>
+          )}
+        </div>
+
+        {/* ── Shipping Orders ──────────────────────────────────────────────── */}
+        <div className="bg-card border border-border rounded-xl p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+              <Package className="w-5 h-5 text-primary" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Shipping Orders</h2>
+              <p className="text-xs text-muted-foreground">
+                View shipping addresses submitted for Collector's Edition purchases.
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-auto"
+              onClick={loadShippingOrders}
+              disabled={shippingLoading}
+            >
+              {shippingLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Refresh"}
+            </Button>
+          </div>
+
+          {shippingOrders.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No shipping orders yet.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-border text-left">
+                    <th className="py-2 px-3 font-medium text-muted-foreground">Name</th>
+                    <th className="py-2 px-3 font-medium text-muted-foreground">Address</th>
+                    <th className="py-2 px-3 font-medium text-muted-foreground">City</th>
+                    <th className="py-2 px-3 font-medium text-muted-foreground">State</th>
+                    <th className="py-2 px-3 font-medium text-muted-foreground">Zip</th>
+                    <th className="py-2 px-3 font-medium text-muted-foreground">Country</th>
+                    <th className="py-2 px-3 font-medium text-muted-foreground">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {shippingOrders.map((order) => (
+                    <tr key={order.id} className="border-b border-border/50 hover:bg-muted/30">
+                      <td className="py-2 px-3 text-foreground">{order.full_name}</td>
+                      <td className="py-2 px-3 text-foreground">
+                        {order.address_line1}
+                        {order.address_line2 ? `, ${order.address_line2}` : ""}
+                      </td>
+                      <td className="py-2 px-3 text-foreground">{order.city}</td>
+                      <td className="py-2 px-3 text-foreground">{order.state}</td>
+                      <td className="py-2 px-3 text-foreground">{order.zip_code}</td>
+                      <td className="py-2 px-3 text-foreground">{order.country}</td>
+                      <td className="py-2 px-3 text-muted-foreground whitespace-nowrap">
+                        {new Date(order.created_at).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
