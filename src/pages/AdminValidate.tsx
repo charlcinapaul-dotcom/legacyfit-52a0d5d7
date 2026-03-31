@@ -151,6 +151,19 @@ export default function AdminValidate() {
   const [audioGenResults, setAudioGenResults] = useState<ImageGenResult[] | null>(null);
   const [resetAudioLoading, setResetAudioLoading] = useState(false);
   const [audioMissingCount, setAudioMissingCount] = useState<{ missing: number; total: number } | null>(null);
+  const [shippingOrders, setShippingOrders] = useState<any[]>([]);
+  const [shippingLoading, setShippingLoading] = useState(false);
+
+  // ── shipping orders loader ─────────────────────────────────────────────────
+  const loadShippingOrders = async () => {
+    setShippingLoading(true);
+    const { data } = await supabase
+      .from("shipping_orders")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setShippingOrders(data ?? []);
+    setShippingLoading(false);
+  };
 
   // ── readiness loader ───────────────────────────────────────────────────────
   const loadReadiness = async () => {
