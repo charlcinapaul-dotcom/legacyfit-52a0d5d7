@@ -44,7 +44,7 @@ serve(async (req) => {
       });
     }
 
-    const { challengeId, tier, slug } = await req.json();
+    const { challengeId, tier, slug, shippingOrderId } = await req.json();
 
     // Subscription tier does not require a challengeId
     const isSubscription = tier === "subscription";

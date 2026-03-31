@@ -6,6 +6,14 @@ import { RewardCodeRedemption } from "@/components/RewardCodeRedemption";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface ChallengePricingProps {
   challengeName: string;
@@ -96,6 +104,17 @@ export const ChallengePricing = ({
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
   const [isRestoring, setIsRestoring] = useState(false);
   const [isSubscriber, setIsSubscriber] = useState(false);
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [addressSubmitting, setAddressSubmitting] = useState(false);
+
+  // Address form state
+  const [fullName, setFullName] = useState("");
+  const [addressLine1, setAddressLine1] = useState("");
+  const [addressLine2, setAddressLine2] = useState("");
+  const [city, setCity] = useState("");
+  const [addressState, setAddressState] = useState("");
+  const [zipCode, setZipCode] = useState("");
+  const [country, setCountry] = useState("United States");
 
   const figureName = extractFigureName(challengeName);
 
@@ -120,16 +139,8 @@ export const ChallengePricing = ({
     checkSubscription();
   }, []);
 
-  const handleCheckout = async (tier: "digital" | "boarding_pass" | "boarding_pass_subscriber") => {
-    if (!challengeId) {
-      toast({
-        title: "Challenge not found",
-        description: "Unable to start checkout — challenge ID is missing.",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  /** Shared auth gate — returns the user or redirects to /auth */
+  const requireAuth = async () => {
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -140,13 +151,31 @@ export const ChallengePricing = ({
         variant: "destructive",
       });
       navigate("/auth");
+      return null;
+    }
+    return user;
+  };
+
+  const handleCheckout = async (
+    tier: "digital" | "boarding_pass" | "boarding_pass_subscriber",
+    shippingOrderId?: string,
+  ) => {
+    if (!challengeId) {
+      toast({
+        title: "Challenge not found",
+        description: "Unable to start checkout — challenge ID is missing.",
+        variant: "destructive",
+      });
       return;
     }
+
+    const user = await requireAuth();
+    if (!user) return;
 
     setLoadingTier(tier);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: { challengeId, tier, slug: challengeSlug },
+        body: { challengeId, tier, slug: challengeSlug, shippingOrderId },
       });
 
       if (error) throw new Error(error.message || "Failed to create checkout session");
@@ -161,26 +190,70 @@ export const ChallengePricing = ({
     }
   };
 
-  const handleCollectorCheckout = () => {
-    const tier = isSubscriber ? "boarding_pass_subscriber" : "boarding_pass";
-    handleCheckout(tier);
+  const handleCollectorClick = async () => {
+    if (!challengeId) {
+      toast({
+        title: "Challenge not found",
+        description: "Unable to start checkout — challenge ID is missing.",
+        variant: "destructive",
+      });
+      return;
+    }
+    const user = await requireAuth();
+    if (!user) return;
+    setShowAddressModal(true);
+  };
+
+  const handleAddressSubmit = async () => {
+    // Validate required fields
+    if (!fullName.trim() || !addressLine1.trim() || !city.trim() || !addressState.trim() || !zipCode.trim()) {
+      toast({
+        title: "Missing fields",
+        description: "Please fill in all required fields.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const user = await requireAuth();
+    if (!user) return;
+
+    setAddressSubmitting(true);
+    try {
+      const { data, error } = await supabase
+        .from("shipping_orders")
+        .insert({
+          user_id: user.id,
+          full_name: fullName.trim(),
+          address_line1: addressLine1.trim(),
+          address_line2: addressLine2.trim() || null,
+          city: city.trim(),
+          state: addressState.trim(),
+          zip_code: zipCode.trim(),
+          country: country.trim(),
+        })
+        .select("id")
+        .single();
+
+      if (error) throw error;
+
+      setShowAddressModal(false);
+
+      const tier = isSubscriber ? "boarding_pass_subscriber" : "boarding_pass";
+      await handleCheckout(tier, data.id);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to save address.";
+      toast({ title: "Address error", description: msg, variant: "destructive" });
+    } finally {
+      setAddressSubmitting(false);
+    }
   };
 
   const handleRestorePurchase = async () => {
     if (!challengeId) return;
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      toast({
-        title: "Sign in required",
-        description: "Please sign in to restore your purchase.",
-        variant: "destructive",
-      });
-      navigate("/auth");
-      return;
-    }
+    const user = await requireAuth();
+    if (!user) return;
 
     setIsRestoring(true);
     try {
@@ -318,7 +391,7 @@ export const ChallengePricing = ({
             size="lg"
             className={cn("w-full text-sm font-semibold whitespace-normal h-auto py-3", accent.primaryBtn)}
             disabled={loadingTier === collectorLoadingKey}
-            onClick={handleCollectorCheckout}
+            onClick={handleCollectorClick}
           >
             {loadingTier === collectorLoadingKey ? (
               <>
@@ -365,6 +438,75 @@ export const ChallengePricing = ({
           meaning — every challenge contributes to something bigger.
         </p>
       </div>
+
+      {/* Shipping Address Modal */}
+      <Dialog open={showAddressModal} onOpenChange={setShowAddressModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Shipping Address</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Where should we send your Collector's Edition boarding passes?
+          </p>
+          <div className="space-y-4 pt-2">
+            <div className="space-y-2">
+              <Label htmlFor="fullName">Full Name *</Label>
+              <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Jane Doe" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="addressLine1">Address Line 1 *</Label>
+              <Input id="addressLine1" value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} placeholder="123 Main St" />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="addressLine2">Address Line 2</Label>
+              <Input id="addressLine2" value={addressLine2} onChange={(e) => setAddressLine2(e.target.value)} placeholder="Apt 4B" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="city">City *</Label>
+                <Input id="city" value={city} onChange={(e) => setCity(e.target.value)} placeholder="Atlanta" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="addressState">State *</Label>
+                <Input id="addressState" value={addressState} onChange={(e) => setAddressState(e.target.value)} placeholder="GA" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="zipCode">Zip Code *</Label>
+                <Input id="zipCode" value={zipCode} onChange={(e) => setZipCode(e.target.value)} placeholder="30301" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="country">Country</Label>
+                <Input id="country" value={country} onChange={(e) => setCountry(e.target.value)} />
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-3 pt-4">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => setShowAddressModal(false)}
+              disabled={addressSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              className={cn("flex-1 font-semibold", accent.primaryBtn)}
+              onClick={handleAddressSubmit}
+              disabled={addressSubmitting}
+            >
+              {addressSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" /> Saving…
+                </>
+              ) : (
+                "Continue to Payment"
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
