@@ -542,6 +542,48 @@ export type Database = {
           },
         ]
       }
+      shipping_orders: {
+        Row: {
+          address_line1: string
+          address_line2: string | null
+          city: string
+          country: string
+          created_at: string
+          full_name: string
+          id: string
+          state: string
+          stripe_session_id: string | null
+          user_id: string
+          zip_code: string
+        }
+        Insert: {
+          address_line1: string
+          address_line2?: string | null
+          city: string
+          country?: string
+          created_at?: string
+          full_name: string
+          id?: string
+          state: string
+          stripe_session_id?: string | null
+          user_id: string
+          zip_code: string
+        }
+        Update: {
+          address_line1?: string
+          address_line2?: string | null
+          city?: string
+          country?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          state?: string
+          stripe_session_id?: string | null
+          user_id?: string
+          zip_code?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string
