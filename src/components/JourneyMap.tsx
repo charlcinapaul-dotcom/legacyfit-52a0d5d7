@@ -48,7 +48,7 @@ export function JourneyMap({ milestones, milesLogged, totalMiles, colorClass = "
 
   const rN = typeof window !== "undefined" && window.innerWidth < 480 ? NODE_R_SM : NODE_R;
   const sorted = [...milestones].sort((a, b) => a.miles - b.miles);
-  const effectiveMiles = Math.max(milesLogged, 1);
+  
   const firstLockedIdx = sorted.findIndex((m) => effectiveMiles < m.miles);
 
   // Compute point positions once the SVG path is in DOM
