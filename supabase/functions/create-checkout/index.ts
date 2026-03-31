@@ -44,7 +44,7 @@ serve(async (req) => {
       });
     }
 
-    const { challengeId, tier, slug } = await req.json();
+    const { challengeId, tier, slug, shippingOrderId } = await req.json();
 
     // Subscription tier does not require a challengeId
     const isSubscription = tier === "subscription";
@@ -84,6 +84,7 @@ serve(async (req) => {
         metadata: {
           user_id: user.id,
           tier,
+          ...(shippingOrderId ? { shipping_order_id: shippingOrderId } : {}),
         },
       });
     } else {
@@ -99,6 +100,7 @@ serve(async (req) => {
           user_id: user.id,
           challenge_id: challengeId,
           tier,
+          ...(shippingOrderId ? { shipping_order_id: shippingOrderId } : {}),
         },
       });
     }
