@@ -100,6 +100,7 @@ serve(async (req) => {
           user_id: user.id,
           challenge_id: challengeId,
           tier,
+          ...(shippingOrderId ? { shipping_order_id: shippingOrderId } : {}),
         },
       });
     }
