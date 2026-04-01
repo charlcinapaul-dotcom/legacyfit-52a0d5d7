@@ -79,9 +79,13 @@ const PrivacyPolicy = () => (
                 <div>
                   <p className="font-medium text-foreground mb-1">Location Data</p>
                   <p>
-                    LegacyFit uses GPS location data only during active walk tracking to measure distance. We do not
-                    store precise location history, and location access can be disabled at any time in your device
-                    settings.
+                    LegacyFit uses GPS location data during active walk tracking to measure walking distance in
+                    real-time. When you start a GPS Walk, the app tracks your location <strong>continuously in the
+                    background</strong>, including when the screen is locked or the app is not in the foreground. This
+                    background tracking is required to accurately measure distance while you walk. Background location
+                    tracking is only active during a walk session you initiate and stops automatically when you end or
+                    discard the walk. We do not store precise location coordinates or location history. Location access
+                    can be disabled at any time in your device settings.
                   </p>
                 </div>
                 <div>
