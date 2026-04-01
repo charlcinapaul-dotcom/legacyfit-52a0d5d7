@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Play, Pause, Square, CheckCircle, Trash2, AlertTriangle, Loader2, Navigation } from "lucide-react";
+import { MapPin, Play, Pause, Square, CheckCircle, Trash2, AlertTriangle, Loader2, Navigation, Shield } from "lucide-react";
 import { useGpsWalk } from "@/hooks/useGpsWalk";
 import { useMileLogging } from "@/hooks/useMileLogging";
 import type { UnlockedStamp } from "@/hooks/useMileLogging";
@@ -12,6 +12,14 @@ import { StampUnlockModal } from "./StampUnlockModal";
 import { FirstMileGateModal } from "./FirstMileGateModal";
 import { MileLogConfirmDialog } from "./MileLogConfirmDialog";
 import { RateLimitBanner } from "./RateLimitBanner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const MIN_SAVE_MILES = 0.1;
 
@@ -31,6 +39,7 @@ export function GpsWalkTracker({
   const gps = useGpsWalk();
 
   const [pendingSave, setPendingSave] = useState(false);
+  const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const [gateModal, setGateModal] = useState<{
     open: boolean;
     screen: "share" | "purchase";
@@ -102,7 +111,7 @@ export function GpsWalkTracker({
 
             <Button
               className="w-full h-14 text-base font-bold gap-2"
-              onClick={gps.startWalk}
+              onClick={() => setShowLocationPrompt(true)}
               disabled={isRateLimited}
             >
               <Play className="w-5 h-5 fill-current" />
@@ -110,6 +119,44 @@ export function GpsWalkTracker({
             </Button>
           </CardContent>
         </Card>
+
+        {/* Pre-permission explanation dialog (Apple requirement) */}
+        <Dialog open={showLocationPrompt} onOpenChange={setShowLocationPrompt}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <Shield className="h-6 w-6 text-primary" />
+              </div>
+              <DialogTitle className="text-center">Location Access Required</DialogTitle>
+              <DialogDescription className="text-center text-sm leading-relaxed">
+                LegacyFit uses your location to track walking distance in real-time, including when your screen is
+                locked. This is how your miles are measured and counted toward your challenge progress.
+                <br /><br />
+                Your location is <strong className="text-foreground">never stored</strong> — it is only used
+                during an active walk and discarded when the walk ends.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex-col gap-2 sm:flex-col">
+              <Button
+                className="w-full font-bold gap-2"
+                onClick={() => {
+                  setShowLocationPrompt(false);
+                  gps.startWalk();
+                }}
+              >
+                <Navigation className="w-4 h-4" />
+                Allow &amp; Start Walk
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full text-muted-foreground"
+                onClick={() => setShowLocationPrompt(false)}
+              >
+                Not Now
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <StampUnlockModal
           stamps={newlyUnlockedStamps}
