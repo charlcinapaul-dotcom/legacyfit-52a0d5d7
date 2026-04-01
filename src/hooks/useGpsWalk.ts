@@ -106,25 +106,13 @@ export function useGpsWalk() {
   // ─── Native background geolocation (iOS/Android) ─────────────────────────
   const startNativeWatch = useCallback(async () => {
     try {
-      // Add location watcher — this handles permissions and background mode
-      await BackgroundGeolocation.start({
-        backgroundMessage: "LegacyFit is tracking your walk distance",
-        backgroundTitle: "LegacyFit GPS Walk",
-        requestPermissions: true,
-        stale: false,
-        distanceFilter: 5, // meters — battery-friendly minimum update distance
-      });
-
-      bgGeoRunningRef.current = true;
-
-      // Listen for location updates
-      BackgroundGeolocation.addWatcher(
+      await BackgroundGeolocation.start(
         {
           backgroundMessage: "LegacyFit is tracking your walk distance",
           backgroundTitle: "LegacyFit GPS Walk",
           requestPermissions: true,
           stale: false,
-          distanceFilter: 5,
+          distanceFilter: 5, // meters — battery-friendly minimum update distance
         },
         (location, err) => {
           if (err) {
@@ -140,6 +128,7 @@ export function useGpsWalk() {
           }
         }
       );
+      bgGeoRunningRef.current = true;
     } catch (e: any) {
       console.error("Background geolocation start failed:", e);
       setError("Unable to start GPS. Please check location permissions.");
