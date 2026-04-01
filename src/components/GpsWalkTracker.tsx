@@ -39,6 +39,7 @@ export function GpsWalkTracker({
   const gps = useGpsWalk();
 
   const [pendingSave, setPendingSave] = useState(false);
+  const [showLocationPrompt, setShowLocationPrompt] = useState(false);
   const [gateModal, setGateModal] = useState<{
     open: boolean;
     screen: "share" | "purchase";
