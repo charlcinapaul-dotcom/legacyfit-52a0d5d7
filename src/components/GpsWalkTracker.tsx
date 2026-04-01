@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Play, Pause, Square, CheckCircle, Trash2, AlertTriangle, Loader2, Navigation } from "lucide-react";
+import { MapPin, Play, Pause, Square, CheckCircle, Trash2, AlertTriangle, Loader2, Navigation, Shield } from "lucide-react";
 import { useGpsWalk } from "@/hooks/useGpsWalk";
 import { useMileLogging } from "@/hooks/useMileLogging";
 import type { UnlockedStamp } from "@/hooks/useMileLogging";
@@ -12,6 +12,14 @@ import { StampUnlockModal } from "./StampUnlockModal";
 import { FirstMileGateModal } from "./FirstMileGateModal";
 import { MileLogConfirmDialog } from "./MileLogConfirmDialog";
 import { RateLimitBanner } from "./RateLimitBanner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 const MIN_SAVE_MILES = 0.1;
 
