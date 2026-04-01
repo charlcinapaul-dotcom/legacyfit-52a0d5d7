@@ -1,4 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { BackgroundGeolocation } from "@capgo/background-geolocation";
+import { Capacitor } from "@capacitor/core";
 import { Geolocation, type Position } from "@capacitor/geolocation";
 
 type WalkStatus = "idle" | "active" | "paused" | "completed";
@@ -33,6 +35,8 @@ const MIN_DISTANCE_METERS = 10;   // ignore GPS drift < 10m
 const MAX_SPEED_MPH = 12;         // ignore unrealistic speed > 12 mph
 const MAX_JUMP_METERS = 100;      // ignore GPS jumps > 100m
 
+const isNative = Capacitor.isNativePlatform();
+
 export function useGpsWalk() {
   const [status, setStatus] = useState<WalkStatus>("idle");
   const [miles, setMiles] = useState(0);
@@ -40,12 +44,13 @@ export function useGpsWalk() {
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Capacitor watchPosition returns a string ID (not a number)
+  // Web fallback: Capacitor watchPosition returns a string ID
   const watchIdRef = useRef<string | null>(null);
   const lastCoordRef = useRef<Coordinate | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const accumulatedMilesRef = useRef(0);
   const isPausedRef = useRef(false);
+  const bgGeoRunningRef = useRef(false);
 
   // Timer tick
   useEffect(() => {
@@ -64,14 +69,10 @@ export function useGpsWalk() {
     };
   }, [status]);
 
-  const processPosition = useCallback((pos: Position) => {
+  const processCoord = useCallback((lat: number, lng: number, timestamp: number) => {
     if (isPausedRef.current) return;
 
-    const newCoord: Coordinate = {
-      lat: pos.coords.latitude,
-      lng: pos.coords.longitude,
-      timestamp: pos.timestamp,
-    };
+    const newCoord: Coordinate = { lat, lng, timestamp };
 
     const prev = lastCoordRef.current;
     if (!prev) {
@@ -102,20 +103,57 @@ export function useGpsWalk() {
     lastCoordRef.current = newCoord;
   }, []);
 
-  const stopTracking = useCallback(() => {
-    if (watchIdRef.current !== null) {
-      Geolocation.clearWatch({ id: watchIdRef.current });
-      watchIdRef.current = null;
+  // ─── Native background geolocation (iOS/Android) ─────────────────────────
+  const startNativeWatch = useCallback(async () => {
+    try {
+      await BackgroundGeolocation.start(
+        {
+          backgroundMessage: "LegacyFit is tracking your walk distance",
+          backgroundTitle: "LegacyFit GPS Walk",
+          requestPermissions: true,
+          stale: false,
+          distanceFilter: 5, // meters — battery-friendly minimum update distance
+        },
+        (location, err) => {
+          if (err) {
+            if (err.code === "NOT_AUTHORIZED") {
+              setPermissionDenied(true);
+              setError("Location permission is required to track your walk.");
+              setStatus("idle");
+            }
+            return;
+          }
+          if (location) {
+            processCoord(location.latitude, location.longitude, location.time ?? Date.now());
+          }
+        }
+      );
+      bgGeoRunningRef.current = true;
+    } catch (e: any) {
+      console.error("Background geolocation start failed:", e);
+      setError("Unable to start GPS. Please check location permissions.");
+      setStatus("idle");
+    }
+  }, [processCoord]);
+
+  const stopNativeWatch = useCallback(async () => {
+    if (bgGeoRunningRef.current) {
+      try {
+        await BackgroundGeolocation.stop();
+      } catch (e) {
+        console.warn("Error stopping background geolocation:", e);
+      }
+      bgGeoRunningRef.current = false;
     }
   }, []);
 
-  const startWatch = useCallback(async () => {
+  // ─── Web fallback (browser / dev) ────────────────────────────────────────
+  const startWebWatch = useCallback(async () => {
     try {
       const id = await Geolocation.watchPosition(
         { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 },
         (position, err) => {
           if (err) {
-            // code 1 = PERMISSION_DENIED in both browser and Capacitor
             if ((err as any).code === 1) {
               setPermissionDenied(true);
               setError("Location permission is required to track your walk.");
@@ -123,10 +161,12 @@ export function useGpsWalk() {
             } else {
               setError("GPS signal lost. Please try again.");
             }
-            stopTracking();
+            stopWebWatch();
             return;
           }
-          if (position) processPosition(position);
+          if (position) {
+            processCoord(position.coords.latitude, position.coords.longitude, position.timestamp);
+          }
         }
       );
       watchIdRef.current = id;
@@ -134,7 +174,31 @@ export function useGpsWalk() {
       setError("Unable to start GPS. Please check location permissions.");
       setStatus("idle");
     }
-  }, [processPosition, stopTracking]);
+  }, [processCoord]);
+
+  const stopWebWatch = useCallback(() => {
+    if (watchIdRef.current !== null) {
+      Geolocation.clearWatch({ id: watchIdRef.current });
+      watchIdRef.current = null;
+    }
+  }, []);
+
+  // ─── Unified controls ───────────────────────────────────────────────────
+  const stopTracking = useCallback(async () => {
+    if (isNative) {
+      await stopNativeWatch();
+    } else {
+      stopWebWatch();
+    }
+  }, [stopNativeWatch, stopWebWatch]);
+
+  const startWatch = useCallback(async () => {
+    if (isNative) {
+      await startNativeWatch();
+    } else {
+      await startWebWatch();
+    }
+  }, [startNativeWatch, startWebWatch]);
 
   const startWalk = useCallback(() => {
     setPermissionDenied(false);
@@ -159,13 +223,13 @@ export function useGpsWalk() {
     setStatus("active");
   }, []);
 
-  const endWalk = useCallback(() => {
-    stopTracking();
+  const endWalk = useCallback(async () => {
+    await stopTracking();
     setStatus("completed");
   }, [stopTracking]);
 
-  const discardWalk = useCallback(() => {
-    stopTracking();
+  const discardWalk = useCallback(async () => {
+    await stopTracking();
     accumulatedMilesRef.current = 0;
     setMiles(0);
     setSeconds(0);
