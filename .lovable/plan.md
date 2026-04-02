@@ -1,53 +1,63 @@
 
 
-## Add Shipping Address Modal for Collector's Edition Checkout
+## Implement Required Email Verification for New Users
 
-### 1. Create `shipping_orders` table (database migration)
+### Overview
 
-```sql
-CREATE TABLE public.shipping_orders (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  full_name text NOT NULL,
-  address_line1 text NOT NULL,
-  address_line2 text,
-  city text NOT NULL,
-  state text NOT NULL,
-  zip_code text NOT NULL,
-  country text NOT NULL DEFAULT 'United States',
-  stripe_session_id text,
-  created_at timestamptz NOT NULL DEFAULT now()
-);
+Currently, after signup the user is immediately redirected to `/onboarding` and can use the app. We need to enforce email verification by:
+1. Disabling auto-confirm on the auth system
+2. Showing a "Check your email" screen after signup instead of redirecting to onboarding
+3. Blocking unverified users from accessing protected pages
 
-ALTER TABLE public.shipping_orders ENABLE ROW LEVEL SECURITY;
+### 1. Disable Auto-Confirm Email Signups
 
-CREATE POLICY "Users can insert their own shipping orders"
-  ON public.shipping_orders FOR INSERT TO authenticated
-  WITH CHECK (auth.uid() = user_id);
+Use the `configure_auth` tool to disable auto-confirm for email signups. This makes the backend require email confirmation before the user can sign in.
 
-CREATE POLICY "Users can view their own shipping orders"
-  ON public.shipping_orders FOR SELECT TO authenticated
-  USING (auth.uid() = user_id);
-```
+### 2. Create Email Verification Pending Page (`src/pages/VerifyEmail.tsx`)
 
-### 2. Update `ChallengePricing.tsx`
+A new page at `/verify-email` that shows:
+- LegacyFit branded header (matching Auth.tsx styling)
+- Message: "Please check your email to verify your account before continuing."
+- The email address they signed up with (passed via state or query param)
+- A **"Resend Verification Email"** button with a 60-second cooldown timer
+- Calls `supabase.auth.resend({ type: 'signup', email })` on click
+- Link back to sign in
 
-- Add `showAddressModal` state and address form state (`fullName`, `addressLine1`, `addressLine2`, `city`, `state`, `zipCode`, `country` defaulting to "United States").
-- Import `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle` from UI components, plus `Input` and `Label`.
-- Change the Collector's Edition button `onClick`: instead of calling `handleCollectorCheckout`, set `showAddressModal = true` (after checking auth — move the auth check to a shared helper).
-- Update `handleCheckout` to accept an optional `shippingOrderId` parameter, passed in the `body` to `create-checkout`.
-- Add a `handleAddressSubmit` function: validates required fields, inserts into `shipping_orders`, then calls `handleCollectorCheckout` with the new record id, then closes the modal.
-- Render a `<Dialog>` modal with the address form fields, "Continue to Payment" submit button (styled with `accent.primaryBtn`), and a Cancel button.
+### 3. Update Auth.tsx Signup Flow
 
-### 3. Update `create-checkout` Edge Function
+After successful `signUp()`:
+- Instead of `navigate("/onboarding")`, navigate to `/verify-email?email={email}`
+- The user will NOT receive a session (since auto-confirm is off), so the `onAuthStateChange` listener won't redirect them
 
-- Accept optional `shippingOrderId` from the request body.
-- Pass it as `shipping_order_id` in the Stripe session `metadata` object (for both subscription and one-time payment paths, though it will only be set for collector tiers).
+### 4. Update Auth.tsx Login Error Handling
 
-### Files modified
+The login flow already handles the "Email not confirmed" error (line 139). Keep this — it will now be triggered for unverified users trying to sign in.
+
+### 5. Add Route in App.tsx
+
+Add `/verify-email` route pointing to the new `VerifyEmail` page.
+
+### 6. Dashboard and Protected Pages
+
+No changes needed — the Dashboard already redirects to `/auth` when there's no session. Since unverified users can't sign in (auto-confirm is off), they can't access any protected pages.
+
+### 7. Admin/Testing
+
+Admins can manually verify test accounts by updating `auth.users.email_confirmed_at` via the backend database. This is already possible — no code changes needed.
+
+### Files Changed
+
 | File | Change |
 |---|---|
-| Migration (new) | Create `shipping_orders` table with RLS |
-| `src/components/ChallengePricing.tsx` | Add address modal, form state, validation, DB insert, pass `shippingOrderId` to checkout |
-| `supabase/functions/create-checkout/index.ts` | Accept and forward `shippingOrderId` in Stripe metadata |
+| Auth config | Disable auto-confirm email signups |
+| `src/pages/VerifyEmail.tsx` (new) | Verification pending screen with resend button |
+| `src/pages/Auth.tsx` | Redirect to `/verify-email` after signup instead of `/onboarding` |
+| `src/App.tsx` | Add `/verify-email` route |
+
+### What This Does NOT Change
+- Existing login flow (unchanged)
+- Password reset flow (unchanged)
+- OAuth/Apple sign-in (these providers auto-verify emails)
+- Onboarding flow (still required after first verified login)
+- RLS policies or database schema (no changes needed)
 
