@@ -177,7 +177,7 @@ const Auth = () => {
           toast.error(error.message);
         }
       } else {
-        navigate("/onboarding");
+        navigate(`/verify-email?email=${encodeURIComponent(email)}`);
       }
     } catch (err) {
       toast.error("An unexpected error occurred. Please try again.");
