@@ -107,6 +107,7 @@ export const ChallengePricing = ({
   const [isSubscriber, setIsSubscriber] = useState(false);
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [addressSubmitting, setAddressSubmitting] = useState(false);
+  const isiOS = isNativeIOS();
 
   // Address form state
   const [fullName, setFullName] = useState("");
