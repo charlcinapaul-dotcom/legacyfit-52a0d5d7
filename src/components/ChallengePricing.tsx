@@ -283,6 +283,23 @@ export const ChallengePricing = ({
 
     setIsRestoring(true);
     try {
+      // On iOS, try restoring Apple IAP purchases first
+      if (isiOS) {
+        const result = await restoreIAPPurchases();
+        if (result.success) {
+          await supabase.functions.invoke("sync-iap-subscription", {
+            body: { isActive: true, expiresDate: null, productIdentifier: "legacyfit.restored" },
+          });
+          toast({
+            title: "Purchase restored!",
+            description: "Your access has been restored. The page will refresh.",
+          });
+          window.location.reload();
+          return;
+        }
+      }
+
+      // Fall back to checking Supabase for Stripe purchases
       const { data, error } = await supabase
         .from("user_challenges")
         .select("payment_status")
