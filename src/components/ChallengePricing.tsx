@@ -473,9 +473,10 @@ export const ChallengePricing = ({
             )}
           </Button>
         </div>
-        </div>
       </div>
       )}
+
+      {/* Reward Code */}
       {challengeId && (
         <div className="max-w-md mx-auto">
           <RewardCodeRedemption challengeId={challengeId} editionColor={editionColor} />
