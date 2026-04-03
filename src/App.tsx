@@ -44,6 +44,9 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
+  // Initialize Apple IAP on iOS native builds
+  useIAPSync();
+
   useEffect(() => {
     queryClient.prefetchQuery({
       queryKey: ["challenges-with-meta"],
