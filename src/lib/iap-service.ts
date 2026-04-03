@@ -16,8 +16,8 @@ export function isNativeIOS(): boolean {
 
 /** Lazy-load the Purchases plugin only on native iOS to avoid web import errors */
 async function getPurchases() {
-  const { Purchases } = await import("@capgo/capacitor-purchases");
-  return Purchases;
+  const { CapacitorPurchases } = await import("@capgo/capacitor-purchases");
+  return CapacitorPurchases;
 }
 
 /** Configure RevenueCat — call once on app launch (iOS only) */
