@@ -6,7 +6,7 @@ import { RewardCodeRedemption } from "@/components/RewardCodeRedemption";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { isNativeIOS, purchaseMonthlyPass } from "@/lib/iap-service";
+import { isNativeIOS, purchaseDigitalAccess, restorePurchases as restoreIAPPurchases } from "@/lib/iap-service";
 import {
   Dialog,
   DialogContent,
@@ -174,16 +174,16 @@ export const ChallengePricing = ({
     const user = await requireAuth();
     if (!user) return;
 
-    // On iOS, use Apple IAP subscription instead of Stripe
-    if (isiOS) {
+    // On iOS, digital purchases go through Apple IAP
+    if (isiOS && tier === "digital") {
       setLoadingTier(tier);
       try {
-        const result = await purchaseMonthlyPass();
+        const result = await purchaseDigitalAccess();
         if (result.success) {
           await supabase.functions.invoke("sync-iap-subscription", {
-            body: { isActive: true, expiresDate: null, productIdentifier: "legacyfit.monthlypass" },
+            body: { isActive: true, expiresDate: null, productIdentifier: "legacyfit.digital" },
           });
-          toast({ title: "You're subscribed! 🎉", description: "Your Legacy Pass is now active. This challenge is unlocked." });
+          toast({ title: "Purchase complete! 🎉", description: "This challenge is now unlocked." });
           window.location.reload();
         } else if (result.error && result.error !== "Purchase cancelled.") {
           toast({ title: "Purchase failed", description: result.error, variant: "destructive" });
@@ -197,7 +197,7 @@ export const ChallengePricing = ({
       return;
     }
 
-    // Web: Stripe checkout
+    // Web (all tiers) + iOS physical merchandise → Stripe checkout
     setLoadingTier(tier);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
@@ -283,6 +283,23 @@ export const ChallengePricing = ({
 
     setIsRestoring(true);
     try {
+      // On iOS, try restoring Apple IAP purchases first
+      if (isiOS) {
+        const result = await restoreIAPPurchases();
+        if (result.success) {
+          await supabase.functions.invoke("sync-iap-subscription", {
+            body: { isActive: true, expiresDate: null, productIdentifier: "legacyfit.restored" },
+          });
+          toast({
+            title: "Purchase restored!",
+            description: "Your access has been restored. The page will refresh.",
+          });
+          window.location.reload();
+          return;
+        }
+      }
+
+      // Fall back to checking Supabase for Stripe purchases
       const { data, error } = await supabase
         .from("user_challenges")
         .select("payment_status")
@@ -328,18 +345,18 @@ export const ChallengePricing = ({
 
       {/* Pricing Cards — iOS shows subscription unlock; web shows one-time tiers */}
       {isiOS ? (
-        <div className="max-w-md mx-auto w-full pt-2">
-          <div className="relative rounded-xl border bg-card p-5 sm:p-6 flex flex-col min-w-0 border-2 border-primary/30">
+        <div className="grid md:grid-cols-2 gap-5 max-w-3xl mx-auto w-full pt-2">
+          {/* Digital Collection — Apple IAP */}
+          <div className="relative rounded-xl border border-border bg-card p-5 sm:p-6 flex flex-col min-w-0">
             <div className="flex items-center gap-2 mb-3">
               <Smartphone className={cn("w-4 h-4", accent.check)} />
               <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                Monthly Journey Pass
+                Digital Collection
               </span>
             </div>
 
             <div className="mb-5">
-              <span className={cn("text-4xl font-bold tracking-tight", accent.price)}>$9.99</span>
-              <span className="text-sm text-muted-foreground">/month</span>
+              <span className={cn("text-4xl font-bold tracking-tight", accent.price)}>$12.99</span>
             </div>
 
             <ul className="space-y-2.5 mb-8 flex-1">
@@ -349,15 +366,12 @@ export const ChallengePricing = ({
                   <span>{f}</span>
                 </li>
               ))}
-              <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                <Check className={cn("w-4 h-4 mt-0.5 shrink-0", accent.check)} />
-                <span>One new legend unlocked every month</span>
-              </li>
             </ul>
 
             <Button
               size="lg"
-              className={cn("w-full text-sm font-semibold", accent.primaryBtn)}
+              variant="outline"
+              className={cn("w-full text-sm font-semibold", accent.secondaryBtn)}
               disabled={loadingTier === "digital"}
               onClick={() => handleCheckout("digital")}
             >
@@ -366,7 +380,68 @@ export const ChallengePricing = ({
                   <Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing…
                 </>
               ) : (
-                "Subscribe & Unlock — $9.99/mo"
+                "Unlock Digital Collection"
+              )}
+            </Button>
+          </div>
+
+          {/* Collector's Edition — Stripe (physical goods) */}
+          <div className={cn("relative rounded-xl border bg-card p-5 sm:p-6 flex flex-col min-w-0", accent.ring)}>
+            <span
+              className={cn(
+                "absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-xs font-semibold border",
+                accent.fanBadge,
+              )}
+            >
+              Fan Favorite
+            </span>
+
+            <div className="flex items-center gap-2 mb-3 mt-1">
+              <Package className={cn("w-4 h-4", accent.check)} />
+              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Collector's Edition
+              </span>
+            </div>
+
+            <div className="mb-5">
+              {isSubscriber ? (
+                <>
+                  <span className={cn("text-4xl font-bold tracking-tight", accent.price)}>$19.00</span>
+                  <p className={cn("text-xs mt-1 font-medium", accent.subscriberApplied)}>
+                    Subscriber price applied ✓
+                  </p>
+                </>
+              ) : (
+                <>
+                  <span className={cn("text-4xl font-bold tracking-tight", accent.price)}>$29.00</span>
+                  <p className={cn("text-xs mt-1", accent.subscriberHint)}>
+                    Subscribers pay $19
+                  </p>
+                </>
+              )}
+            </div>
+
+            <ul className="space-y-2.5 mb-8 flex-1">
+              {collectorFeatures.map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <Check className={cn("w-4 h-4 mt-0.5 shrink-0", accent.check)} />
+                  <span>{f}</span>
+                </li>
+              ))}
+            </ul>
+
+            <Button
+              size="lg"
+              className={cn("w-full text-sm font-semibold whitespace-normal h-auto py-3", accent.primaryBtn)}
+              disabled={loadingTier === collectorLoadingKey}
+              onClick={handleCollectorClick}
+            >
+              {loadingTier === collectorLoadingKey ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing…
+                </>
+              ) : (
+                "Unlock Collector's Edition"
               )}
             </Button>
           </div>
