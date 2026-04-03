@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/Landing";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { fetchChallengesWithMeta } from "./hooks/useChallengesWithMeta";
+import { useIAPSync } from "./hooks/useIAPSync";
 
 const Auth = lazy(() => import("./pages/Auth"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
