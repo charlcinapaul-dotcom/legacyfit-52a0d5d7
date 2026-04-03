@@ -326,7 +326,52 @@ export const ChallengePricing = ({
         </p>
       </div>
 
-      {/* Pricing Cards */}
+      {/* Pricing Cards — iOS shows subscription unlock; web shows one-time tiers */}
+      {isiOS ? (
+        <div className="max-w-md mx-auto w-full pt-2">
+          <div className="relative rounded-xl border bg-card p-5 sm:p-6 flex flex-col min-w-0 border-2 border-primary/30">
+            <div className="flex items-center gap-2 mb-3">
+              <Smartphone className={cn("w-4 h-4", accent.check)} />
+              <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                Monthly Journey Pass
+              </span>
+            </div>
+
+            <div className="mb-5">
+              <span className={cn("text-4xl font-bold tracking-tight", accent.price)}>$9.99</span>
+              <span className="text-sm text-muted-foreground">/month</span>
+            </div>
+
+            <ul className="space-y-2.5 mb-8 flex-1">
+              {digitalFeatures.map((f) => (
+                <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
+                  <Check className={cn("w-4 h-4 mt-0.5 shrink-0", accent.check)} />
+                  <span>{f}</span>
+                </li>
+              ))}
+              <li className="flex items-start gap-2 text-sm text-muted-foreground">
+                <Check className={cn("w-4 h-4 mt-0.5 shrink-0", accent.check)} />
+                <span>One new legend unlocked every month</span>
+              </li>
+            </ul>
+
+            <Button
+              size="lg"
+              className={cn("w-full text-sm font-semibold", accent.primaryBtn)}
+              disabled={loadingTier === "digital"}
+              onClick={() => handleCheckout("digital")}
+            >
+              {loadingTier === "digital" ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" /> Processing…
+                </>
+              ) : (
+                "Subscribe & Unlock — $9.99/mo"
+              )}
+            </Button>
+          </div>
+        </div>
+      ) : (
       <div className="grid md:grid-cols-2 gap-5 max-w-3xl mx-auto w-full pt-2">
         {/* Option 1 — Digital Collection */}
         <div className="relative rounded-xl border border-border bg-card p-5 sm:p-6 flex flex-col min-w-0">
