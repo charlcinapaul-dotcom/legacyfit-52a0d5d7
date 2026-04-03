@@ -174,6 +174,30 @@ export const ChallengePricing = ({
     const user = await requireAuth();
     if (!user) return;
 
+    // On iOS, use Apple IAP subscription instead of Stripe
+    if (isiOS) {
+      setLoadingTier(tier);
+      try {
+        const result = await purchaseMonthlyPass();
+        if (result.success) {
+          await supabase.functions.invoke("sync-iap-subscription", {
+            body: { isActive: true, expiresDate: null, productIdentifier: "legacyfit.monthlypass" },
+          });
+          toast({ title: "You're subscribed! 🎉", description: "Your Legacy Pass is now active. This challenge is unlocked." });
+          window.location.reload();
+        } else if (result.error && result.error !== "Purchase cancelled.") {
+          toast({ title: "Purchase failed", description: result.error, variant: "destructive" });
+        }
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : "Something went wrong.";
+        toast({ title: "Purchase error", description: msg, variant: "destructive" });
+      } finally {
+        setLoadingTier(null);
+      }
+      return;
+    }
+
+    // Web: Stripe checkout
     setLoadingTier(tier);
     try {
       const { data, error } = await supabase.functions.invoke("create-checkout", {
