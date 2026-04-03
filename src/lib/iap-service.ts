@@ -54,7 +54,6 @@ export async function purchaseMonthlyPass(): Promise<{
   const Purchases = await getPurchases();
 
   try {
-    // Get offerings from RevenueCat
     const { offerings } = await Purchases.getOfferings();
     const currentOffering = offerings.current;
 
@@ -72,12 +71,60 @@ export async function purchaseMonthlyPass(): Promise<{
     const isActive = !!customerInfo.entitlements.active[ENTITLEMENT_ID];
     return { success: isActive };
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes("cancelled") || msg.includes("canceled") || msg.includes("PURCHASE_CANCELLED")) {
-      return { success: false, error: "Purchase cancelled." };
-    }
-    return { success: false, error: msg };
+    return handlePurchaseError(err);
   }
+}
+
+/**
+ * Purchase the one-time digital access product via Apple IAP.
+ * Requires "legacyfit.digital" to be registered in App Store Connect and RevenueCat.
+ */
+export async function purchaseDigitalAccess(): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  if (!isNativeIOS()) return { success: false, error: "Not on iOS" };
+
+  const Purchases = await getPurchases();
+
+  try {
+    const { offerings } = await Purchases.getOfferings();
+    const currentOffering = offerings.current;
+
+    if (!currentOffering) {
+      return { success: false, error: "No offerings available." };
+    }
+
+    // Look for a package with the digital access product
+    const allPackages = currentOffering.availablePackages || [];
+    const digitalPkg = allPackages.find(
+      (pkg: { product?: { identifier?: string } }) =>
+        pkg.product?.identifier === "legacyfit.digital"
+    );
+
+    if (!digitalPkg) {
+      // Fall back to monthly subscription if digital product not yet configured
+      return purchaseMonthlyPass();
+    }
+
+    const { customerInfo } = await Purchases.purchasePackage({
+      identifier: digitalPkg.identifier,
+      offeringIdentifier: currentOffering.identifier,
+    });
+
+    const isActive = !!customerInfo.entitlements.active[ENTITLEMENT_ID];
+    return { success: isActive };
+  } catch (err: unknown) {
+    return handlePurchaseError(err);
+  }
+}
+
+function handlePurchaseError(err: unknown): { success: false; error: string } {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (msg.includes("cancelled") || msg.includes("canceled") || msg.includes("PURCHASE_CANCELLED")) {
+    return { success: false, error: "Purchase cancelled." };
+  }
+  return { success: false, error: msg };
 }
 
 /** Restore previous purchases. Returns true if premium is now active. */
