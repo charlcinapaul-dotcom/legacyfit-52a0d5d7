@@ -36,6 +36,7 @@ interface ManageSubscriptionSectionProps {
 }
 
 function ManageSubscriptionSection({ userId }: ManageSubscriptionSectionProps) {
+  const navigate = useNavigate();
   const [portalLoading, setPortalLoading] = useState(false);
 
   const { data: subData, isLoading } = useQuery({
@@ -68,16 +69,17 @@ function ManageSubscriptionSection({ userId }: ManageSubscriptionSectionProps) {
     }
   };
 
-  if (isLoading || !subData?.hasActive) return null;
+  if (isLoading) return null;
 
-  const renewalDateFormatted = subData.renewalDate
+  const renewalDateFormatted = subData?.renewalDate
     ? new Date(subData.renewalDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
     : null;
 
-  return (
-    <div className="mb-8">
-      <Card className="bg-card border-primary/30">
-        <CardContent className="p-5 flex items-center justify-between gap-4 flex-wrap">
+  // Active subscriber view
+  if (subData?.hasActive) {
+    return (
+      <Card className="bg-card border-primary/30 h-full">
+        <CardContent className="p-5 flex flex-col gap-3 h-full">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
               <Sparkles className="w-5 h-5 text-primary" />
@@ -95,7 +97,7 @@ function ManageSubscriptionSection({ userId }: ManageSubscriptionSectionProps) {
             disabled={portalLoading}
             variant="outline"
             size="sm"
-            className="border-primary/40 text-primary hover:bg-primary/10 font-semibold shrink-0"
+            className="border-primary/40 text-primary hover:bg-primary/10 font-semibold mt-auto w-full"
           >
             {portalLoading ? (
               <>
@@ -111,7 +113,35 @@ function ManageSubscriptionSection({ userId }: ManageSubscriptionSectionProps) {
           </Button>
         </CardContent>
       </Card>
-    </div>
+    );
+  }
+
+  // Non-subscriber view
+  return (
+    <Card className="bg-card border-border h-full">
+      <CardContent className="p-5 flex flex-col gap-3 h-full">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <p className="font-medium text-foreground text-sm">LegacyFit Membership</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Continue your fitness journey with new challenges, progress tracking, and community support.
+            </p>
+          </div>
+        </div>
+        <p className="text-lg font-bold text-primary">$9.99 <span className="text-xs font-normal text-muted-foreground">per month</span></p>
+        <Button
+          onClick={() => navigate("/challenges")}
+          size="sm"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold mt-auto w-full"
+        >
+          Join Membership
+        </Button>
+        <p className="text-[11px] text-muted-foreground text-center">Available after completing your first challenge.</p>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -621,6 +651,16 @@ const Dashboard = () => {
           )}
         </div>
 
+        {/* Group Challenge */}
+        {activeChallenge && (
+          <div className="mb-8">
+            <GroupChallenge
+              challengeId={activeChallenge.challengeId}
+              totalMiles={activeChallenge.totalMiles}
+              isEnrolled={true}
+            />
+          </div>
+        )}
 
         {/* Digital BIB */}
         {profile?.bib_number && (
@@ -635,24 +675,11 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Referral Invite */}
-        <div className="mb-8">
+        {/* Referral + Membership — side by side on md+ */}
+        <div className="mb-8 grid md:grid-cols-2 gap-4">
           <ReferralCard />
+          <ManageSubscriptionSection userId={user?.id ?? null} />
         </div>
-
-        {/* Group Challenge */}
-        {activeChallenge && (
-          <div className="mb-8">
-            <GroupChallenge
-              challengeId={activeChallenge.challengeId}
-              totalMiles={activeChallenge.totalMiles}
-              isEnrolled={true}
-            />
-          </div>
-        )}
-
-        {/* Subscription Management */}
-        <ManageSubscriptionSection userId={user?.id ?? null} />
 
         {/* Quick Actions */}
         <div className="grid sm:grid-cols-2 gap-4">
