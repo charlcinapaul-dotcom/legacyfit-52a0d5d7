@@ -29,6 +29,7 @@ const AdminValidate = lazy(() => import("./pages/AdminValidate"));
 const Export = lazy(() => import("./pages/Export"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const VerifyEmail = lazy(() => import("./pages/VerifyEmail"));
 
@@ -90,6 +91,7 @@ const App = () => {
             <Route path="/export" element={<Export />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="*" element={<NotFound />} />

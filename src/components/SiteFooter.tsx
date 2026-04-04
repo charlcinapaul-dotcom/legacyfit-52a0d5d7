@@ -42,6 +42,7 @@ export const SiteFooter = () => (
           <div className="flex flex-col gap-2 text-sm text-muted-foreground">
             <Link to="/legal" className="hover:text-foreground transition-colors">Terms & Privacy</Link>
             <Link to="/privacy-policy" className="hover:text-foreground transition-colors">Privacy Policy</Link>
+            <Link to="/refund-policy" className="hover:text-foreground transition-colors">Refund Policy</Link>
             <Link to="/contact" className="hover:text-foreground transition-colors">Support</Link>
           </div>
         </div>
