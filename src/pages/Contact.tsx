@@ -45,13 +45,22 @@ const Contact = () => {
     <PageLayout>
       <Helmet>
         <title>Contact LegacyFit — Get Support</title>
-        <meta name="description" content="Reach out to the LegacyFit team for support, questions about challenges, or content inquiries. We're here to help." />
+        <meta
+          name="description"
+          content="Reach out to the LegacyFit team for support, questions about challenges, or content inquiries. We're here to help."
+        />
         <meta property="og:title" content="Contact LegacyFit — Get Support" />
-        <meta property="og:description" content="Get in touch with the LegacyFit team for support, billing questions, or general inquiries." />
+        <meta
+          property="og:description"
+          content="Get in touch with the LegacyFit team for support, billing questions, or general inquiries."
+        />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content="Contact LegacyFit — Get Support" />
-        <link rel="canonical" href={typeof window !== "undefined" ? window.location.href : "https://legacyfitvirtual.com/contact"} />
+        <link
+          rel="canonical"
+          href={typeof window !== "undefined" ? window.location.href : "https://legacyfitvirtual.com/contact"}
+        />
       </Helmet>
       <section className="py-20 px-4">
         <div className="container mx-auto max-w-3xl">
@@ -59,9 +68,7 @@ const Contact = () => {
             <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
               Get in <span className="text-gradient-gold">Touch</span>
             </h1>
-            <p className="text-lg text-muted-foreground">
-              We're here to help. Reach out anytime.
-            </p>
+            <p className="text-lg text-muted-foreground">We're here to help. Reach out anytime.</p>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-6 mb-12">
@@ -73,9 +80,7 @@ const Contact = () => {
               <div>
                 <h3 className="font-semibold text-foreground mb-1">Email Support</h3>
                 <p className="text-sm text-muted-foreground">support@legacyfitvirtual.com</p>
-                <p className="text-xs text-muted-foreground/60 mt-1 select-all">
-                  support@legacyfitvirtual.com
-                </p>
+                <p className="text-xs text-muted-foreground/60 mt-1 select-all">support@legacyfitvirtual.com</p>
               </div>
             </a>
 
@@ -101,9 +106,7 @@ const Contact = () => {
             {sent ? (
               <div className="text-center py-8">
                 <p className="text-foreground font-medium mb-2">Your message has been sent!</p>
-                <p className="text-sm text-muted-foreground">
-                  We'll get back to you within 1–2 business days.
-                </p>
+                <p className="text-sm text-muted-foreground">We'll get back to you within 1–2 business days.</p>
                 <Button
                   variant="outline"
                   className="mt-4 border-[#D4AF37]/50 text-[#D4AF37] hover:bg-[#D4AF37]/10"
@@ -115,7 +118,9 @@ const Contact = () => {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="contact-name" className="text-foreground">Name</Label>
+                  <Label htmlFor="contact-name" className="text-foreground">
+                    Name
+                  </Label>
                   <Input
                     id="contact-name"
                     type="text"
@@ -128,7 +133,9 @@ const Contact = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="contact-email" className="text-foreground">Email</Label>
+                  <Label htmlFor="contact-email" className="text-foreground">
+                    Email
+                  </Label>
                   <Input
                     id="contact-email"
                     type="email"
@@ -141,7 +148,9 @@ const Contact = () => {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="contact-message" className="text-foreground">Message</Label>
+                  <Label htmlFor="contact-message" className="text-foreground">
+                    Message
+                  </Label>
                   <Textarea
                     id="contact-message"
                     required
@@ -168,14 +177,14 @@ const Contact = () => {
           <div className="border-t border-border pt-8">
             <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
               <FileText className="w-5 h-5 text-primary" />
-              Legal & Policies
+              Legal
             </h2>
             <div className="grid sm:grid-cols-2 gap-4">
               <Link
                 to="/legal"
                 className="p-4 rounded-lg bg-secondary/50 border border-border text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                Terms of Service & Privacy Policy
+                Terms of Service
               </Link>
               <Link
                 to="/legal"
