@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, Loader2, Package, Smartphone } from "lucide-react";
+import { Check, Loader2, Package, Smartphone, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { RewardCodeRedemption } from "@/components/RewardCodeRedemption";
