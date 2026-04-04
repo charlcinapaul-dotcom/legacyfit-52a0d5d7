@@ -9,8 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PassportStamp } from "@/components/PassportStamp";
 import { usePassportStamps, useChallenges, type StampWithMilestone } from "@/hooks/usePassportStamps";
+import { useActiveChallenge } from "@/hooks/useActiveChallenge";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShareMenu } from "@/components/ShareMenu";
+import { Badge } from "@/components/ui/badge";
 
 export default function Passport() {
   const navigate = useNavigate();
@@ -19,6 +23,21 @@ export default function Passport() {
   // Fetch ALL stamps across all challenges (no challengeId filter)
   const { stamps, unlockedCount, totalCount, isLoading } = usePassportStamps();
   const { data: challenges, isLoading: challengesLoading } = useChallenges();
+  const { data: activeChallenge } = useActiveChallenge();
+
+  // Fetch all enrolled challenge IDs for the current user
+  const { data: enrolledChallengeIds } = useQuery({
+    queryKey: ["enrolled-challenge-ids"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return new Set<string>();
+      const { data } = await supabase
+        .from("user_challenges")
+        .select("challenge_id")
+        .eq("user_id", user.id);
+      return new Set((data || []).map((r) => r.challenge_id));
+    },
+  });
 
   const progressPercent = totalCount > 0 ? (unlockedCount / totalCount) * 100 : 0;
 
@@ -34,7 +53,18 @@ export default function Passport() {
     return acc;
   }, {});
 
-  const challengeGroups = Object.entries(stampsByChallengeId);
+  const activeChallengeId = activeChallenge?.challengeId;
+  const enrolled = enrolledChallengeIds || new Set<string>();
+
+  // Sort: active first, then enrolled, then the rest
+  const challengeGroups = Object.entries(stampsByChallengeId).sort(([a], [b]) => {
+    const aActive = a === activeChallengeId ? 0 : 1;
+    const bActive = b === activeChallengeId ? 0 : 1;
+    if (aActive !== bActive) return aActive - bActive;
+    const aEnrolled = enrolled.has(a) ? 0 : 1;
+    const bEnrolled = enrolled.has(b) ? 0 : 1;
+    return aEnrolled - bEnrolled;
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-amber-950/5 to-background">
@@ -117,11 +147,18 @@ export default function Passport() {
                 </Card>
               ) : (
                 <div className="space-y-8">
-                  {challengeGroups.map(([challengeId, challengeStamps]) => (
-                    <div key={challengeId}>
+                  {challengeGroups.map(([challengeId, challengeStamps]) => {
+                    const isActive = challengeId === activeChallengeId;
+                    return (
+                    <div key={challengeId} className={isActive ? "border-l-2 border-[#D4AF37] pl-3" : ""}>
                       <h3 className="text-sm font-semibold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />
                         {challengeMap[challengeId] || "Challenge"}
+                        {isActive && (
+                          <Badge variant="outline" className="ml-1 text-[10px] border-[#D4AF37] text-[#D4AF37] font-semibold uppercase tracking-wider">
+                            Current Journey
+                          </Badge>
+                        )}
                       </h3>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                         {challengeStamps.map((stamp) => (
@@ -133,7 +170,8 @@ export default function Passport() {
                         ))}
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </TabsContent>
@@ -149,11 +187,18 @@ export default function Passport() {
                 </Card>
               ) : (
                 <div className="space-y-8">
-                  {challengeGroups.map(([challengeId, challengeStamps]) => (
-                    <div key={challengeId}>
+                  {challengeGroups.map(([challengeId, challengeStamps]) => {
+                    const isActive = challengeId === activeChallengeId;
+                    return (
+                    <div key={challengeId} className={isActive ? "border-l-2 border-[#D4AF37] pl-3" : ""}>
                       <h3 className="text-sm font-semibold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />
                         {challengeMap[challengeId] || "Challenge"}
+                        {isActive && (
+                          <Badge variant="outline" className="ml-1 text-[10px] border-[#D4AF37] text-[#D4AF37] font-semibold uppercase tracking-wider">
+                            Current Journey
+                          </Badge>
+                        )}
                       </h3>
                       <div className="space-y-3">
                         {challengeStamps.map((stamp, index) => {
@@ -209,7 +254,8 @@ export default function Passport() {
                         })}
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </TabsContent>
