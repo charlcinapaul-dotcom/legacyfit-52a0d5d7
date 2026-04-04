@@ -665,24 +665,11 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Referral Invite */}
-        <div className="mb-8">
+        {/* Referral + Membership — side by side on md+ */}
+        <div className="mb-8 grid md:grid-cols-2 gap-4">
           <ReferralCard />
+          <ManageSubscriptionSection userId={user?.id ?? null} />
         </div>
-
-        {/* Group Challenge */}
-        {activeChallenge && (
-          <div className="mb-8">
-            <GroupChallenge
-              challengeId={activeChallenge.challengeId}
-              totalMiles={activeChallenge.totalMiles}
-              isEnrolled={true}
-            />
-          </div>
-        )}
-
-        {/* Subscription Management */}
-        <ManageSubscriptionSection userId={user?.id ?? null} />
 
         {/* Quick Actions */}
         <div className="grid sm:grid-cols-2 gap-4">
