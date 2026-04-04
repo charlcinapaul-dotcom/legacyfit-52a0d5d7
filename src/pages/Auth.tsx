@@ -226,6 +226,7 @@ const Auth = () => {
   const handleAppleLogin = async () => {
     setLoading(true);
     try {
+      const { SignInWithApple } = await import("@capacitor-community/apple-sign-in");
       const result = await SignInWithApple.authorize({
         clientId: "com.legacyfit.app",
         redirectURI: `${window.location.origin}/dashboard`,
