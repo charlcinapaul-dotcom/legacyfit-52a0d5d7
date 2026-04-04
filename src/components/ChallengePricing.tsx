@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Check, Loader2, Package, Smartphone } from "lucide-react";
+import { Check, Loader2, Package, Smartphone, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { RewardCodeRedemption } from "@/components/RewardCodeRedemption";
@@ -107,6 +107,7 @@ export const ChallengePricing = ({
   const [isSubscriber, setIsSubscriber] = useState(false);
   const [showAddressModal, setShowAddressModal] = useState(false);
   const [addressSubmitting, setAddressSubmitting] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const isiOS = isNativeIOS();
 
   // Address form state
@@ -432,6 +433,15 @@ export const ChallengePricing = ({
 
             <Button
               size="lg"
+              variant="outline"
+              className={cn("w-full text-sm font-semibold mb-2", accent.secondaryBtn)}
+              onClick={() => setShowPreviewModal(true)}
+            >
+              View What's Included
+            </Button>
+
+            <Button
+              size="lg"
               className={cn("w-full text-sm font-semibold whitespace-normal h-auto py-3", accent.primaryBtn)}
               disabled={loadingTier === collectorLoadingKey}
               onClick={handleCollectorClick}
@@ -535,6 +545,15 @@ export const ChallengePricing = ({
 
           <Button
             size="lg"
+            variant="outline"
+            className={cn("w-full text-sm font-semibold mb-2", accent.secondaryBtn)}
+            onClick={() => setShowPreviewModal(true)}
+          >
+            View What's Included
+          </Button>
+
+          <Button
+            size="lg"
             className={cn("w-full text-sm font-semibold whitespace-normal h-auto py-3", accent.primaryBtn)}
             disabled={loadingTier === collectorLoadingKey}
             onClick={handleCollectorClick}
@@ -585,6 +604,35 @@ export const ChallengePricing = ({
           meaning — every challenge contributes to something bigger.
         </p>
       </div>
+
+      {/* What's Included Preview Modal */}
+      {showPreviewModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setShowPreviewModal(false)}
+        >
+          <div
+            className="relative max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-xl bg-card p-4 sm:p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowPreviewModal(false)}
+              aria-label="Close preview"
+              className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-black/60 text-[#D4AF37] hover:bg-black/80 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <img
+              src="/boarding_pass_preview.png"
+              alt="Collector's Edition boarding passes preview"
+              className="w-full object-contain rounded-lg"
+            />
+            <p className="text-xs text-muted-foreground/70 text-center mt-4 leading-relaxed">
+              This optional purchase includes printed physical boarding passes that are mailed to you after completing the challenge.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Shipping Address Modal */}
       <Dialog open={showAddressModal} onOpenChange={setShowAddressModal}>
