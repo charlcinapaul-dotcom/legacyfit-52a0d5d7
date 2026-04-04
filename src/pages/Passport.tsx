@@ -187,11 +187,18 @@ export default function Passport() {
                 </Card>
               ) : (
                 <div className="space-y-8">
-                  {challengeGroups.map(([challengeId, challengeStamps]) => (
-                    <div key={challengeId}>
+                  {challengeGroups.map(([challengeId, challengeStamps]) => {
+                    const isActive = challengeId === activeChallengeId;
+                    return (
+                    <div key={challengeId} className={isActive ? "border-l-2 border-[#D4AF37] pl-3" : ""}>
                       <h3 className="text-sm font-semibold text-amber-400 uppercase tracking-wider mb-3 flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />
                         {challengeMap[challengeId] || "Challenge"}
+                        {isActive && (
+                          <Badge variant="outline" className="ml-1 text-[10px] border-[#D4AF37] text-[#D4AF37] font-semibold uppercase tracking-wider">
+                            Current Journey
+                          </Badge>
+                        )}
                       </h3>
                       <div className="space-y-3">
                         {challengeStamps.map((stamp, index) => {
