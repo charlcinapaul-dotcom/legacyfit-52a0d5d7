@@ -43,3 +43,5 @@ project_id = "utfexhdncajccdpvquky"
     verify_jwt = false
   [functions.create-portal-session]
     verify_jwt = false
+  [functions.contact-form]
+    verify_jwt = false
