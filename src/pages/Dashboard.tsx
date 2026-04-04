@@ -651,6 +651,16 @@ const Dashboard = () => {
           )}
         </div>
 
+        {/* Group Challenge */}
+        {activeChallenge && (
+          <div className="mb-8">
+            <GroupChallenge
+              challengeId={activeChallenge.challengeId}
+              totalMiles={activeChallenge.totalMiles}
+              isEnrolled={true}
+            />
+          </div>
+        )}
 
         {/* Digital BIB */}
         {profile?.bib_number && (
