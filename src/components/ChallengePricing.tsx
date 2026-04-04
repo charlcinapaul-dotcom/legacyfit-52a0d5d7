@@ -433,6 +433,15 @@ export const ChallengePricing = ({
 
             <Button
               size="lg"
+              variant="outline"
+              className={cn("w-full text-sm font-semibold mb-2", accent.secondaryBtn)}
+              onClick={() => setShowPreviewModal(true)}
+            >
+              View What's Included
+            </Button>
+
+            <Button
+              size="lg"
               className={cn("w-full text-sm font-semibold whitespace-normal h-auto py-3", accent.primaryBtn)}
               disabled={loadingTier === collectorLoadingKey}
               onClick={handleCollectorClick}
