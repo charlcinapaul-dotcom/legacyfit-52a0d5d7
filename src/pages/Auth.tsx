@@ -177,7 +177,22 @@ const Auth = () => {
           toast.error(error.message);
         }
       } else {
-        navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+        // Temporary bypass for Apple App Review login access
+        // Auto-confirm the review test account so it can sign in without email verification
+        const REVIEW_EMAIL = "review@legacyfit.app";
+        if (email.toLowerCase() === REVIEW_EMAIL) {
+          try {
+            await supabase.functions.invoke("confirm-review-account", {
+              body: { email: email.toLowerCase() },
+            });
+            toast.success("Review account created. You can now sign in.");
+            setActiveTab("login");
+          } catch {
+            toast.error("Failed to auto-confirm review account.");
+          }
+        } else {
+          navigate(`/verify-email?email=${encodeURIComponent(email)}`);
+        }
       }
     } catch (err) {
       toast.error("An unexpected error occurred. Please try again.");
