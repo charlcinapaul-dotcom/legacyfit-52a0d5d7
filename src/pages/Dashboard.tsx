@@ -662,11 +662,6 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Membership — mobile only (between Group Challenge and Digital BIB) */}
-        <div className="mb-8 md:hidden">
-          <ManageSubscriptionSection userId={user?.id ?? null} />
-        </div>
-
         {/* Digital BIB */}
         {profile?.bib_number && (
           <div className="mb-8">
@@ -680,12 +675,10 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Referral + Membership — side by side on md+ (membership hidden on mobile since rendered above) */}
+        {/* Referral + Membership — side by side on md+ */}
         <div className="mb-8 grid md:grid-cols-2 gap-4">
           <ReferralCard />
-          <div className="hidden md:block">
-            <ManageSubscriptionSection userId={user?.id ?? null} />
-          </div>
+          <ManageSubscriptionSection userId={user?.id ?? null} />
         </div>
 
         {/* Quick Actions */}
