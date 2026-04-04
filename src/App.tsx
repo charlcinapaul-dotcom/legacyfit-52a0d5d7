@@ -91,6 +91,7 @@ const App = () => {
             <Route path="/export" element={<Export />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
             <Route path="*" element={<NotFound />} />

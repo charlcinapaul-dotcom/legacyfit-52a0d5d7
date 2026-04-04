@@ -187,7 +187,7 @@ const Contact = () => {
                 Terms of Service
               </Link>
               <Link
-                to="/legal"
+                to="/refund-policy"
                 className="p-4 rounded-lg bg-secondary/50 border border-border text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
                 Refund Policy
