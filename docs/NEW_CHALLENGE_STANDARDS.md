@@ -6,17 +6,17 @@
 
 ## 1. challenges Table
 
-| Field | Rule |
-|---|---|
-| `title` | Full proper name + theme word. e.g. `"Ruth Bader Ginsburg Equality Journey"` |
-| `slug` | URL-safe lowercase, globally unique. e.g. `"ruth-bader-ginsburg"` |
-| `edition` | Must be `"Women's History"`, `"Pride"`, or `"First Black Pioneers"`. Controls color theme (see §6). |
-| `total_miles` | Numeric. Must exactly equal `miles_required` of milestone 6. |
-| `description` | 1–2 sentences. Public-facing copy shown on Challenges page. |
-| `is_active` | Set to `false` on insert. Only set to `true` after all 6 milestones are fully seeded, audio generated, and stamp images generated. |
-| `image_url` | Challenge backdrop image URL (displayed as hero on ChallengeRoute page). |
-| `price_cents` | Leave null — global pricing applies (see §5). |
-| `stripe_price_id` / `stripe_product_id` | Leave null — not used by checkout. Global `PRICE_IDS` in `create-checkout/index.ts` apply to all challenges. |
+| Field                                   | Rule                                                                                                                               |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `title`                                 | Full proper name + theme word. e.g. `"Ruth Bader Ginsburg Equality Journey"`                                                       |
+| `slug`                                  | URL-safe lowercase, globally unique. e.g. `"ruth-bader-ginsburg"`                                                                  |
+| `edition`                               | Must be `"Women's History"`, `"Pride"`, or `"First Black Pioneers"`. Controls color theme (see §6).                                |
+| `total_miles`                           | Numeric. Must exactly equal `miles_required` of milestone 6.                                                                       |
+| `description`                           | 1–2 sentences. Public-facing copy shown on Challenges page.                                                                        |
+| `is_active`                             | Set to `false` on insert. Only set to `true` after all 6 milestones are fully seeded, audio generated, and stamp images generated. |
+| `image_url`                             | Challenge backdrop image URL (displayed as hero on ChallengeRoute page).                                                           |
+| `price_cents`                           | Leave null — global pricing applies (see §5).                                                                                      |
+| `stripe_price_id` / `stripe_product_id` | Leave null — not used by checkout. Global `PRICE_IDS` in `create-checkout/index.ts` apply to all challenges.                       |
 
 ---
 
@@ -24,20 +24,20 @@
 
 Every challenge MUST have **exactly 6 milestones**. No more, no fewer.
 
-| Field | Rule |
-|---|---|
-| `order_index` | 1 through 6, sequential, no gaps. |
-| `miles_required` | **Milestone 1 MUST be exactly `1` mile.** This is hard-wired into the free-first-mile gate in `useMileLogging.ts` (`eq("miles_required", 1)`). Milestones 2–6 should be evenly spaced across the total challenge distance. |
-| `title` | Person's name or event name. Used as fallback label if `stamp_title` is missing. |
-| `stamp_title` | Short, unique stamp display title. **Must be globally unique across ALL challenges** (check existing milestones before inserting). |
-| `stamp_copy` | Short quote or phrase shown on the stamp card. 1 sentence max. |
-| `location_name` | Specific physical geographic location where the historical event occurred. Must be a precise, real place — NOT a generic descriptor or award title. e.g. `"Tuskegee University, Alabama"` not `"NASA headquarters"`. |
-| `historical_event` | **Exactly 3 sentences.** This is the ElevenLabs Matilda narration text. Sentence 1: introduce the person/event. Sentence 2: describe the significance. Sentence 3: connect to legacy or impact. |
-| `audio_url` | Set to `null` on insert. Auto-populated by the `on_milestone_insert_generate_audio` database trigger → `generate-milestone-audio` edge function. |
-| `stamp_image_url` | Set to `null` on insert. Manually generated after insert via admin UI → `generate-stamp-image` edge function. |
-| `latitude` / `longitude` | Coordinates of the specific physical location. Required for map view. |
-| `stamp_mileage_display` | Display string matching `miles_required`. e.g. `"1 MILE"`, `"10 MILES"`, `"26 MILES"`. |
-| `description` | Optional. Legacy field superseded by `historical_event`. Can leave null. |
+| Field                    | Rule                                                                                                                                                                                                                       |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `order_index`            | 1 through 6, sequential, no gaps.                                                                                                                                                                                          |
+| `miles_required`         | **Milestone 1 MUST be exactly `1` mile.** This is hard-wired into the free-first-mile gate in `useMileLogging.ts` (`eq("miles_required", 1)`). Milestones 2–6 should be evenly spaced across the total challenge distance. |
+| `title`                  | Person's name or event name. Used as fallback label if `stamp_title` is missing.                                                                                                                                           |
+| `stamp_title`            | Short, unique stamp display title. **Must be globally unique across ALL challenges** (check existing milestones before inserting).                                                                                         |
+| `stamp_copy`             | Short quote or phrase shown on the stamp card. 1 sentence max.                                                                                                                                                             |
+| `location_name`          | Specific physical geographic location where the historical event occurred. Must be a precise, real place — NOT a generic descriptor or award title. e.g. `"Tuskegee University, Alabama"` not `"NASA headquarters"`.       |
+| `historical_event`       | **Exactly 3 sentences.** This is the ElevenLabs Matilda narration text. Sentence 1: introduce the person/event. Sentence 2: describe the significance. Sentence 3: connect to legacy or impact.                            |
+| `audio_url`              | Set to `null` on insert. Auto-populated by the `on_milestone_insert_generate_audio` database trigger → `generate-milestone-audio` edge function.                                                                           |
+| `stamp_image_url`        | Set to `null` on insert. Manually generated after insert via admin UI → `generate-stamp-image` edge function.                                                                                                              |
+| `latitude` / `longitude` | Coordinates of the specific physical location. Required for map view.                                                                                                                                                      |
+| `stamp_mileage_display`  | Display string matching `miles_required`. e.g. `"1 MILE"`, `"10 MILES"`, `"26 MILES"`.                                                                                                                                     |
+| `description`            | Optional. Legacy field superseded by `historical_event`. Can leave null.                                                                                                                                                   |
 
 ---
 
@@ -66,18 +66,19 @@ Every stamp MUST use the aged parchment aesthetic:
 
 ### 4b. Required Visual Elements (ALL must be present)
 
-| Element | Source field | Placement |
-|---|---|---|
-| **Pioneer/person name** | `stamp_title` or `milestones.title` | Center, bold serif all-caps, dominant text |
-| **Mileage banner** | `stamp_mileage_display` | Horizontal ribbon/banner across stamp (e.g. `"5 MILES"`) |
-| **Historical location** | `location_name` | Below the name, smaller subtitle text |
-| **Double concentric outer ring** | — | Circular outer border with two rings |
-| **Decorative wheat or laurel wreath** | — | Top arc of the stamp, above the name |
-| **LEGACYFIT brand mark** | — | Bottom edge of stamp |
+| Element                               | Source field                        | Placement                                                |
+| ------------------------------------- | ----------------------------------- | -------------------------------------------------------- |
+| **Pioneer/person name**               | `stamp_title` or `milestones.title` | Center, bold serif all-caps, dominant text               |
+| **Mileage banner**                    | `stamp_mileage_display`             | Horizontal ribbon/banner across stamp (e.g. `"5 MILES"`) |
+| **Historical location**               | `location_name`                     | Below the name, smaller subtitle text                    |
+| **Double concentric outer ring**      | —                                   | Circular outer border with two rings                     |
+| **Decorative wheat or laurel wreath** | —                                   | Top arc of the stamp, above the name                     |
+| **LEGACYFIT brand mark**              | —                                   | Bottom edge of stamp                                     |
 
 ### 4c. Uniqueness Requirements
 
 Every stamp is unique along **three dimensions**:
+
 1. **Person** — the pioneer's name is the dominant center text.
 2. **Mile** — the mileage banner reflects the exact `miles_required` of that milestone.
 3. **Location** — the `location_name` appears below the name and should visually differ per stamp.
@@ -99,9 +100,9 @@ No two stamps across any challenges may share the same visual composition.
 
 LegacyFit uses **two global price tiers** for ALL challenges — there is NO per-challenge pricing.
 
-| Tier key | Stripe Price ID | Amount | Label |
-|---|---|---|---|
-| `digital` | `price_1T8emA3JzkAB6gcFRznutdsG` | **$12.99** | Digital Collection |
+| Tier key        | Stripe Price ID                  | Amount     | Label               |
+| --------------- | -------------------------------- | ---------- | ------------------- |
+| `digital`       | `price_1T8emA3JzkAB6gcFRznutdsG` | **$12.99** | Digital Collection  |
 | `boarding_pass` | `price_1T8emZ3JzkAB6gcFwP7KsM2F` | **$29.00** | Collector's Edition |
 
 - Price IDs are hardcoded in `supabase/functions/create-checkout/index.ts` in the `PRICE_IDS` constant.
@@ -110,10 +111,10 @@ LegacyFit uses **two global price tiers** for ALL challenges — there is NO per
 
 ### 5b. What Each Tier Includes
 
-| Tier | Features |
-|---|---|
-| **Digital Collection ($12.99)** | 6 Digital Stamps · Full Challenge Access · Every milestone story · Yours to keep |
-| **Collector's Edition ($29.00)** | 6 Physical Boarding Passes · 6 Digital Stamps · Full Challenge Access · Printed and mailed |
+| Tier                             | Features                                                                                          |
+| -------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **Digital Collection ($12.99)**  | 6 Digital Stamps · Enrollment in This Challenge · Every milestone story · Yours to keep           |
+| **Collector's Edition ($29.00)** | 6 Physical Boarding Passes · 6 Digital Stamps · Enrollment in This Challenge · Printed and mailed |
 
 The Collector's Edition is labeled **"Fan Favorite"** in the `ChallengePricing` UI.
 
@@ -122,6 +123,7 @@ The Collector's Edition is labeled **"Fan Favorite"** in the `ChallengePricing` 
 LegacyFit has a **reward code** system that grants free enrolled (`paid`) access without going through Stripe checkout.
 
 **How reward codes work:**
+
 - Codes are stored in the `reward_codes` table (`code`, `user_id`, `is_redeemed`, `redeemed_for_challenge_id`).
 - A user redeems a code via the `RewardCodeRedemption` component shown below the pricing cards on every challenge page.
 - On redemption, the `redeem-reward-code` edge function marks the code `is_redeemed = true` and upserts a `user_challenges` row with `payment_status = 'paid'`.
@@ -142,11 +144,11 @@ LegacyFit has a **reward code** system that grants free enrolled (`paid`) access
 
 Determined by the `edition` field. Logic lives in `getEditionColor()` in `src/pages/ChallengeRoute.tsx`.
 
-| edition value | Theme | Visual |
-|---|---|---|
-| Contains `"pride"` (case-insensitive) | `"pride"` | Rainbow gradient |
+| edition value                                        | Theme        | Visual             |
+| ---------------------------------------------------- | ------------ | ------------------ |
+| Contains `"pride"` (case-insensitive)                | `"pride"`    | Rainbow gradient   |
 | Contains `"first black pioneers"` (case-insensitive) | `"pioneers"` | Amber/bronze tones |
-| Anything else (`"Women's History"`, etc.) | `"gold"` | Gold/amber tones |
+| Anything else (`"Women's History"`, etc.)            | `"gold"`     | Gold/amber tones   |
 
 > Note: A `"cyan"` theme exists in `getColorStyles()` but is not mapped to any edition yet.
 
@@ -156,12 +158,12 @@ Determined by the `edition` field. Logic lives in `getEditionColor()` in `src/pa
 
 Logic lives in `src/pages/Challenges.tsx`.
 
-| Condition | Displayed in |
-|---|---|
-| `edition === "Women's History"` AND `is_active = true` | **Women's History Edition** section |
+| Condition                                                   | Displayed in                             |
+| ----------------------------------------------------------- | ---------------------------------------- |
+| `edition === "Women's History"` AND `is_active = true`      | **Women's History Edition** section      |
 | `edition === "First Black Pioneers"` AND `is_active = true` | **First Black Pioneers Edition** section |
-| `slug === "pride"` AND `is_active = true` | **Pride Edition** section |
-| `is_active = false` | **Past Editions** (grayed out) |
+| `slug === "pride"` AND `is_active = true`                   | **Pride Edition** section                |
+| `is_active = false`                                         | **Past Editions** (grayed out)           |
 
 ---
 
@@ -179,16 +181,17 @@ Every challenge MUST support the free first-mile preview. This requires:
 
 The Log Miles card uses this exact rendering priority — **never deviate from this order**:
 
-| State | What is shown |
-|---|---|
-| Loading (auth or enrollment check in progress) | Spinner only |
-| **Not signed in** | Large gold "Start Your Free 1 Mile Legacy Passport" button — links to `/auth` |
-| **Signed in, not enrolled, 0 miles logged** (free-mile window) | Full logger with single large gold "Start Your Free 1 Mile Legacy Passport" button that logs 1 mile |
-| **Signed in, not enrolled, ≥ 1 mile logged** (past free window) | Large gold "Start Your Free 1 Mile Legacy Passport" button (no logging inputs) |
-| **Signed in, payment pending** | "Your payment is being processed" message (no logging inputs) |
-| **Signed in and enrolled (paid)** | Full mile logger: quick-add buttons (+1, +3, +5, +7), custom entry form, daily limit display |
+| State                                                           | What is shown                                                                                       |
+| --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Loading (auth or enrollment check in progress)                  | Spinner only                                                                                        |
+| **Not signed in**                                               | Large gold "Start Your Free 1 Mile Legacy Passport" button — links to `/auth`                       |
+| **Signed in, not enrolled, 0 miles logged** (free-mile window)  | Full logger with single large gold "Start Your Free 1 Mile Legacy Passport" button that logs 1 mile |
+| **Signed in, not enrolled, ≥ 1 mile logged** (past free window) | Large gold "Start Your Free 1 Mile Legacy Passport" button (no logging inputs)                      |
+| **Signed in, payment pending**                                  | "Your payment is being processed" message (no logging inputs)                                       |
+| **Signed in and enrolled (paid)**                               | Full mile logger: quick-add buttons (+1, +3, +5, +7), custom entry form, daily limit display        |
 
 **Rules:**
+
 - The text "Sign In to Log Miles" or "Enrollment Required" must **never** appear anywhere in MileLogger.
 - The gold CTA button must always use `bg-primary text-primary-foreground` — never hardcoded colors.
 - The regular logging interface (quick buttons + custom form) is shown **only** after `enrollment.isEnrolled === true`.
@@ -246,21 +249,21 @@ Displays an ordered list of the 6 milestones as cards.
 
 All stamp images MUST follow this vintage parchment aesthetic. This is the **binding standard** for every edition.
 
-| Property | Requirement |
-|---|---|
+| Property              | Requirement                                                                                                                             |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | **Canvas background** | Aged parchment paper — `#F5EDD8` warm cream/tan texture. Covers the **entire** square canvas. No white, no grey, no transparent pixels. |
-| **Shape** | Circular with **double concentric outer ring** |
-| **Top arc** | Decorative wheat or laurel wreath above the name |
-| **Bottom edge** | `LEGACYFIT` brand mark |
-| **Center text** | Pioneer/person name — bold serif all-caps, dominant text (unique per stamp) |
-| **Mileage banner** | Horizontal ribbon/banner — e.g. `"5 MILES"` (unique per milestone) |
-| **Location subtitle** | `location_name` below the name (unique per milestone) |
-| **Ink color** | Deep Navy `#1E3A5F` or Burgundy Red `#7A1E2C` — distressed/worn, not flat |
-| **Typography style** | Bold serif all-caps, vintage hand-crafted look |
-| **Generation model** | `google/gemini-3-pro-image-preview` |
-| **Storage path** | `challenge-images` bucket → `stamps/{milestone_id}.png` |
-| **DB write** | URL written to `milestones.stamp_image_url` AND `passport_stamp_images` table |
-| **UI container** | `bg-[#F5EDD8] rounded-lg` on the `<img>` wrapper in `PassportStamp.tsx` |
+| **Shape**             | Circular with **double concentric outer ring**                                                                                          |
+| **Top arc**           | Decorative wheat or laurel wreath above the name                                                                                        |
+| **Bottom edge**       | `LEGACYFIT` brand mark                                                                                                                  |
+| **Center text**       | Pioneer/person name — bold serif all-caps, dominant text (unique per stamp)                                                             |
+| **Mileage banner**    | Horizontal ribbon/banner — e.g. `"5 MILES"` (unique per milestone)                                                                      |
+| **Location subtitle** | `location_name` below the name (unique per milestone)                                                                                   |
+| **Ink color**         | Deep Navy `#1E3A5F` or Burgundy Red `#7A1E2C` — distressed/worn, not flat                                                               |
+| **Typography style**  | Bold serif all-caps, vintage hand-crafted look                                                                                          |
+| **Generation model**  | `google/gemini-3-pro-image-preview`                                                                                                     |
+| **Storage path**      | `challenge-images` bucket → `stamps/{milestone_id}.png`                                                                                 |
+| **DB write**          | URL written to `milestones.stamp_image_url` AND `passport_stamp_images` table                                                           |
+| **UI container**      | `bg-[#F5EDD8] rounded-lg` on the `<img>` wrapper in `PassportStamp.tsx`                                                                 |
 
 **Locked stamp display**: `blur-sm opacity-80` — artwork visible but obscured until milestone threshold reached.
 
@@ -270,16 +273,16 @@ All stamp images MUST follow this vintage parchment aesthetic. This is the **bin
 
 ## 11. Reference Files
 
-| File | What it governs |
-|---|---|
-| `src/hooks/useMileLogging.ts` | Free first-mile gate, milestone unlock logic |
-| `src/pages/ChallengeRoute.tsx` | Edition color themes, challenge page layout |
-| `src/pages/ChallengePassport.tsx` | Challenge passport page, Journey Stamps + Checkpoint tabs |
-| `src/pages/Challenges.tsx` | Challenge list routing and section assignment |
-| `src/components/PassportStamp.tsx` | Stamp card component — blur/unlock rendering |
-| `src/hooks/usePassportStamps.ts` | Fetches challenge milestones with `isUnlocked` state |
-| `src/components/ChallengePricing.tsx` | Pricing tiers and Stripe checkout trigger |
-| `supabase/functions/create-checkout/index.ts` | Global Stripe price IDs |
-| `supabase/functions/generate-milestone-audio/index.ts` | ElevenLabs audio generation |
-| `supabase/functions/generate-stamp-image/index.ts` | Stamp image generation |
-| `supabase/functions/check-milestone-unlocks/index.ts` | Enrolled user milestone unlock logic |
+| File                                                   | What it governs                                           |
+| ------------------------------------------------------ | --------------------------------------------------------- |
+| `src/hooks/useMileLogging.ts`                          | Free first-mile gate, milestone unlock logic              |
+| `src/pages/ChallengeRoute.tsx`                         | Edition color themes, challenge page layout               |
+| `src/pages/ChallengePassport.tsx`                      | Challenge passport page, Journey Stamps + Checkpoint tabs |
+| `src/pages/Challenges.tsx`                             | Challenge list routing and section assignment             |
+| `src/components/PassportStamp.tsx`                     | Stamp card component — blur/unlock rendering              |
+| `src/hooks/usePassportStamps.ts`                       | Fetches challenge milestones with `isUnlocked` state      |
+| `src/components/ChallengePricing.tsx`                  | Pricing tiers and Stripe checkout trigger                 |
+| `supabase/functions/create-checkout/index.ts`          | Global Stripe price IDs                                   |
+| `supabase/functions/generate-milestone-audio/index.ts` | ElevenLabs audio generation                               |
+| `supabase/functions/generate-stamp-image/index.ts`     | Stamp image generation                                    |
+| `supabase/functions/check-milestone-unlocks/index.ts`  | Enrolled user milestone unlock logic                      |
