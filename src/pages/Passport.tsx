@@ -9,8 +9,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PassportStamp } from "@/components/PassportStamp";
 import { usePassportStamps, useChallenges, type StampWithMilestone } from "@/hooks/usePassportStamps";
+import { useActiveChallenge } from "@/hooks/useActiveChallenge";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ShareMenu } from "@/components/ShareMenu";
+import { Badge } from "@/components/ui/badge";
 
 export default function Passport() {
   const navigate = useNavigate();
@@ -19,6 +23,21 @@ export default function Passport() {
   // Fetch ALL stamps across all challenges (no challengeId filter)
   const { stamps, unlockedCount, totalCount, isLoading } = usePassportStamps();
   const { data: challenges, isLoading: challengesLoading } = useChallenges();
+  const { data: activeChallenge } = useActiveChallenge();
+
+  // Fetch all enrolled challenge IDs for the current user
+  const { data: enrolledChallengeIds } = useQuery({
+    queryKey: ["enrolled-challenge-ids"],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return new Set<string>();
+      const { data } = await supabase
+        .from("user_challenges")
+        .select("challenge_id")
+        .eq("user_id", user.id);
+      return new Set((data || []).map((r) => r.challenge_id));
+    },
+  });
 
   const progressPercent = totalCount > 0 ? (unlockedCount / totalCount) * 100 : 0;
 
@@ -34,7 +53,18 @@ export default function Passport() {
     return acc;
   }, {});
 
-  const challengeGroups = Object.entries(stampsByChallengeId);
+  const activeChallengeId = activeChallenge?.challengeId;
+  const enrolled = enrolledChallengeIds || new Set<string>();
+
+  // Sort: active first, then enrolled, then the rest
+  const challengeGroups = Object.entries(stampsByChallengeId).sort(([a], [b]) => {
+    const aActive = a === activeChallengeId ? 0 : 1;
+    const bActive = b === activeChallengeId ? 0 : 1;
+    if (aActive !== bActive) return aActive - bActive;
+    const aEnrolled = enrolled.has(a) ? 0 : 1;
+    const bEnrolled = enrolled.has(b) ? 0 : 1;
+    return aEnrolled - bEnrolled;
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-amber-950/5 to-background">
