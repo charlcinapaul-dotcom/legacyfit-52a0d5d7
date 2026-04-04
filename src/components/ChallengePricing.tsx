@@ -605,6 +605,35 @@ export const ChallengePricing = ({
         </p>
       </div>
 
+      {/* What's Included Preview Modal */}
+      {showPreviewModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setShowPreviewModal(false)}
+        >
+          <div
+            className="relative max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-xl bg-card p-4 sm:p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowPreviewModal(false)}
+              aria-label="Close preview"
+              className="absolute top-3 right-3 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-black/60 text-[#D4AF37] hover:bg-black/80 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <img
+              src="/boarding_pass_preview.png"
+              alt="Collector's Edition boarding passes preview"
+              className="w-full object-contain rounded-lg"
+            />
+            <p className="text-xs text-muted-foreground/70 text-center mt-4 leading-relaxed">
+              This optional purchase includes printed physical boarding passes that are mailed to you after completing the challenge.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Shipping Address Modal */}
       <Dialog open={showAddressModal} onOpenChange={setShowAddressModal}>
         <DialogContent className="sm:max-w-md">
