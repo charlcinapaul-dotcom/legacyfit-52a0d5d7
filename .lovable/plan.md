@@ -1,28 +1,28 @@
+## Fix Hero Image Edge-to-Edge on All Screens
 
+### Problem
 
-## Add Dedicated Refund Policy Page
+The uploaded `LegacyFit_Hero.png` is a portrait-oriented image. On desktop/tablet (landscape viewports), `object-cover` stretches it but white/transparent borders on the image edges appear as gray bars through the dark overlay.
 
-### What changes
+### Solution — Two changes
 
-1. **New file: `src/pages/RefundPolicy.tsx`**
-   - Create a new page styled identically to `src/pages/Legal.tsx` (same header with back arrow, same card sections, same typography)
-   - Render the full refund policy text provided by the user, using the same `bg-card rounded-xl border border-border p-6` section cards
-   - Organize content into logical sections: All Sales Are Final, Lost Shipments, App Store Purchases, Billing Errors, Fraud/Abuse, Regional Rights, Contact
-   - Use the same icon style (lucide icons) and heading patterns as Legal.tsx
+**1. Process the uploaded image (script)**
 
-2. **Update `src/App.tsx`**
-   - Add lazy import for `RefundPolicy`
-   - Add route: `<Route path="/refund-policy" element={<RefundPolicy />} />`
+- Use the uploaded image in `public/LegacyFit_Hero.png`
+- Run a Python script to detect and replace all white/near-white pixels (RGB > 240) with the parchment color (#B4966E) that matches the map's natural edge color
+- This ensures no white areas remain that would appear gray through the overlay
+- Center the image
 
-3. **Update `src/pages/Contact.tsx`**
-   - Change the Refund Policy `<Link to="/legal">` to `<Link to="/refund-policy">`
+**2. Add a fallback background color to the hero section**
 
-4. **Update `src/components/SiteFooter.tsx`**
-   - Add a "Refund Policy" link pointing to `/refund-policy` in the Legal column (optional, if desired for discoverability)
+- In `src/pages/Landing.tsx`, add a parchment-toned background color (`bg-[#B4966E]`) to the image container `div` so that if the image doesn't fully cover on any breakpoint, the exposed area blends seamlessly with the map edges instead of showing gray
+
+### Files changed
+
+- `src/pages/Landing.tsx` — add `bg-[#B4966E]` class to the image wrapper div (line 55)
 
 ### No changes to
-- Legal.tsx page
-- Terms of Service link
-- FAQ card or any other element on Contact page
-- Any styling or colors
 
+- Mobile layout or styling
+- Hero text, buttons, or overlay opacity
+- Any other page or component
