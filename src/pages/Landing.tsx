@@ -51,20 +51,15 @@ const Landing = () => {
       </Helmet>
       <PageLayout>
       {/* ───── 1. Hero ───── */}
-      <section
-        className="relative min-h-[100vh] flex flex-col justify-start md:justify-center pt-16 pb-20 px-4 overflow-hidden"
-        style={{
-          width: "100vw",
-          maxWidth: "100vw",
-          marginLeft: "50%",
-          transform: "translateX(-50%)",
-          backgroundImage: `url(${heroImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "70% center",
-          backgroundRepeat: "no-repeat",
-          backgroundColor: "#8b7355",
-        }}
-      >
+      <section className="relative min-h-[100vh] flex flex-col justify-start md:justify-center pt-16 pb-20 px-4 overflow-hidden w-full max-w-full">
+        <div className="absolute inset-0 overflow-hidden">
+          <img
+            src={heroImage}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover object-center"
+            loading="eager"
+            draggable={false}
+          />
           <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: "rgba(0,0,0,0.65)" }} />
           {/* Mobile-only text-readability gradient — stacks on top of base overlay */}
           <div
