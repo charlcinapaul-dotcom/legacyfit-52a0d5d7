@@ -453,6 +453,7 @@ const Dashboard = () => {
               )}
             </div>
           </div>
+          </div>
         </div>
 
         {/* Currently Walking pinned card */}
