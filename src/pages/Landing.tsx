@@ -56,8 +56,8 @@ const Landing = () => {
           <img
             src={heroImage}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-            style={{ objectPosition: "75% center" }}
+            className="absolute inset-0 w-full h-full object-cover object-right"
+            style={{ transform: "scale(1.5)", transformOrigin: "right center" }}
           />
           <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: "rgba(0,0,0,0.65)" }} />
           {/* Mobile-only text-readability gradient — stacks on top of base overlay */}
