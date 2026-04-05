@@ -374,14 +374,8 @@ const Dashboard = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Hero Section — matches challenge page hero layout */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary via-card to-secondary border border-border mb-8">
-          <div className="absolute inset-0 bg-gradient-to-r from-background/80 to-transparent z-10" />
-          {activeChallenge?.imageUrl && (
-            <img
-              src={activeChallenge.imageUrl}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover opacity-30"
-            />
-          )}
+          <div className="relative overflow-hidden rounded-2xl" style={{ backgroundImage: "url('/map-bg.png')", backgroundSize: "cover", backgroundPosition: "center" }}>
+         
 
           <div className="relative z-20 p-6 md:p-10">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
