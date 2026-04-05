@@ -54,7 +54,7 @@ const Landing = () => {
       <section className="relative min-h-[100vh] flex flex-col justify-start md:justify-center pt-16 pb-20 px-4 overflow-hidden w-full max-w-full">
         <div className="absolute inset-0 overflow-hidden">
           <img
-            src={boardingPassBg}
+            src={heroImage}
             alt=""
             className="absolute inset-0 w-full h-full object-cover object-right-top md:object-center"
           />
