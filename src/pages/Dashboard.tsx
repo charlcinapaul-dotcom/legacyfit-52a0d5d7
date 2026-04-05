@@ -375,7 +375,6 @@ const Dashboard = () => {
         {/* Hero Section — matches challenge page hero layout */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary via-card to-secondary border border-border mb-8">
           <div className="relative overflow-hidden rounded-2xl" style={{ backgroundImage: "url('/map-bg.png')", backgroundSize: "cover", backgroundPosition: "center" }}>
-         
 
           <div className="relative z-20 p-6 md:p-10">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
