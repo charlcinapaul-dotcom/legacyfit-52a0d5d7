@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight, MapPin, Award, Users, Footprints, TrendingUp, BookOpen, Heart } from "lucide-react";
 import { PageLayout } from "@/components/PageLayout";
 import { supabase } from "@/integrations/supabase/client";
-import boardingPassBg from "@/assets/boarding-pass-bg.png";
+const heroImage = "/LegacyFit_Hero.png";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -54,7 +54,7 @@ const Landing = () => {
       <section className="relative min-h-[100vh] flex flex-col justify-start md:justify-center pt-16 pb-20 px-4 overflow-hidden w-full max-w-full">
         <div className="absolute inset-0 overflow-hidden">
           <img
-            src={boardingPassBg}
+            src={heroImage}
             alt=""
             className="absolute inset-0 w-full h-full object-cover object-right-top md:object-center"
           />
