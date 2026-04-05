@@ -51,15 +51,14 @@ const Landing = () => {
       </Helmet>
       <PageLayout>
       {/* ───── 1. Hero ───── */}
-      <section className="relative min-h-[100vh] flex flex-col justify-start md:justify-center pt-16 pb-20 px-4 overflow-hidden" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)" }}>
+      <section className="relative min-h-[100vh] flex flex-col justify-start md:justify-center pt-16 pb-20 px-4 overflow-hidden w-full max-w-full" style={{ backgroundColor: "#8b7355" }}>
         <div
           className="absolute inset-0"
           style={{
             backgroundImage: `url(${heroImage})`,
             backgroundSize: "cover",
-            backgroundPosition: "center",
+            backgroundPosition: "70% center",
             backgroundRepeat: "no-repeat",
-            backgroundColor: "#b8a07a",
           }}
         />
           <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: "rgba(0,0,0,0.65)" }} />
