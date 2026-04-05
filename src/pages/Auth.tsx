@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
+import { Capacitor } from "@capacitor/core";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -201,20 +203,18 @@ const Auth = () => {
     }
   };
 
-  // Google: web OAuth redirect (unchanged)
+  // Google OAuth — uses Lovable Cloud managed OAuth on web, Supabase fallback on native
   const handleOAuthLogin = async (provider: "google") => {
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`,
-        },
+      const result = await lovable.auth.signInWithOAuth(provider, {
+        redirect_uri: window.location.origin,
       });
 
-      if (error) {
-        toast.error(error.message);
+      if (result.error) {
+        toast.error(result.error.message || "Google Sign-In failed.");
       }
+      if (result.redirected) return; // browser will redirect
     } catch (err) {
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
@@ -222,32 +222,45 @@ const Auth = () => {
     }
   };
 
-  // Apple: native Capacitor plugin → Supabase signInWithIdToken (works inside WKWebView)
+  // Apple Sign-In — native Capacitor plugin on iOS, Lovable Cloud OAuth on web
   const handleAppleLogin = async () => {
     setLoading(true);
     try {
-      const { SignInWithApple } = await import("@capacitor-community/apple-sign-in");
-      const result = await SignInWithApple.authorize({
-        clientId: "com.legacyfit.app",
-        redirectURI: `${window.location.origin}/dashboard`,
-        scopes: "email name",
-        state: crypto.randomUUID(),
-        nonce: crypto.randomUUID(),
-      });
+      if (Capacitor.isNativePlatform()) {
+        // Native iOS: use Capacitor Apple Sign-In plugin
+        const { SignInWithApple } = await import("@capacitor-community/apple-sign-in");
+        const res = await SignInWithApple.authorize({
+          clientId: "com.legacyfit.app",
+          redirectURI: `${window.location.origin}/dashboard`,
+          scopes: "email name",
+          state: crypto.randomUUID(),
+          nonce: crypto.randomUUID(),
+        });
 
-      const identityToken = result.response?.identityToken;
-      if (!identityToken) {
-        toast.error("Apple Sign-In failed: no identity token returned.");
-        return;
-      }
+        const identityToken = res.response?.identityToken;
+        if (!identityToken) {
+          toast.error("Apple Sign-In failed: no identity token returned.");
+          return;
+        }
 
-      const { error } = await supabase.auth.signInWithIdToken({
-        provider: "apple",
-        token: identityToken,
-      });
+        const { error } = await supabase.auth.signInWithIdToken({
+          provider: "apple",
+          token: identityToken,
+        });
 
-      if (error) {
-        toast.error(error.message);
+        if (error) {
+          toast.error(error.message);
+        }
+      } else {
+        // Web: use Lovable Cloud managed Apple OAuth
+        const result = await lovable.auth.signInWithOAuth("apple", {
+          redirect_uri: window.location.origin,
+        });
+
+        if (result.error) {
+          toast.error(result.error.message || "Apple Sign-In failed.");
+        }
+        if (result.redirected) return;
       }
     } catch (err: any) {
       // User cancelled the Apple sheet — don't show an error
