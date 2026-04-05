@@ -70,7 +70,6 @@ const Landing = () => {
               background: "linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.25) 55%, transparent 100%)",
             }}
           />
-        </div>
 
         <div className="container mx-auto text-center relative z-10 pt-20 md:pt-0">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight text-gradient-gold">
