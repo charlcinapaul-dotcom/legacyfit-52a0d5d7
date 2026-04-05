@@ -51,7 +51,7 @@ const Landing = () => {
       </Helmet>
       <PageLayout>
       {/* ───── 1. Hero ───── */}
-      <section className="relative min-h-[100vh] flex flex-col justify-start md:justify-center pt-16 pb-20 px-4 overflow-hidden w-full max-w-full">
+      <section className="relative min-h-[100vh] flex flex-col justify-start md:justify-center pt-16 pb-20 px-4 overflow-hidden" style={{ width: "100vw", marginLeft: "calc(-50vw + 50%)" }}>
         <div
           className="absolute inset-0"
           style={{
