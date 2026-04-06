@@ -70,7 +70,7 @@ const Landing = () => {
               loading="eager"
               draggable={false}
             />
-            <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: "rgba(0,0,0,0.65)" }} />
+            <div className="absolute inset-0 pointer-events-none" style={{ backgroundColor: "rgba(0,0,0,0.45)" }} />
             {/* Mobile-only text-readability gradient — stacks on top of base overlay */}
             <div
               className="absolute inset-0 pointer-events-none md:hidden"
