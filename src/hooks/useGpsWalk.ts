@@ -53,7 +53,7 @@ export function useGpsWalk() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const accumulatedMilesRef = useRef(0);
   const isPausedRef = useRef(false);
-  const bgGeoRunningRef = useRef(false);
+  const watcherIdRef = useRef<string | null>(null);
 
   // Timer tick
   useEffect(() => {
