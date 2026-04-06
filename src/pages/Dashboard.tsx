@@ -6,11 +6,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { 
-  MapPin, 
-  Award, 
-  Users, 
-  Plus, 
+import {
+  MapPin,
+  Award,
+  Users,
+  Plus,
   TrendingUp,
   Target,
   Loader2,
@@ -131,7 +131,9 @@ function ManageSubscriptionSection({ userId }: ManageSubscriptionSectionProps) {
             </p>
           </div>
         </div>
-        <p className="text-lg font-bold text-primary">$9.99 <span className="text-xs font-normal text-muted-foreground">per month</span></p>
+        <p className="text-lg font-bold text-primary">
+          $9.99 <span className="text-xs font-normal text-muted-foreground">per month</span>
+        </p>
         <Button
           onClick={() => navigate("/challenges")}
           size="sm"
@@ -139,7 +141,9 @@ function ManageSubscriptionSection({ userId }: ManageSubscriptionSectionProps) {
         >
           Join Membership
         </Button>
-        <p className="text-[11px] text-muted-foreground text-center">Available after completing your first challenge.</p>
+        <p className="text-[11px] text-muted-foreground text-center">
+          Available after completing your first challenge.
+        </p>
       </CardContent>
     </Card>
   );
@@ -183,7 +187,9 @@ const Dashboard = () => {
   const [milestoneCount, setMilestoneCount] = useState(0);
   const [stampCount, setStampCount] = useState(0);
   const [certOpen, setCertOpen] = useState(false);
-  const [certChallenge, setCertChallenge] = useState<{ name: string; miles: number; imageUrl: string | null } | null>(null);
+  const [certChallenge, setCertChallenge] = useState<{ name: string; miles: number; imageUrl: string | null } | null>(
+    null,
+  );
   const [certGenerating, setCertGenerating] = useState(false);
   const { data: activeChallenge } = useActiveChallenge();
 
@@ -205,7 +211,9 @@ const Dashboard = () => {
 
   useEffect(() => {
     // Set up auth state listener first
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
 
@@ -242,11 +250,7 @@ const Dashboard = () => {
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", userId)
-        .single();
+      const { data, error } = await supabase.from("profiles").select("*").eq("user_id", userId).single();
 
       if (error) {
         console.error("Error fetching profile:", error);
@@ -269,7 +273,8 @@ const Dashboard = () => {
     try {
       const { data, error } = await supabase
         .from("user_challenges")
-        .select(`
+        .select(
+          `
           id,
           miles_logged,
           is_completed,
@@ -285,7 +290,8 @@ const Dashboard = () => {
               location_name
             )
           )
-        `)
+        `,
+        )
         .eq("user_id", userId);
 
       if (error) {
@@ -338,10 +344,7 @@ const Dashboard = () => {
           setCertOpen(true);
 
           // Stamp viewed_at immediately so a reinstall/new device won't re-show it
-          await supabase
-            .from("certificates")
-            .update({ viewed_at: new Date().toISOString() })
-            .eq("id", cert.id);
+          await supabase.from("certificates").update({ viewed_at: new Date().toISOString() }).eq("id", cert.id);
 
           break; // show one modal at a time
         }
@@ -349,7 +352,6 @@ const Dashboard = () => {
     };
     checkCompletions();
   }, [user, userChallenges]);
-
 
   if (loading) {
     return (
@@ -374,138 +376,137 @@ const Dashboard = () => {
       <main className="container mx-auto px-4 py-8">
         {/* Hero Section — matches challenge page hero layout */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-secondary via-card to-secondary border border-border mb-8">
-          <div className="relative overflow-hidden rounded-2xl" style={{ backgroundImage: "url('/map-bg.png')", backgroundSize: "cover", backgroundPosition: "center" }}>
+          <div
+            className="relative overflow-hidden rounded-2xl"
+            style={{
+              backgroundImage: "url('/map-bg.png')",
+              backgroundSize: "contain",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
+            }}
+          >
+            <div className="relative z-20 p-6 md:p-10">
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+                Welcome back, {profile?.display_name}!
+              </h1>
+              <p className="text-muted-foreground max-w-xl mb-8">Ready to unlock more history today?</p>
 
-          <div className="relative z-20 p-6 md:p-10">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-              Welcome back, {profile?.display_name}!
-            </h1>
-            <p className="text-muted-foreground max-w-xl mb-8">
-              Ready to unlock more history today?
-            </p>
-
-            {/* Streak Banner + Share — only when user has an active streak */}
-            {hasStreak && (
-              <div className="flex gap-3 mb-4">
-                <div
-                  className="flex-1 border border-primary/20 rounded-lg p-3 flex items-center gap-4"
-                  style={{ background: "linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05))" }}
-                >
-                  <span className="text-3xl leading-none">🔥</span>
-                  <div>
-                    <p className="text-lg font-bold text-primary leading-tight">
-                      {streakData!.current_streak}-Week Streak
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Keep it going — log miles today to protect your streak
-                    </p>
+              {/* Streak Banner + Share — only when user has an active streak */}
+              {hasStreak && (
+                <div className="flex gap-3 mb-4">
+                  <div
+                    className="flex-1 border border-primary/20 rounded-lg p-3 flex items-center gap-4"
+                    style={{ background: "linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05))" }}
+                  >
+                    <span className="text-3xl leading-none">🔥</span>
+                    <div>
+                      <p className="text-lg font-bold text-primary leading-tight">
+                        {streakData!.current_streak}-Week Streak
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Keep it going — log miles today to protect your streak
+                      </p>
+                    </div>
+                  </div>
+                  <div className="border border-primary/20 rounded-lg p-3 flex items-center">
+                    <ShareMenu
+                      stampName={activeChallenge?.slug || "LegacyFit"}
+                      shareUrl="https://legacyfitvirtual.com"
+                    />
                   </div>
                 </div>
-                <div className="border border-primary/20 rounded-lg p-3 flex items-center">
-                  <ShareMenu
-                    stampName={activeChallenge?.slug || "LegacyFit"}
-                    shareUrl="https://legacyfitvirtual.com"
-                  />
-                </div>
-              </div>
-            )}
+              )}
 
-            {/* Stats Grid — inside hero with backdrop tiles, matching challenge page */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 border border-border">
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <TrendingUp className="w-4 h-4" />
-                  <span className="text-xs uppercase tracking-wide">Total Miles</span>
-                </div>
-                <div className="text-2xl font-bold text-foreground">{profile?.total_miles || 0}</div>
-              </div>
-
-              <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 border border-border">
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <Target className="w-4 h-4" />
-                  <span className="text-xs uppercase tracking-wide">Milestones</span>
-                </div>
-                <div className="text-2xl font-bold text-foreground">{milestoneCount}</div>
-              </div>
-
-              <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 border border-border">
-                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                  <Award className="w-4 h-4" />
-                  <span className="text-xs uppercase tracking-wide">Stamps</span>
-                </div>
-                <div className="text-2xl font-bold text-foreground">{stampCount}</div>
-              </div>
-
-              {/* 4th slot: Longest Streak when banner is active, otherwise full StreakBadge */}
-              {hasStreak ? (
+              {/* Stats Grid — inside hero with backdrop tiles, matching challenge page */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 border border-border">
                   <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                    <Flame className="w-4 h-4" />
-                    <span className="text-xs uppercase tracking-wide">Best Streak</span>
+                    <TrendingUp className="w-4 h-4" />
+                    <span className="text-xs uppercase tracking-wide">Total Miles</span>
                   </div>
-                  <div className="text-2xl font-bold text-foreground">
-                    {streakData?.longest_streak ?? 0}
-                    <span className="text-xs font-normal text-muted-foreground ml-1">wks</span>
-                  </div>
+                  <div className="text-2xl font-bold text-foreground">{profile?.total_miles || 0}</div>
                 </div>
-              ) : (
-                <StreakBadge />
-              )}
+
+                <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 border border-border">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                    <Target className="w-4 h-4" />
+                    <span className="text-xs uppercase tracking-wide">Milestones</span>
+                  </div>
+                  <div className="text-2xl font-bold text-foreground">{milestoneCount}</div>
+                </div>
+
+                <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 border border-border">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                    <Award className="w-4 h-4" />
+                    <span className="text-xs uppercase tracking-wide">Stamps</span>
+                  </div>
+                  <div className="text-2xl font-bold text-foreground">{stampCount}</div>
+                </div>
+
+                {/* 4th slot: Longest Streak when banner is active, otherwise full StreakBadge */}
+                {hasStreak ? (
+                  <div className="bg-background/60 backdrop-blur-sm rounded-xl p-4 border border-border">
+                    <div className="flex items-center gap-2 text-muted-foreground mb-1">
+                      <Flame className="w-4 h-4" />
+                      <span className="text-xs uppercase tracking-wide">Best Streak</span>
+                    </div>
+                    <div className="text-2xl font-bold text-foreground">
+                      {streakData?.longest_streak ?? 0}
+                      <span className="text-xs font-normal text-muted-foreground ml-1">wks</span>
+                    </div>
+                  </div>
+                ) : (
+                  <StreakBadge />
+                )}
+              </div>
             </div>
-          </div>
           </div>
         </div>
 
         {/* Currently Walking pinned card */}
-        {activeChallenge && !activeChallenge.isCompleted && userChallenges.length > 0 && (() => {
-          const activeChallengeData = userChallenges.find(
-            (uc) => uc.challenge?.id === activeChallenge.challengeId
-          );
-          const milesLogged = activeChallenge.milesLogged ?? 0;
-          const totalMiles = activeChallenge.totalMiles ?? 1;
-          const progressPercent = Math.min(100, Math.round((milesLogged / totalMiles) * 100));
-          const milestones: { miles_required: number; title: string }[] =
-            (activeChallengeData?.challenge as any)?.milestones ?? [];
-          const nextMilestone = milestones
-            .filter((m) => m.miles_required > milesLogged)
-            .sort((a, b) => a.miles_required - b.miles_required)[0];
-          return (
-            <div className="bg-card border border-primary/30 rounded-2xl p-5 mb-6">
-              <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">
-                Currently Walking
-              </p>
-              <h3 className="text-xl font-bold text-foreground mb-3">{activeChallenge.title}</h3>
+        {activeChallenge &&
+          !activeChallenge.isCompleted &&
+          userChallenges.length > 0 &&
+          (() => {
+            const activeChallengeData = userChallenges.find((uc) => uc.challenge?.id === activeChallenge.challengeId);
+            const milesLogged = activeChallenge.milesLogged ?? 0;
+            const totalMiles = activeChallenge.totalMiles ?? 1;
+            const progressPercent = Math.min(100, Math.round((milesLogged / totalMiles) * 100));
+            const milestones: { miles_required: number; title: string }[] =
+              (activeChallengeData?.challenge as any)?.milestones ?? [];
+            const nextMilestone = milestones
+              .filter((m) => m.miles_required > milesLogged)
+              .sort((a, b) => a.miles_required - b.miles_required)[0];
+            return (
+              <div className="bg-card border border-primary/30 rounded-2xl p-5 mb-6">
+                <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2">Currently Walking</p>
+                <h3 className="text-xl font-bold text-foreground mb-3">{activeChallenge.title}</h3>
 
-              {/* Progress bar */}
-              <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
-                <span>{progressPercent}% complete</span>
-                <span className="text-primary font-medium">{milesLogged} / {totalMiles} miles</span>
+                {/* Progress bar */}
+                <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+                  <span>{progressPercent}% complete</span>
+                  <span className="text-primary font-medium">
+                    {milesLogged} / {totalMiles} miles
+                  </span>
+                </div>
+                <div className="relative h-2 w-full overflow-hidden rounded-full bg-secondary mb-3">
+                  <div className="h-full bg-primary transition-all" style={{ width: `${progressPercent}%` }} />
+                </div>
+
+                {/* Next milestone */}
+                {nextMilestone && (
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Next stop: <span className="text-foreground font-medium">{nextMilestone.title}</span> —{" "}
+                    {Math.max(0, nextMilestone.miles_required - milesLogged).toFixed(1)} mi away
+                  </p>
+                )}
+
+                <Button className="w-full" onClick={() => navigate(`/challenge/${activeChallenge.slug}`)}>
+                  Continue Walking →
+                </Button>
               </div>
-              <div className="relative h-2 w-full overflow-hidden rounded-full bg-secondary mb-3">
-                <div
-                  className="h-full bg-primary transition-all"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-
-              {/* Next milestone */}
-              {nextMilestone && (
-                <p className="text-sm text-muted-foreground mb-4">
-                  Next stop:{" "}
-                  <span className="text-foreground font-medium">{nextMilestone.title}</span>
-                  {" "}— {Math.max(0, nextMilestone.miles_required - milesLogged).toFixed(1)} mi away
-                </p>
-              )}
-
-              <Button
-                className="w-full"
-                onClick={() => navigate(`/challenge/${activeChallenge.slug}`)}
-              >
-                Continue Walking →
-              </Button>
-            </div>
-          );
-        })()}
+            );
+          })()}
 
         {/* Active Challenges */}
         <div className="mb-8">
@@ -521,106 +522,107 @@ const Dashboard = () => {
               {userChallenges.map((uc) => {
                 const isCompleted = uc.is_completed === true;
                 return (
-                <Card 
-                  key={uc.id} 
-                  className={`bg-card border-border hover:border-primary/50 transition-colors cursor-pointer ${isCompleted ? "border-primary/30" : ""}`}
-                  onClick={() => navigate(`/challenge/${uc.challenge?.slug}`)}
-                >
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-lg bg-secondary overflow-hidden flex-shrink-0">
-                        {uc.challenge?.image_url ? (
-                          <img 
-                            src={uc.challenge.image_url} 
-                            alt={uc.challenge.title}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <MapPin className="w-6 h-6 text-muted-foreground" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-foreground truncate">{uc.challenge?.title}</h3>
-                        {(() => {
-                          const milesLogged = uc.miles_logged || 0;
-                          const milestones = (uc.challenge as any)?.milestones as Milestone[] | undefined;
-                          // Find nearest milestone (the one with miles_required closest to milesLogged)
-                          const nearest = milestones?.length
-                            ? milestones.reduce((prev, curr) =>
-                                Math.abs(curr.miles_required - milesLogged) < Math.abs(prev.miles_required - milesLogged)
-                                  ? curr
-                                  : prev
-                              )
-                            : null;
-                          const locationName = nearest?.location_name?.trim() || null;
-                          return (
-                            <p className="text-sm text-muted-foreground">
-                              {locationName
-                                ? `Walking through ${locationName}`
-                                : `${milesLogged.toFixed(1)} miles walked`}
-                            </p>
-                          );
-                        })()}
-                        <div className="mt-2 h-2 bg-secondary rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-primary rounded-full transition-all"
-                            style={{ 
-                              width: `${Math.min(100, ((uc.miles_logged || 0) / (uc.challenge?.total_miles || 1)) * 100)}%` 
-                            }}
-                          />
+                  <Card
+                    key={uc.id}
+                    className={`bg-card border-border hover:border-primary/50 transition-colors cursor-pointer ${isCompleted ? "border-primary/30" : ""}`}
+                    onClick={() => navigate(`/challenge/${uc.challenge?.slug}`)}
+                  >
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-4">
+                        <div className="w-16 h-16 rounded-lg bg-secondary overflow-hidden flex-shrink-0">
+                          {uc.challenge?.image_url ? (
+                            <img
+                              src={uc.challenge.image_url}
+                              alt={uc.challenge.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <MapPin className="w-6 h-6 text-muted-foreground" />
+                            </div>
+                          )}
                         </div>
-                        {(() => {
-                          if (isCompleted) return null;
-                          const milestones = (uc.challenge as any)?.milestones as Milestone[] | undefined;
-                          if (!milestones?.length) return null;
-                          const milesLogged = uc.miles_logged || 0;
-                          const next = milestones
-                            .filter((m) => m.miles_required > milesLogged)
-                            .sort((a, b) => a.miles_required - b.miles_required)[0];
-                          if (!next) return null;
-                          const remaining = (next.miles_required - milesLogged).toFixed(1);
-                          return (
-                            <p className="mt-1.5 text-xs text-muted-foreground leading-tight">
-                              Next:{" "}
-                              <span style={{ color: "#FFD700" }} className="font-medium">
-                                {next.title}
-                              </span>
-                              {" "}— {remaining} mi away
-                            </p>
-                          );
-                        })()}
-                        {isCompleted && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="mt-2 h-7 px-2 text-xs text-primary hover:text-primary"
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              const { data: cert } = await supabase
-                                .from("certificates")
-                                .select("image_url")
-                                .eq("user_id", user!.id)
-                                .eq("challenge_id", uc.challenge.id)
-                                .maybeSingle();
-                              setCertChallenge({
-                                name: uc.challenge.title,
-                                miles: uc.challenge.total_miles,
-                                imageUrl: cert?.image_url || null,
-                              });
-                              setCertOpen(true);
-                            }}
-                          >
-                            <Trophy className="w-3 h-3 mr-1" />
-                            View Certificate
-                          </Button>
-                        )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-foreground truncate">{uc.challenge?.title}</h3>
+                          {(() => {
+                            const milesLogged = uc.miles_logged || 0;
+                            const milestones = (uc.challenge as any)?.milestones as Milestone[] | undefined;
+                            // Find nearest milestone (the one with miles_required closest to milesLogged)
+                            const nearest = milestones?.length
+                              ? milestones.reduce((prev, curr) =>
+                                  Math.abs(curr.miles_required - milesLogged) <
+                                  Math.abs(prev.miles_required - milesLogged)
+                                    ? curr
+                                    : prev,
+                                )
+                              : null;
+                            const locationName = nearest?.location_name?.trim() || null;
+                            return (
+                              <p className="text-sm text-muted-foreground">
+                                {locationName
+                                  ? `Walking through ${locationName}`
+                                  : `${milesLogged.toFixed(1)} miles walked`}
+                              </p>
+                            );
+                          })()}
+                          <div className="mt-2 h-2 bg-secondary rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-primary rounded-full transition-all"
+                              style={{
+                                width: `${Math.min(100, ((uc.miles_logged || 0) / (uc.challenge?.total_miles || 1)) * 100)}%`,
+                              }}
+                            />
+                          </div>
+                          {(() => {
+                            if (isCompleted) return null;
+                            const milestones = (uc.challenge as any)?.milestones as Milestone[] | undefined;
+                            if (!milestones?.length) return null;
+                            const milesLogged = uc.miles_logged || 0;
+                            const next = milestones
+                              .filter((m) => m.miles_required > milesLogged)
+                              .sort((a, b) => a.miles_required - b.miles_required)[0];
+                            if (!next) return null;
+                            const remaining = (next.miles_required - milesLogged).toFixed(1);
+                            return (
+                              <p className="mt-1.5 text-xs text-muted-foreground leading-tight">
+                                Next:{" "}
+                                <span style={{ color: "#FFD700" }} className="font-medium">
+                                  {next.title}
+                                </span>{" "}
+                                — {remaining} mi away
+                              </p>
+                            );
+                          })()}
+                          {isCompleted && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="mt-2 h-7 px-2 text-xs text-primary hover:text-primary"
+                              onClick={async (e) => {
+                                e.stopPropagation();
+                                const { data: cert } = await supabase
+                                  .from("certificates")
+                                  .select("image_url")
+                                  .eq("user_id", user!.id)
+                                  .eq("challenge_id", uc.challenge.id)
+                                  .maybeSingle();
+                                setCertChallenge({
+                                  name: uc.challenge.title,
+                                  miles: uc.challenge.total_miles,
+                                  imageUrl: cert?.image_url || null,
+                                });
+                                setCertOpen(true);
+                              }}
+                            >
+                              <Trophy className="w-3 h-3 mr-1" />
+                              View Certificate
+                            </Button>
+                          )}
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
                       </div>
-                      <ChevronRight className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
                 );
               })}
             </div>
@@ -631,10 +633,8 @@ const Dashboard = () => {
                   <MapPin className="w-8 h-8 text-muted-foreground" />
                 </div>
                 <h3 className="text-lg font-medium text-foreground mb-2">No Active Challenges</h3>
-                <p className="text-muted-foreground mb-4">
-                  Join a challenge to start your journey through history
-                </p>
-                <Button 
+                <p className="text-muted-foreground mb-4">Join a challenge to start your journey through history</p>
+                <Button
                   className="bg-primary text-primary-foreground hover:bg-primary/90"
                   onClick={() => navigate("/challenges")}
                 >
@@ -650,10 +650,7 @@ const Dashboard = () => {
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-foreground mb-4">Your Digital BIB</h2>
             <div className="max-w-sm mx-auto">
-              <DigitalBib
-                displayName={profile.display_name || "Explorer"}
-                bibNumber={profile.bib_number}
-              />
+              <DigitalBib displayName={profile.display_name || "Explorer"} bibNumber={profile.bib_number} />
             </div>
           </div>
         )}
@@ -677,7 +674,7 @@ const Dashboard = () => {
 
         {/* Quick Actions */}
         <div className="grid sm:grid-cols-2 gap-4">
-          <Card 
+          <Card
             className="bg-card border-border hover:border-primary/50 transition-colors cursor-pointer"
             onClick={() => navigate("/passport")}
           >
@@ -692,7 +689,10 @@ const Dashboard = () => {
             </CardContent>
           </Card>
 
-          <Card className="bg-card border-border hover:border-accent/50 transition-colors cursor-pointer" onClick={() => navigate("/leaderboard")}>
+          <Card
+            className="bg-card border-border hover:border-accent/50 transition-colors cursor-pointer"
+            onClick={() => navigate("/leaderboard")}
+          >
             <CardContent className="p-6 flex items-center gap-4">
               <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center">
                 <Users className="w-6 h-6 text-accent" />
@@ -703,7 +703,6 @@ const Dashboard = () => {
               </div>
             </CardContent>
           </Card>
-
         </div>
 
         {/* Completion Certificate Modal */}
