@@ -1,7 +1,9 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { BackgroundGeolocation } from "@capgo/background-geolocation";
-import { Capacitor } from "@capacitor/core";
+import { BackgroundGeolocationPlugin } from "@capacitor-community/background-geolocation";
+import { registerPlugin, Capacitor } from "@capacitor/core";
 import { Geolocation, type Position } from "@capacitor/geolocation";
+
+const BackgroundGeolocation = registerPlugin<BackgroundGeolocationPlugin>("BackgroundGeolocation");
 
 type WalkStatus = "idle" | "active" | "paused" | "completed";
 
@@ -50,7 +52,7 @@ export function useGpsWalk() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const accumulatedMilesRef = useRef(0);
   const isPausedRef = useRef(false);
-  const bgGeoRunningRef = useRef(false);
+  const watcherIdRef = useRef<string | null>(null);
 
   // Timer tick
   useEffect(() => {
@@ -106,17 +108,17 @@ export function useGpsWalk() {
   // ─── Native background geolocation (iOS/Android) ─────────────────────────
   const startNativeWatch = useCallback(async () => {
     try {
-      await BackgroundGeolocation.start(
+      const id = await BackgroundGeolocation.addWatcher(
         {
-          backgroundMessage: "LegacyFit is tracking your walk distance",
-          backgroundTitle: "LegacyFit GPS Walk",
+          backgroundMessage: "LegacyFit is tracking your walk",
+          backgroundTitle: "Walk in Progress",
           requestPermissions: true,
           stale: false,
-          distanceFilter: 5, // meters — battery-friendly minimum update distance
+          distanceFilter: 10,
         },
-        (location, err) => {
-          if (err) {
-            if (err.code === "NOT_AUTHORIZED") {
+        (location, error) => {
+          if (error) {
+            if (error.code === "NOT_AUTHORIZED") {
               setPermissionDenied(true);
               setError("Location permission is required to track your walk.");
               setStatus("idle");
@@ -128,7 +130,7 @@ export function useGpsWalk() {
           }
         }
       );
-      bgGeoRunningRef.current = true;
+      watcherIdRef.current = id;
     } catch (e: any) {
       console.error("Background geolocation start failed:", e);
       setError("Unable to start GPS. Please check location permissions.");
@@ -137,13 +139,13 @@ export function useGpsWalk() {
   }, [processCoord]);
 
   const stopNativeWatch = useCallback(async () => {
-    if (bgGeoRunningRef.current) {
+    if (watcherIdRef.current !== null) {
       try {
-        await BackgroundGeolocation.stop();
+        await BackgroundGeolocation.removeWatcher({ id: watcherIdRef.current });
       } catch (e) {
         console.warn("Error stopping background geolocation:", e);
       }
-      bgGeoRunningRef.current = false;
+      watcherIdRef.current = null;
     }
   }, []);
 
