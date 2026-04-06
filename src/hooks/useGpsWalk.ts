@@ -1,5 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { BackgroundGeolocation } from "@capacitor-community/background-geolocation";
+import { BackgroundGeolocationPlugin } from "@capacitor-community/background-geolocation";
+import { registerPlugin } from "@capacitor/core";
+
+const BackgroundGeolocation = registerPlugin<BackgroundGeolocationPlugin>("BackgroundGeolocation");
 import { Capacitor } from "@capacitor/core";
 import { Geolocation, type Position } from "@capacitor/geolocation";
 
