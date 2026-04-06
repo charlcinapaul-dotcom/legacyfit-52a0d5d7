@@ -380,7 +380,7 @@ const Dashboard = () => {
             className="relative overflow-hidden rounded-2xl"
             style={{
               backgroundImage: "url('/map-bg.png')",
-              backgroundSize: "contain",
+              backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
             }}
