@@ -1,10 +1,9 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { BackgroundGeolocationPlugin } from "@capacitor-community/background-geolocation";
-import { registerPlugin } from "@capacitor/core";
+import { registerPlugin, Capacitor } from "@capacitor/core";
+import { Geolocation, type Position } from "@capacitor/geolocation";
 
 const BackgroundGeolocation = registerPlugin<BackgroundGeolocationPlugin>("BackgroundGeolocation");
-import { Capacitor } from "@capacitor/core";
-import { Geolocation, type Position } from "@capacitor/geolocation";
 
 type WalkStatus = "idle" | "active" | "paused" | "completed";
 
