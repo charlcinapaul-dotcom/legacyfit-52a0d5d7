@@ -385,7 +385,7 @@ const Dashboard = () => {
               backgroundRepeat: "no-repeat",
             }}
           >
-            <div className="absolute inset-0 z-10" style={{ background: "rgba(0,0,0,0.5)" }} />
+            <div className="absolute inset-0 z-10" style={{ background: "rgba(0,0,0,0.7)" }} />
             <div className="relative z-20 p-6 md:p-10">
               <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
                 Welcome back, {profile?.display_name}!
