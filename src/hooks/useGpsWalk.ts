@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { BackgroundGeolocation } from "@capgo/background-geolocation";
+import { BackgroundGeolocation } from "@capacitor-community/background-geolocation";
 import { Capacitor } from "@capacitor/core";
 import { Geolocation, type Position } from "@capacitor/geolocation";
 
