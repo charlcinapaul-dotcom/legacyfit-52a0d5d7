@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight, MapPin, Award, Users, Footprints, TrendingUp, BookOpen, Heart } from "lucide-react";
 import { PageLayout } from "@/components/PageLayout";
 import { supabase } from "@/integrations/supabase/client";
-const heroImage = "/LegacyFit_Hero.png";
+import portraitMap from "@/assets/map-portrait.png";
+import landscapeMap from "@/assets/map-landscape.png";
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -63,10 +64,20 @@ const Landing = () => {
         {/* ───── 1. Hero ───── */}
         <section className="relative min-h-[100vh] flex flex-col justify-start md:justify-center pt-16 pb-20 px-4 overflow-hidden w-full max-w-full bg-background">
           <div className="absolute inset-0 overflow-hidden bg-[#F0E2C6]">
+            {/* Mobile — Portrait */}
             <img
-              src={heroImage}
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover object-center"
+              src={portraitMap}
+              alt="LegacyFit map background"
+              className="absolute inset-0 w-full h-full object-cover object-center block md:hidden"
+              loading="eager"
+              draggable={false}
+            />
+
+            {/* Tablet & Desktop — Landscape */}
+            <img
+              src={landscapeMap}
+              alt="LegacyFit map background"
+              className="absolute inset-0 w-full h-full object-cover object-center hidden md:block"
               loading="eager"
               draggable={false}
             />
