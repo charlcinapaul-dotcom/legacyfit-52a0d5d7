@@ -1,5 +1,5 @@
 /**
- * Apple In-App Purchase service using RevenueCat via @capgo/capacitor-purchases.
+ * Apple In-App Purchase service using RevenueCat via @revenuecat/purchases-capacitor.
  * Only active on iOS native builds; web falls through to Stripe.
  */
 import { Capacitor } from "@capacitor/core";
@@ -14,7 +14,7 @@ export function isNativeIOS(): boolean {
 
 /** Lazy-load the plugin only on native iOS */
 async function getPurchases() {
-  const { CapacitorPurchases } = await import("@capgo/capacitor-purchases");
+  const { CapacitorPurchases } = await import("@revenuecat/purchases-capacitor");
   return CapacitorPurchases;
 }
 
