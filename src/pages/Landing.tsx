@@ -68,7 +68,7 @@ const Landing = () => {
             <img
               src={portraitMap}
               alt="LegacyFit map background"
-              className="absolute inset-0 w-full h-full object-contain object-center block md:hidden"
+              className="absolute inset-x-0 top-0 w-full h-auto object-contain object-center block md:hidden"
               loading="eager"
               draggable={false}
             />
@@ -77,7 +77,7 @@ const Landing = () => {
             <img
               src={landscapeMap}
               alt="LegacyFit map background"
-              className="absolute inset-0 w-full h-full object-contain lg:object-cover hidden md:block"
+              className="absolute inset-x-0 top-0 w-full h-auto object-contain object-center hidden md:block"
               loading="eager"
               draggable={false}
             />
