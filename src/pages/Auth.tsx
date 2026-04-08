@@ -228,7 +228,7 @@ const Auth = () => {
     try {
       if (Capacitor.isNativePlatform()) {
         // Native iOS: use Capacitor Apple Sign-In plugin
-        const { SignInWithApple } = await import("@capawesome/capacitor-apple-sign-in");
+        const { AppleSignIn } = await import("@capawesome/capacitor-apple-sign-in");
         const res = await SignInWithApple.authorize({
           clientId: "com.legacyfit.app",
           redirectURI: `${window.location.origin}/dashboard`,
