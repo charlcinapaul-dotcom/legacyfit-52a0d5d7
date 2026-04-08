@@ -22,7 +22,7 @@ async function getPurchases() {
 export async function initIAP(appUserId?: string): Promise<void> {
   if (!isNativeIOS()) return;
   const Purchases = await getPurchases();
-  await Purchases.setup({
+  await Purchases.configure({
     apiKey: REVENUECAT_APPLE_API_KEY,
     ...(appUserId ? { appUserID: appUserId } : {}),
   });
