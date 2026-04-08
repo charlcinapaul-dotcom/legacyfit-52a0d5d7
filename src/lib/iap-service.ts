@@ -14,15 +14,15 @@ export function isNativeIOS(): boolean {
 
 /** Lazy-load the plugin only on native iOS */
 async function getPurchases() {
-  const { CapacitorPurchases } = await import("@revenuecat/purchases-capacitor");
-  return CapacitorPurchases;
+  const { Purchases } = await import("@revenuecat/purchases-capacitor");
+  return Purchases;
 }
 
 /** Configure RevenueCat — call once on app launch (iOS only) */
 export async function initIAP(appUserId?: string): Promise<void> {
   if (!isNativeIOS()) return;
   const Purchases = await getPurchases();
-  await Purchases.setup({
+  await Purchases.configure({
     apiKey: REVENUECAT_APPLE_API_KEY,
     ...(appUserId ? { appUserID: appUserId } : {}),
   });
@@ -54,7 +54,7 @@ export async function purchaseMonthlyPass(): Promise<{
   const Purchases = await getPurchases();
 
   try {
-    const { offerings } = await Purchases.getOfferings();
+    const offerings = await Purchases.getOfferings();
     const currentOffering = offerings.current;
 
     if (!currentOffering || !currentOffering.monthly) {
@@ -64,8 +64,7 @@ export async function purchaseMonthlyPass(): Promise<{
     const monthlyPackage = currentOffering.monthly;
 
     const { customerInfo } = await Purchases.purchasePackage({
-      identifier: monthlyPackage.identifier,
-      offeringIdentifier: currentOffering.identifier,
+      aPackage: monthlyPackage,
     });
 
     const isActive = !!customerInfo.entitlements.active[ENTITLEMENT_ID];
@@ -88,7 +87,7 @@ export async function purchaseDigitalAccess(): Promise<{
   const Purchases = await getPurchases();
 
   try {
-    const { offerings } = await Purchases.getOfferings();
+    const offerings = await Purchases.getOfferings();
     const currentOffering = offerings.current;
 
     if (!currentOffering) {
@@ -98,8 +97,7 @@ export async function purchaseDigitalAccess(): Promise<{
     // Look for a package with the digital access product
     const allPackages = currentOffering.availablePackages || [];
     const digitalPkg = allPackages.find(
-      (pkg: { product?: { identifier?: string } }) =>
-        pkg.product?.identifier === "legacyfit.digital"
+      (pkg) => pkg.product?.identifier === "legacyfit.digital"
     );
 
     if (!digitalPkg) {
@@ -108,8 +106,7 @@ export async function purchaseDigitalAccess(): Promise<{
     }
 
     const { customerInfo } = await Purchases.purchasePackage({
-      identifier: digitalPkg.identifier,
-      offeringIdentifier: currentOffering.identifier,
+      aPackage: digitalPkg,
     });
 
     const isActive = !!customerInfo.entitlements.active[ENTITLEMENT_ID];
