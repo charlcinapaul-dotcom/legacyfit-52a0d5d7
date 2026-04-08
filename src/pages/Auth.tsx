@@ -229,15 +229,13 @@ const Auth = () => {
       if (Capacitor.isNativePlatform()) {
         // Native iOS: use Capacitor Apple Sign-In plugin
         const { AppleSignIn } = await import("@capawesome/capacitor-apple-sign-in");
-        const res = await SignInWithApple.authorize({
-          clientId: "com.legacyfit.app",
-          redirectURI: `${window.location.origin}/dashboard`,
-          scopes: "email name",
-          state: crypto.randomUUID(),
+        const res = await AppleSignIn.signIn({
+          scopes: ["email", "fullName"],
           nonce: crypto.randomUUID(),
+          state: crypto.randomUUID(),
         });
 
-        const identityToken = res.response?.identityToken;
+        const identityToken = res.identityToken;
         if (!identityToken) {
           toast.error("Apple Sign-In failed: no identity token returned.");
           return;
