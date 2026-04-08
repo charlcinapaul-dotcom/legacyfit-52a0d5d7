@@ -14,8 +14,8 @@ export function isNativeIOS(): boolean {
 
 /** Lazy-load the plugin only on native iOS */
 async function getPurchases() {
-  const mod = await import("@revenuecat/purchases-capacitor");
-  return mod.Purchases ?? mod.default;
+  const { Purchases } = await import("@revenuecat/purchases-capacitor");
+  return Purchases;
 }
 
 /** Configure RevenueCat — call once on app launch (iOS only) */
