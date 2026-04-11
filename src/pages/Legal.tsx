@@ -3,24 +3,35 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, BookOpen, Shield, FileText, Mail } from "lucide-react";
 import { DisclaimerBanner } from "@/components/DisclaimerBanner";
 
-
 const Legal = () => {
   return (
     <div className="min-h-screen bg-background w-full max-w-full overflow-x-hidden">
       <Helmet>
-        <title>Legal Information — LegacyFit Terms & Policies</title>
-        <meta name="description" content="LegacyFit legal information including terms of use, content attribution, and contact details for legal inquiries." />
+        <title>Legal Information — LegacyFit Terms </title>
+        <meta
+          name="description"
+          content="LegacyFit legal information including terms of use, content attribution, and contact details for legal inquiries."
+        />
         <meta property="og:title" content="Legal Information — LegacyFit" />
-        <meta property="og:description" content="Review LegacyFit's terms of use, content attribution policy, and legal contact information." />
+        <meta
+          property="og:description"
+          content="Review LegacyFit's terms of use, content attribution policy, and legal contact information."
+        />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary" />
         <meta name="twitter:title" content="Legal Information — LegacyFit" />
-        <link rel="canonical" href={typeof window !== "undefined" ? window.location.href : "https://legacyfitvirtual.com/legal"} />
+        <link
+          rel="canonical"
+          href={typeof window !== "undefined" ? window.location.href : "https://legacyfitvirtual.com/legal"}
+        />
       </Helmet>
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+          <Link
+            to="/"
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
             <ArrowLeft className="w-5 h-5" />
             <span>Back</span>
           </Link>
@@ -60,14 +71,14 @@ const Legal = () => {
               </div>
               <div className="text-sm text-muted-foreground space-y-3">
                 <p>
-                  By using LegacyFit, you agree to use the platform for personal, non-commercial purposes. 
-                  All content, including historical narratives and milestone descriptions, is provided for 
-                  educational and motivational purposes.
+                  By using LegacyFit, you agree to use the platform for personal, non-commercial purposes. All content,
+                  including historical narratives and milestone descriptions, is provided for educational and
+                  motivational purposes.
                 </p>
                 <p>
-                  Users are responsible for ensuring their physical fitness before participating in any 
-                  walking, running, or jogging challenges. Always consult with a healthcare professional 
-                  before beginning any new exercise program.
+                  Users are responsible for ensuring their physical fitness before participating in any walking,
+                  running, or jogging challenges. Always consult with a healthcare professional before beginning any new
+                  exercise program.
                 </p>
               </div>
             </section>
@@ -80,12 +91,12 @@ const Legal = () => {
               </div>
               <div className="text-sm text-muted-foreground space-y-3">
                 <p>
-                  Historical information presented in LegacyFit challenges is compiled from publicly 
-                  available educational sources. We strive for accuracy and respect in all portrayals.
+                  Historical information presented in LegacyFit challenges is compiled from publicly available
+                  educational sources. We strive for accuracy and respect in all portrayals.
                 </p>
                 <p>
-                  If you are a rights holder or representative and have concerns about any content, 
-                  please contact us using the information below.
+                  If you are a rights holder or representative and have concerns about any content, please contact us
+                  using the information below.
                 </p>
               </div>
             </section>
@@ -98,20 +109,20 @@ const Legal = () => {
               </div>
               <div className="text-sm text-muted-foreground">
                 <p>
-                  For questions, concerns, or inquiries regarding legal matters, content usage, or 
-                  attribution, please reach out to our team at:
+                  For questions, concerns, or inquiries regarding legal matters, content usage, or attribution, please
+                  reach out to our team at:
                 </p>
                 <p className="mt-2 font-medium text-foreground">
-                  <a href="mailto:support@legacyfitvirtual.com" className="hover:underline">support@legacyfitvirtual.com</a>
+                  <a href="mailto:support@legacyfitvirtual.com" className="hover:underline">
+                    support@legacyfitvirtual.com
+                  </a>
                 </p>
               </div>
             </section>
           </div>
 
           {/* Last Updated */}
-          <div className="text-center mt-12 text-xs text-muted-foreground">
-            Last updated: January 2025
-          </div>
+          <div className="text-center mt-12 text-xs text-muted-foreground">Last updated: January 2025</div>
         </div>
       </main>
     </div>
