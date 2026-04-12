@@ -1,50 +1,73 @@
 
 
-## Switch Stripe from Test Mode to Live Mode
+## Fix: "Loading your journey..." stuck screen for email/password users
 
-### What you need to do in Stripe Dashboard (your side)
+### Root cause
 
-1. **Toggle to Live mode** in your Stripe Dashboard (top-right switch)
+When an email/password user logs in, the Dashboard calls `fetchProfile` which uses `.single()` to fetch from `profiles`. If no profile row exists (e.g., the `handle_new_user` trigger failed or didn't fire), `.single()` returns an error, the profile is never set, `loading` stays false but `profile` stays null, and the UI shows the spinner indefinitely.
 
-2. **Create live-mode products and prices** that mirror your test ones:
-   - Digital Collection — $12.99 one-time
-   - Collector's Edition — $29.00 one-time
-   - Collector's Edition Subscriber — $19.00 one-time
-   - LegacyFit Digital Pass — $9.99/month recurring
+Google OAuth works because those users are confirmed immediately and the trigger fires reliably.
 
-3. **Copy each new live price ID** (they'll start with `price_` but be different from your test IDs)
+### Solution
 
-4. **Get your live API keys:**
-   - Go to Developers → API Keys (in live mode)
-   - Copy your **Live Secret Key** (`sk_live_...`)
+Modify `fetchProfile` in `src/pages/Dashboard.tsx` to **upsert** a profile row if none is found, ensuring every authenticated user always has a profile.
 
-5. **Create a live webhook endpoint:**
-   - Go to Developers → Webhooks (in live mode)
-   - Add endpoint URL: `https://utfexhdncajccdpvquky.supabase.co/functions/v1/stripe-webhook`
-   - Select events: `checkout.session.completed`, `customer.subscription.deleted`, `customer.subscription.updated`, `invoice.payment_failed`
-   - Copy the **Webhook Signing Secret** (`whsec_...`)
-
-### What I will update in the codebase
-
-Once you provide the live price IDs, I will:
-
-1. **Update `STRIPE_SECRET_KEY`** — replace test key with your live secret key
-2. **Update `STRIPE_WEBHOOK_SECRET`** — replace test webhook secret with your live webhook signing secret
-3. **Update `supabase/functions/create-checkout/index.ts`** — replace all 4 test price IDs with the live ones
-
-### Files changed
+### Changes
 
 | File | Change |
 |---|---|
-| `supabase/functions/create-checkout/index.ts` | Replace 4 test-mode price IDs with live-mode price IDs |
-| Secrets: `STRIPE_SECRET_KEY` | Replace with live secret key |
-| Secrets: `STRIPE_WEBHOOK_SECRET` | Replace with live webhook signing secret |
+| `src/pages/Dashboard.tsx` | In `fetchProfile`: change `.single()` to `.maybeSingle()`. If no profile row is returned, upsert one using the user's ID, then re-fetch and continue. |
 
-### What I need from you
+### Implementation detail
 
-1. Your 4 live price IDs (one for each tier)
-2. Confirmation to update the secret key (I'll prompt you securely)
-3. Confirmation to update the webhook secret
+```typescript
+const fetchProfile = async (userId: string) => {
+  try {
+    let { data, error } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
 
-No code logic changes are needed — the checkout, webhook, and verify-payment functions all work identically in live mode. Only the keys and price IDs change.
+    if (error) {
+      console.error("Error fetching profile:", error);
+      setLoading(false);
+      return;
+    }
+
+    // Profile row missing — create one
+    if (!data) {
+      const { error: upsertError } = await supabase
+        .from("profiles")
+        .upsert({ user_id: userId }, { onConflict: "user_id" });
+
+      if (upsertError) {
+        console.error("Error creating profile:", upsertError);
+        setLoading(false);
+        return;
+      }
+
+      // Re-fetch after upsert
+      const { data: newData } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+      data = newData;
+    }
+
+    setProfile(data);
+    if (!data?.display_name) {
+      navigate("/onboarding");
+      return;
+    }
+  } catch (err) {
+    console.error("Error:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+```
+
+This is a single-file change. No database migration needed -- the existing RLS policies already allow authenticated users to insert their own profile (`auth.uid() = user_id`).
 
