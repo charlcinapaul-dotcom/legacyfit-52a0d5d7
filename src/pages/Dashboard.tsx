@@ -250,17 +250,39 @@ const Dashboard = () => {
 
   const fetchProfile = async (userId: string) => {
     try {
-      const { data, error } = await supabase.from("profiles").select("*").eq("user_id", userId).single();
+      let { data, error } = await supabase.from("profiles").select("*").eq("user_id", userId).maybeSingle();
 
       if (error) {
         console.error("Error fetching profile:", error);
-      } else {
-        setProfile(data);
-        // Guard: redirect to onboarding if no display_name set yet
-        if (!data?.display_name) {
-          navigate("/onboarding");
+        setLoading(false);
+        return;
+      }
+
+      // Profile row missing — create one
+      if (!data) {
+        const { error: upsertError } = await supabase
+          .from("profiles")
+          .upsert({ user_id: userId }, { onConflict: "user_id" });
+
+        if (upsertError) {
+          console.error("Error creating profile:", upsertError);
+          setLoading(false);
           return;
         }
+
+        // Re-fetch after upsert
+        const { data: newData } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("user_id", userId)
+          .maybeSingle();
+        data = newData;
+      }
+
+      setProfile(data);
+      if (!data?.display_name) {
+        navigate("/onboarding");
+        return;
       }
     } catch (err) {
       console.error("Error:", err);
