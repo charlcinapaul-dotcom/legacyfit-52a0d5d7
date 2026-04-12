@@ -13,8 +13,9 @@ export function useHasClaimedFreePreview() {
     staleTime: 5 * 60_000,
     gcTime: 10 * 60_000,
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return false;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return false;
+      const user = session.user;
 
       const { data: profile, error } = await supabase
         .from("profiles")
