@@ -76,8 +76,10 @@ const Onboarding = () => {
 
       const { error: updateError } = await supabase
         .from("profiles")
-        .update({ display_name: username.trim() })
-        .eq("user_id", session.user.id);
+        .upsert(
+          { user_id: session.user.id, display_name: username.trim() },
+          { onConflict: "user_id" }
+        );
 
       if (updateError) {
         toast.error("Failed to save your name. Please try again.");
