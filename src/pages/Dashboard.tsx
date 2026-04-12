@@ -217,8 +217,9 @@ const Dashboard = () => {
       setSession(session);
       setUser(session?.user ?? null);
 
-      if (!session) {
+      if (event === 'SIGNED_OUT' || !session) {
         navigate("/auth");
+        return;
       }
 
       // Defer profile fetch to avoid deadlock
