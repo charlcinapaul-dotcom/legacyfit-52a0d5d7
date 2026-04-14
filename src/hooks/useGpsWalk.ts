@@ -1,5 +1,9 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import type { BackgroundGeolocationPlugin } from "@capgo/background-geolocation";
+// BackgroundGeolocationPlugin type — inlined to avoid missing type declarations at build time
+interface BackgroundGeolocationPlugin {
+  addWatcher(options: any, callback: (location: any, error: any) => void): Promise<string>;
+  removeWatcher(options: { id: string }): Promise<void>;
+}
 import { registerPlugin, Capacitor } from "@capacitor/core";
 import { Geolocation, type Position } from "@capacitor/geolocation";
 
