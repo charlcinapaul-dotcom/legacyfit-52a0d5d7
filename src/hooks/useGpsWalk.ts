@@ -1,5 +1,9 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import type { BackgroundGeolocationPlugin } from "@capacitor-community/background-geolocation";
+// BackgroundGeolocationPlugin type — inlined to avoid missing type declarations at build time
+interface BackgroundGeolocationPlugin {
+  addWatcher(options: any, callback: (location: any, error: any) => void): Promise<string>;
+  removeWatcher(options: { id: string }): Promise<void>;
+}
 import { registerPlugin, Capacitor } from "@capacitor/core";
 import { Geolocation, type Position } from "@capacitor/geolocation";
 
@@ -202,7 +206,7 @@ export function useGpsWalk() {
     }
   }, [startNativeWatch, startWebWatch]);
 
-  const startWalk = useCallback(() => {
+  const startWalk = useCallback(async () => {
     setPermissionDenied(false);
     setError(null);
     setMiles(0);
@@ -211,6 +215,11 @@ export function useGpsWalk() {
     lastCoordRef.current = null;
     isPausedRef.current = false;
     setStatus("active");
+    try {
+      (window as any)._wakeLock = await (navigator as any).wakeLock?.request("screen");
+    } catch (e) {
+      console.warn("Wake lock unavailable", e);
+    }
     startWatch();
   }, [startWatch]);
 
@@ -226,11 +235,19 @@ export function useGpsWalk() {
   }, []);
 
   const endWalk = useCallback(async () => {
+    try {
+      await (window as any)._wakeLock?.release();
+      (window as any)._wakeLock = null;
+    } catch (e) {}
     await stopTracking();
     setStatus("completed");
   }, [stopTracking]);
 
   const discardWalk = useCallback(async () => {
+    try {
+      await (window as any)._wakeLock?.release();
+      (window as any)._wakeLock = null;
+    } catch (e) {}
     await stopTracking();
     accumulatedMilesRef.current = 0;
     setMiles(0);
