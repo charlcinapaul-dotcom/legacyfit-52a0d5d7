@@ -6,7 +6,7 @@ import { useParams, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
-import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar, Volume2, VolumeX, RotateCcw, Wand2, Loader2, Sparkles, X, Footprints, Navigation } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Target, Trophy, Lock, CheckCircle2, Calendar, Volume2, VolumeX, RotateCcw, Wand2, Loader2, Sparkles, X, Footprints, Activity } from "lucide-react";
 
 import { useMilestoneAudio } from "@/hooks/useMilestoneAudio";
 import { cn } from "@/lib/utils";
@@ -475,12 +475,12 @@ const ChallengeRoute = () => {
                   className={cn(isCompleted && "opacity-40 !bg-transparent !shadow-none !text-muted-foreground data-[state=active]:!bg-transparent data-[state=active]:!shadow-none data-[state=active]:!text-muted-foreground")}
                 >Log Steps</TabsTrigger>
                 <TabsTrigger
-                  value="gps"
+                  value="health"
                   disabled={isCompleted}
                   className={cn("flex items-center gap-1.5", isCompleted && "opacity-40 !bg-transparent !shadow-none !text-muted-foreground data-[state=active]:!bg-transparent data-[state=active]:!shadow-none data-[state=active]:!text-muted-foreground")}
                 >
-                  <Navigation className="w-3.5 h-3.5" />
-                  GPS Walk
+                  <Activity className="w-3.5 h-3.5" />
+                  Health Sync
                 </TabsTrigger>
               </TabsList>
 
@@ -514,8 +514,8 @@ const ChallengeRoute = () => {
                       challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
                     />
                   </TabsContent>
-                  <TabsContent value="gps">
-                    <GpsWalkTracker
+                  <TabsContent value="health">
+                    <HealthSyncTracker
                       challengeId={challenge.id}
                       challengeSlug={slug}
                       challengeName={challenge.name}
