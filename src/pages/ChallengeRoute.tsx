@@ -19,7 +19,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChallengePricing } from "@/components/ChallengePricing";
 import { SubscriptionUpsellCard } from "@/components/SubscriptionUpsellCard";
 
-import { GpsWalkTracker } from "@/components/GpsWalkTracker";
+// GPS Walk code retained but hidden from UI
+// import { GpsWalkTracker } from "@/components/GpsWalkTracker";
+import { HealthSyncTracker } from "@/components/HealthSyncTracker";
 import { useChallengeBySlug } from "@/hooks/useChallengeBySlug";
 import { useEnrollmentStatus } from "@/hooks/useEnrollmentStatus";
 import { Skeleton } from "@/components/ui/skeleton";
