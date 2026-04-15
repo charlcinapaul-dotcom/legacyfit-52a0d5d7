@@ -48,6 +48,13 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
     setError(null);
     setMilesSynced(null);
 
+    // Request wake lock to keep screen on during sync
+    try {
+      (window as any)._wakeLock = await (navigator as any).wakeLock?.request("screen");
+    } catch (e) {
+      console.warn("Wake lock unavailable", e);
+    }
+
     try {
       // Dynamic import to avoid breaking web builds
       const { Health } = await import("@capgo/capacitor-health");
@@ -155,6 +162,11 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
       console.error("Health sync error:", err);
       setError(err?.message || "Failed to sync health data.");
     } finally {
+      // Release wake lock
+      try {
+        await (window as any)._wakeLock?.release();
+        (window as any)._wakeLock = null;
+      } catch (e) {}
       setIsSyncing(false);
     }
   }, [challengeId, healthSource]);
