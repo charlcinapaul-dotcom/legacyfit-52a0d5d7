@@ -162,6 +162,11 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
       console.error("Health sync error:", err);
       setError(err?.message || "Failed to sync health data.");
     } finally {
+      // Release wake lock
+      try {
+        await (window as any)._wakeLock?.release();
+        (window as any)._wakeLock = null;
+      } catch (e) {}
       setIsSyncing(false);
     }
   }, [challengeId, healthSource]);
