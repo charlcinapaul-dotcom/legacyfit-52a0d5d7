@@ -89,6 +89,27 @@ const PrivacyPolicy = () => (
                   </p>
                 </div>
                 <div>
+                  <p className="font-medium text-foreground mb-1">Health Data</p>
+                  <p>
+                    LegacyFit requests access to read step data from Apple HealthKit (iOS) and Google Health Connect
+                    (Android). This data is used solely to calculate miles walked and credit them toward your active
+                    walking challenge. LegacyFit does not store your raw health data on our servers — only the
+                    calculated miles are saved to your account. LegacyFit does not share your health data with any
+                    third parties for advertising or marketing purposes.
+                  </p>
+                  <p className="mt-2">
+                    <strong>iOS Users:</strong> You can revoke HealthKit access at any time in your iPhone Settings
+                    under Privacy &amp; Security → Health → LegacyFit.
+                  </p>
+                  <p className="mt-2">
+                    <strong>Android Users:</strong> You can revoke Health Connect access at any time in your Android
+                    Settings under Health Connect → App Permissions → LegacyFit.
+                  </p>
+                  <p className="mt-2">
+                    LegacyFit does not write any data to Apple HealthKit or Google Health Connect.
+                  </p>
+                </div>
+                <div>
                   <p className="font-medium text-foreground mb-1">Payment Information</p>
                   <p>
                     Payments are processed securely through Stripe. We do not store credit card numbers or payment
