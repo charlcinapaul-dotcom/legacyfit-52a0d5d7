@@ -79,14 +79,29 @@ const PrivacyPolicy = () => (
                 <div>
                   <p className="font-medium text-foreground mb-1">Location Data</p>
                   <p>
-                    LegacyFit uses GPS location data during active walk tracking to measure walking distance in
-                    real-time. When you start a GPS Walk, the app tracks your location <strong>continuously in the
-                    background</strong>, including when the screen is locked or the app is not in the foreground. This
-                    background tracking is required to accurately measure distance while you walk. Background location
-                    tracking is only active during a walk session you initiate and stops automatically when you end or
-                    discard the walk. We do not store precise location coordinates or location history. Location access
-                    can be disabled at any time in your device settings.
+                    LegacyFit does not collect or store GPS location data. Walking distance is calculated using step
+                    data read from Apple HealthKit (iOS) or Google Health Connect (Android). We do not track your
+                    location in the foreground or background at any time.
                   </p>
+                </div>
+                <div>
+                  <p className="font-medium text-foreground mb-1">Health Data</p>
+                  <p>
+                    LegacyFit requests access to read step data from Apple HealthKit (iOS) and Google Health Connect
+                    (Android). This data is used solely to calculate miles walked and credit them toward your active
+                    walking challenge. LegacyFit does not store your raw health data on our servers — only the
+                    calculated miles are saved to your account. LegacyFit does not share your health data with any third
+                    parties for advertising or marketing purposes.
+                  </p>
+                  <p className="mt-2">
+                    <strong>iOS Users:</strong> You can revoke HealthKit access at any time in your iPhone Settings
+                    under Privacy &amp; Security → Health → LegacyFit.
+                  </p>
+                  <p className="mt-2">
+                    <strong>Android Users:</strong> You can revoke Health Connect access at any time in your Android
+                    Settings under Health Connect → App Permissions → LegacyFit.
+                  </p>
+                  <p className="mt-2">LegacyFit does not write any data to Apple HealthKit or Google Health Connect.</p>
                 </div>
                 <div>
                   <p className="font-medium text-foreground mb-1">Payment Information</p>
@@ -284,7 +299,7 @@ const PrivacyPolicy = () => (
             </section>
           </div>
 
-          <div className="text-center mt-12 text-xs text-muted-foreground">Last updated: March 22, 2026</div>
+          <div className="text-center mt-12 text-xs text-muted-foreground">Last updated: April 16, 2026</div>
         </div>
       </main>
     </div>
