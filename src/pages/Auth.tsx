@@ -30,12 +30,30 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
+  // Resolve where to send a signed-in user: onboarding if they have no display_name yet, otherwise the requested redirect.
+  const resolveDestination = async (userId: string): Promise<string> => {
+    try {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (!profile?.display_name || !profile.display_name.trim()) {
+        return "/onboarding";
+      }
+    } catch (err) {
+      console.error("Failed to load profile for redirect:", err);
+    }
+    return redirectAfterAuth;
+  };
+
   useEffect(() => {
     // Check if already logged in
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        navigate(redirectAfterAuth);
+        const dest = await resolveDestination(session.user.id);
+        navigate(dest);
       }
     };
     checkSession();
@@ -100,7 +118,8 @@ const Auth = () => {
       }
 
       if (session && event !== 'PASSWORD_RECOVERY') {
-        navigate(redirectAfterAuth);
+        const dest = await resolveDestination(session.user.id);
+        navigate(dest);
       }
     });
 
