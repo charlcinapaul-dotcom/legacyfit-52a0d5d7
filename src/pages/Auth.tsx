@@ -118,7 +118,8 @@ const Auth = () => {
       }
 
       if (session && event !== 'PASSWORD_RECOVERY') {
-        navigate(redirectAfterAuth);
+        const dest = await resolveDestination(session.user.id);
+        navigate(dest);
       }
     });
 
