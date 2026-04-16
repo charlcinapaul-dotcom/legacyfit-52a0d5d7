@@ -41,6 +41,9 @@ export function HealthSyncTracker({ challengeId }: HealthSyncTrackerProps) {
             <p className="text-xs text-muted-foreground">
               Sync steps from {sourceName}
             </p>
+            <p className="text-[11px] text-muted-foreground/70 mt-1">
+              Only miles are stored — never your raw health data.
+            </p>
           </div>
         </div>
 
@@ -114,19 +117,6 @@ export function HealthSyncTracker({ challengeId }: HealthSyncTrackerProps) {
         )}
       </div>
 
-      {/* Privacy Notice */}
-      <div className="bg-secondary/30 border border-border rounded-xl p-5">
-        <div className="flex items-start gap-3">
-          <Shield className="w-5 h-5 text-muted-foreground mt-0.5 shrink-0" />
-          <div className="text-xs text-muted-foreground leading-relaxed">
-            <p className="font-semibold text-foreground/80 mb-1">Privacy Notice</p>
-            <p>
-              LegacyFit reads your step data from {sourceName} to credit miles toward challenges.
-              Your health data is never stored on our servers — only the calculated miles.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
