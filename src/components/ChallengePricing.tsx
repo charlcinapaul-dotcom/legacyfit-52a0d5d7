@@ -184,6 +184,18 @@ export const ChallengePricing = ({
           await supabase.functions.invoke("sync-iap-subscription", {
             body: { isActive: true, expiresDate: null, productIdentifier: "legacyfit.digital" },
           });
+
+          // Grant challenge access in the database (RLS-bypassed via service role).
+          const { data: unlockData, error: unlockErr } = await supabase.functions.invoke(
+            "unlock-iap-challenge",
+            { body: { challengeId, productIdentifier: "legacyfit.digital" } }
+          );
+          if (unlockErr || !unlockData?.success) {
+            const msg = unlockErr?.message || unlockData?.error || "Could not unlock the challenge. Please contact support.";
+            toast({ title: "Unlock failed", description: msg, variant: "destructive" });
+            return;
+          }
+
           toast({ title: "Purchase complete! 🎉", description: "This challenge is now unlocked." });
           window.location.reload();
         } else if (result.error && result.error !== "Purchase cancelled.") {
