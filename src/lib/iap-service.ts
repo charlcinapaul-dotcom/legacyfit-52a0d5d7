@@ -94,9 +94,12 @@ export async function purchaseDigitalAccess(): Promise<{
   success: boolean;
   error?: string;
 }> {
+  console.log("IAP: purchaseDigitalAccess called");
+  console.log("IAP: isNativeIOS =", isNativeIOS());
   if (!isNativeIOS()) return { success: false, error: "Not on iOS" };
 
   const Purchases = await getPurchases();
+  console.log("IAP: getPurchases complete");
 
   try {
     console.log("IAP: fetching offerings...");
