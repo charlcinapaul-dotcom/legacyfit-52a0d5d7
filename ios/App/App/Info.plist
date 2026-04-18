@@ -28,6 +28,10 @@
 	<string>LegacyFit reads your step data to credit miles toward your walking challenges.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>LegacyFit does not write health data.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>LegacyFit may access location through background services. No location data is collected or stored.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>LegacyFit may access location through background services. No location data is collected or stored.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
