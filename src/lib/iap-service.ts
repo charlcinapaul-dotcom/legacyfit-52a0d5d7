@@ -99,7 +99,9 @@ export async function purchaseDigitalAccess(): Promise<{
   const Purchases = await getPurchases();
 
   try {
-    const offerings = await Purchases.getOfferings();
+    console.log("IAP: fetching offerings...");
+    const offerings = await withTimeout(Purchases.getOfferings(), 15000);
+    console.log("IAP: offerings received");
     const currentOffering = offerings.current;
 
     if (!currentOffering) {
