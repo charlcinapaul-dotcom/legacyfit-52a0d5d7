@@ -44,6 +44,16 @@ export async function hasActiveSubscription(): Promise<boolean> {
   return !!entitlement;
 }
 
+/** Race a promise against a timeout (ms). Throws Error("IAP_TIMEOUT") on timeout. */
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error("IAP_TIMEOUT")), ms)
+    ),
+  ]);
+}
+
 /** Purchase the monthly subscription via Apple IAP. Returns true on success. */
 export async function purchaseMonthlyPass(): Promise<{
   success: boolean;
@@ -54,7 +64,9 @@ export async function purchaseMonthlyPass(): Promise<{
   const Purchases = await getPurchases();
 
   try {
-    const offerings = await Purchases.getOfferings();
+    console.log("IAP: fetching offerings...");
+    const offerings = await withTimeout(Purchases.getOfferings(), 15000);
+    console.log("IAP: offerings received");
     const currentOffering = offerings.current;
 
     if (!currentOffering || !currentOffering.monthly) {
@@ -87,7 +99,9 @@ export async function purchaseDigitalAccess(): Promise<{
   const Purchases = await getPurchases();
 
   try {
-    const offerings = await Purchases.getOfferings();
+    console.log("IAP: fetching offerings...");
+    const offerings = await withTimeout(Purchases.getOfferings(), 15000);
+    console.log("IAP: offerings received");
     const currentOffering = offerings.current;
 
     if (!currentOffering) {
@@ -118,6 +132,9 @@ export async function purchaseDigitalAccess(): Promise<{
 
 function handlePurchaseError(err: unknown): { success: false; error: string } {
   const msg = err instanceof Error ? err.message : String(err);
+  if (msg === "IAP_TIMEOUT") {
+    return { success: false, error: "Purchase timed out. Please check your connection and try again." };
+  }
   if (msg.includes("cancelled") || msg.includes("canceled") || msg.includes("PURCHASE_CANCELLED")) {
     return { success: false, error: "Purchase cancelled." };
   }
