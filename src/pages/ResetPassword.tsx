@@ -63,8 +63,9 @@ const ResetPassword = () => {
         toast.error(error.message);
       } else {
         setSuccess(true);
-        toast.success("Password updated!");
-        setTimeout(() => navigate("/challenges"), 2000);
+        await supabase.auth.signOut();
+        toast.success("Password updated! Please sign in with your new password.");
+        setTimeout(() => navigate("/"), 2000);
       }
     } catch {
       toast.error("An unexpected error occurred.");
