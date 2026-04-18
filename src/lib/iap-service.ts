@@ -3,6 +3,7 @@
  * Only active on iOS native builds; web falls through to Stripe.
  */
 import { Capacitor } from "@capacitor/core";
+import { Purchases } from "@revenuecat/purchases-capacitor";
 
 const REVENUECAT_APPLE_API_KEY = "appl_WQBLYzsTnzzkgRfZZIyrHjGkYhS";
 const ENTITLEMENT_ID = "premium";
@@ -12,16 +13,9 @@ export function isNativeIOS(): boolean {
   return Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios";
 }
 
-/** Lazy-load the plugin only on native iOS */
-async function getPurchases() {
-  const { Purchases } = await import("@revenuecat/purchases-capacitor");
-  return Purchases;
-}
-
 /** Configure RevenueCat — call once on app launch (iOS only) */
 export async function initIAP(appUserId?: string): Promise<void> {
   if (!isNativeIOS()) return;
-  const Purchases = await getPurchases();
   await Purchases.configure({
     apiKey: REVENUECAT_APPLE_API_KEY,
     ...(appUserId ? { appUserID: appUserId } : {}),
@@ -31,14 +25,12 @@ export async function initIAP(appUserId?: string): Promise<void> {
 /** Identify the RevenueCat user (call after auth login) */
 export async function identifyIAPUser(userId: string): Promise<void> {
   if (!isNativeIOS()) return;
-  const Purchases = await getPurchases();
   await Purchases.logIn({ appUserID: userId });
 }
 
 /** Check if the user currently has the premium entitlement */
 export async function hasActiveSubscription(): Promise<boolean> {
   if (!isNativeIOS()) return false;
-  const Purchases = await getPurchases();
   const { customerInfo } = await Purchases.getCustomerInfo();
   const entitlement = customerInfo.entitlements.active[ENTITLEMENT_ID];
   return !!entitlement;
@@ -60,8 +52,6 @@ export async function purchaseMonthlyPass(): Promise<{
   error?: string;
 }> {
   if (!isNativeIOS()) return { success: false, error: "Not on iOS" };
-
-  const Purchases = await getPurchases();
 
   try {
     console.log("IAP: fetching offerings...");
@@ -98,7 +88,6 @@ export async function purchaseDigitalAccess(): Promise<{
   console.log("IAP: isNativeIOS =", isNativeIOS());
   if (!isNativeIOS()) return { success: false, error: "Not on iOS" };
 
-  const Purchases = await getPurchases();
   console.log("IAP: getPurchases complete");
 
   try {
@@ -151,7 +140,6 @@ export async function restorePurchases(): Promise<{
 }> {
   if (!isNativeIOS()) return { success: false, error: "Not on iOS" };
 
-  const Purchases = await getPurchases();
   try {
     const { customerInfo } = await Purchases.restorePurchases();
     const isActive = !!customerInfo.entitlements.active[ENTITLEMENT_ID];
@@ -165,7 +153,6 @@ export async function restorePurchases(): Promise<{
 /** Get customer info for syncing to backend */
 export async function getCustomerInfo() {
   if (!isNativeIOS()) return null;
-  const Purchases = await getPurchases();
   const { customerInfo } = await Purchases.getCustomerInfo();
   return customerInfo;
 }
