@@ -132,6 +132,9 @@ export async function purchaseDigitalAccess(): Promise<{
 
 function handlePurchaseError(err: unknown): { success: false; error: string } {
   const msg = err instanceof Error ? err.message : String(err);
+  if (msg === "IAP_TIMEOUT") {
+    return { success: false, error: "Purchase timed out. Please check your connection and try again." };
+  }
   if (msg.includes("cancelled") || msg.includes("canceled") || msg.includes("PURCHASE_CANCELLED")) {
     return { success: false, error: "Purchase cancelled." };
   }
