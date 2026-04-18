@@ -124,18 +124,56 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     const aiResponse = await response.json();
-    const imageData = aiResponse.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    const imageData: string | undefined = aiResponse.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
     if (!imageData) {
       throw new Error("No image generated from AI");
     }
 
-    console.log("Stamp image generated successfully");
+    console.log("Stamp image generated successfully — converting to bytes");
 
-    // Store the image URL in the database
+    // Convert AI output (base64 data URI OR remote URL) to binary bytes
+    let bytes: Uint8Array;
+    if (imageData.startsWith("data:")) {
+      const base64 = imageData.replace(/^data:image\/\w+;base64,/, "");
+      const binaryStr = atob(base64);
+      bytes = new Uint8Array(binaryStr.length);
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i);
+      }
+    } else {
+      const imgResp = await fetch(imageData);
+      if (!imgResp.ok) {
+        throw new Error(`Failed to download AI image: ${imgResp.status}`);
+      }
+      const buf = await imgResp.arrayBuffer();
+      bytes = new Uint8Array(buf);
+    }
+
+    // Upload to Supabase Storage
+    const storagePath = `stamps/${milestoneId}.png`;
+    const { error: uploadError } = await supabase.storage
+      .from("challenge-images")
+      .upload(storagePath, bytes, {
+        contentType: "image/png",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      throw new Error(`Storage upload failed: ${uploadError.message}`);
+    }
+
+    const { data: publicUrlData } = supabase.storage
+      .from("challenge-images")
+      .getPublicUrl(storagePath);
+    const publicUrl = publicUrlData.publicUrl;
+
+    console.log(`Stamp uploaded → ${publicUrl}`);
+
+    // Save the public URL (never base64) to passport_stamp_images
     const { error: insertError } = await supabase.from("passport_stamp_images").upsert({
       milestone_id: milestoneId,
-      image_url: imageData,
+      image_url: publicUrl,
     });
 
     if (insertError) {
@@ -143,13 +181,13 @@ serve(async (req: Request): Promise<Response> => {
       // Don't fail - still return the image
     }
 
-    // Also update the milestone's stamp_image_url
+    // Also update the milestone's stamp_image_url with the public URL
     await supabase
       .from("milestones")
-      .update({ stamp_image_url: imageData })
+      .update({ stamp_image_url: publicUrl })
       .eq("id", milestoneId);
 
-    return new Response(JSON.stringify({ imageUrl: imageData }), {
+    return new Response(JSON.stringify({ imageUrl: publicUrl }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
