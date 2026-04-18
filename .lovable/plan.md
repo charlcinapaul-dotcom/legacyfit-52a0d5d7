@@ -1,46 +1,28 @@
-The user reports that on Android (web/app), after signup their full name was used as the username instead of being prompted to create one via Onboarding.
+Looking at the current `generate-stamp-image` function, it directly saves the AI-returned base64 data URI to the database. The sister function `generate-all-stamps` already does this correctly (decode → upload → save URL). I'll port that pattern.
 
-Looking at the code:
+Note on path: user requested `stamp-images/{challenge_slug}/{milestone_id}.png` in the description, but their final-format example shows `stamps/{milestone_id}.png` (which matches `generate-all-stamps`). I'll need to clarify, but to stay consistent with the existing batch function and the example URL, I'll plan for `stamps/{milestone_id}.png` — and confirm before implementing.
 
-1. `**handle_new_user()` trigger** (in db-functions): On signup, it inserts into profiles with `display_name = NEW.raw_user_meta_data->>'full_name'`. For Google OAuth signups, `full_name` is populated from the Google profile, so the display_name is auto-set to the user's real name.
-2. `**Onboarding.tsx**`: Checks `if (profile?.display_name) navigate("/dashboard")` — so if display_name was already set by the trigger (e.g., from Google's full_name), the user is skipped past onboarding entirely.
-3. `**Auth.tsx**`: After SIGNED_IN, redirects directly to `/dashboard` (or the `redirect` query param), never to `/onboarding`. So even email/password users — whose `full_name` is null and would get a null display_name — never see the onboarding screen unless something else routes them there.
+## Plan
 
-**Two bugs:**
+**File touched:** `supabase/functions/generate-stamp-image/index.ts` only.
 
-- **Bug A (Google/OAuth users):** Trigger auto-fills display_name with Google's full name → Onboarding is skipped → user never picks a username.
-- **Bug B (all users):** Auth.tsx never routes new signups to `/onboarding`. Even email signups skip it.
+**Changes inside the function (after AI call succeeds):**
 
-## Fix Plan
+1. Fetch milestone's `challenge_id` to derive `challenge_slug` (only if we use slug-based path).
+2. Extract image from AI response: `aiResponse.choices[0].message.images[0].image_url.url`.
+3. Detect format:
+  - If starts with `data:image/...;base64,` → strip prefix, `atob()`, convert to `Uint8Array`.
+  - Else (HTTP URL) → `fetch()` it, get `arrayBuffer()`, convert to `Uint8Array`.
+4. Upload bytes to `challenge-images` bucket at path `stamps/{milestone_id}.png` with `contentType: "image/png"`, `upsert: true`.
+5. Get public URL via `supabase.storage.from("challenge-images").getPublicUrl(path)`.
+6. Upsert public URL (not base64) into `passport_stamp_images.image_url`.
+7. Update `milestones.stamp_image_url` with public URL.
+8. Return `{ imageUrl: publicUrl }` to caller.
 
-**1. `supabase/migrations/` — new migration:** Update `handle_new_user()` to NOT populate `display_name` from `raw_user_meta_data->>'full_name'`. Insert profile with `display_name = NULL` so every new user is forced through onboarding to choose a unique username.
+**Untouched:** auth check, admin check, cache short-circuit, prompt, model, error handling shell, all other edge functions, all DB records.
 
-```sql
-CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path TO 'public'
-AS $$
-BEGIN
-  INSERT INTO public.profiles (user_id, display_name) VALUES (NEW.id, NULL);
-  INSERT INTO public.user_roles (user_id, role) VALUES (NEW.id, 'user');
-  RETURN NEW;
-END;
-$$;
-```
+**After deploy:** screenshot the updated file via `code--view` output (the user asked for a screenshot of the code).
 
-**2. `src/pages/Auth.tsx`:** After SIGNED_IN, check if the user's profile has a `display_name`. If null/empty → navigate to `/onboarding`. Otherwise → navigate to the original `redirect` (default `/dashboard`). Apply this in the `onAuthStateChange` handler so it covers email/password sign-in, Google OAuth sign-in, and brand new signups uniformly.
+### One clarification needed before implementing
 
-**3. Backfill consideration (optional, ask user):** Existing Google users already have their full name as display_name. Do nothing to existing accounts — this fix only affects new signups going forward.
-
-### Why this works on iOS + Android + Web
-
-The fix lives in the database trigger (server-side) and Auth.tsx (shared code across all platforms — the same React app runs in the iOS Capacitor wrapper, Android Capacitor wrapper, and web). One fix covers all three.
-
-### Files touched
-
-- New migration file (drop & recreate `handle_new_user`)
-- `src/pages/Auth.tsx` (add display_name check before redirect)
-
-### Untouched
-
-- `src/pages/Onboarding.tsx` — already correctly checks for display_name and enforces uniqueness
-- All challenge / mile / payment logic                                                                                                                                                                                                                                                                                                   Do NOT change anything else.
+The storage path differs between your description and your example URL.                                                                                                                                                                                       Use the path `stamps/{milestone_id}.png` inside the `challenge-images` bucket. This matches the existing `generate-all-stamps` function and the example URL format. You do not need the challenge slug in the path. Proceed with implementing the changes as planned.
