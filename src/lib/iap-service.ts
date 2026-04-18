@@ -25,7 +25,6 @@ export async function initIAP(appUserId?: string): Promise<void> {
 /** Identify the RevenueCat user (call after auth login) */
 export async function identifyIAPUser(userId: string): Promise<void> {
   if (!isNativeIOS()) return;
-  const Purchases = await getPurchases();
   await Purchases.logIn({ appUserID: userId });
 }
 
