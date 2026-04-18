@@ -31,7 +31,6 @@ export async function identifyIAPUser(userId: string): Promise<void> {
 /** Check if the user currently has the premium entitlement */
 export async function hasActiveSubscription(): Promise<boolean> {
   if (!isNativeIOS()) return false;
-  const Purchases = await getPurchases();
   const { customerInfo } = await Purchases.getCustomerInfo();
   const entitlement = customerInfo.entitlements.active[ENTITLEMENT_ID];
   return !!entitlement;
@@ -53,8 +52,6 @@ export async function purchaseMonthlyPass(): Promise<{
   error?: string;
 }> {
   if (!isNativeIOS()) return { success: false, error: "Not on iOS" };
-
-  const Purchases = await getPurchases();
 
   try {
     console.log("IAP: fetching offerings...");
@@ -91,7 +88,6 @@ export async function purchaseDigitalAccess(): Promise<{
   console.log("IAP: isNativeIOS =", isNativeIOS());
   if (!isNativeIOS()) return { success: false, error: "Not on iOS" };
 
-  const Purchases = await getPurchases();
   console.log("IAP: getPurchases complete");
 
   try {
@@ -144,7 +140,6 @@ export async function restorePurchases(): Promise<{
 }> {
   if (!isNativeIOS()) return { success: false, error: "Not on iOS" };
 
-  const Purchases = await getPurchases();
   try {
     const { customerInfo } = await Purchases.restorePurchases();
     const isActive = !!customerInfo.entitlements.active[ENTITLEMENT_ID];
@@ -158,7 +153,6 @@ export async function restorePurchases(): Promise<{
 /** Get customer info for syncing to backend */
 export async function getCustomerInfo() {
   if (!isNativeIOS()) return null;
-  const Purchases = await getPurchases();
   const { customerInfo } = await Purchases.getCustomerInfo();
   return customerInfo;
 }
