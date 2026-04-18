@@ -3,6 +3,7 @@
  * Only active on iOS native builds; web falls through to Stripe.
  */
 import { Capacitor } from "@capacitor/core";
+import { Purchases } from "@revenuecat/purchases-capacitor";
 
 const REVENUECAT_APPLE_API_KEY = "appl_WQBLYzsTnzzkgRfZZIyrHjGkYhS";
 const ENTITLEMENT_ID = "premium";
@@ -12,16 +13,9 @@ export function isNativeIOS(): boolean {
   return Capacitor.isNativePlatform() && Capacitor.getPlatform() === "ios";
 }
 
-/** Lazy-load the plugin only on native iOS */
-async function getPurchases() {
-  const { Purchases } = await import("@revenuecat/purchases-capacitor");
-  return Purchases;
-}
-
 /** Configure RevenueCat — call once on app launch (iOS only) */
 export async function initIAP(appUserId?: string): Promise<void> {
   if (!isNativeIOS()) return;
-  const Purchases = await getPurchases();
   await Purchases.configure({
     apiKey: REVENUECAT_APPLE_API_KEY,
     ...(appUserId ? { appUserID: appUserId } : {}),
