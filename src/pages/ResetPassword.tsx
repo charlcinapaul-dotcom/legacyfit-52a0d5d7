@@ -18,6 +18,14 @@ const ResetPassword = () => {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
+    // If the URL hash indicates a recovery flow, immediately sign out any
+    // auto-created recovery session so ambient listeners don't treat it as
+    // a real login. Supabase will then re-emit PASSWORD_RECOVERY from the
+    // token in the hash, which we listen for below.
+    if (typeof window !== "undefined" && window.location.hash.includes("type=recovery")) {
+      supabase.auth.signOut().catch(() => { /* noop */ });
+    }
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event) => {
         if (event === "PASSWORD_RECOVERY") {
@@ -28,7 +36,7 @@ const ResetPassword = () => {
     );
 
     // Timeout fallback — if PASSWORD_RECOVERY never fires, show invalid link
-    const timer = setTimeout(() => setChecking(false), 4000);
+    const timer = setTimeout(() => setChecking(false), 10000);
 
     return () => {
       subscription.unsubscribe();
@@ -55,8 +63,9 @@ const ResetPassword = () => {
         toast.error(error.message);
       } else {
         setSuccess(true);
-        toast.success("Password updated!");
-        setTimeout(() => navigate("/challenges"), 2000);
+        await supabase.auth.signOut();
+        toast.success("Password updated! Please sign in with your new password.");
+        setTimeout(() => navigate("/"), 2000);
       }
     } catch {
       toast.error("An unexpected error occurred.");
