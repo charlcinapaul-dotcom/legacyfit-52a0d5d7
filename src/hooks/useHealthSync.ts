@@ -57,6 +57,9 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
 
     try {
       // Dynamic import to avoid breaking web builds
+      if (!Capacitor.isNativePlatform()) {
+        throw new Error("Health sync is only available on iOS or Android devices.");
+      }
       const { Health } = await import("@capgo/capacitor-health");
 
       // Check availability
