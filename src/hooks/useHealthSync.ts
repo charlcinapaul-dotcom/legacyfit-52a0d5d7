@@ -2,6 +2,10 @@ import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Capacitor } from "@capacitor/core";
 import { STEPS_PER_MILE } from "@/lib/health-sync";
+import {
+  ensureHealthReadAuthorization,
+  HEALTH_PERMISSION_DENIED_MESSAGE,
+} from "@/lib/capacitor-health";
 
 export type HealthSource = "apple_health" | "google_fit";
 
@@ -56,26 +60,10 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
     }
 
     try {
-      // Dynamic import to avoid breaking web builds
-      if (!Capacitor.isNativePlatform()) {
-        throw new Error("Health sync is only available on iOS or Android devices.");
-      }
-      const { Health } = await import("@capgo/capacitor-health");
+      const { Health, granted } = await ensureHealthReadAuthorization(true);
 
-      // Check availability
-      const availability = await Health.isAvailable();
-      if (!availability.available) {
-        throw new Error("Health data is not available on this device.");
-      }
-
-      // Request permission
-      const auth = await Health.requestAuthorization({
-        read: ["steps"],
-        write: [],
-      });
-
-      if (!auth.granted) {
-        throw new Error("Permission to read step data was denied. Please enable it in your device settings.");
+      if (!granted) {
+        throw new Error(HEALTH_PERMISSION_DENIED_MESSAGE);
       }
 
       // Query past 7 days of step data
