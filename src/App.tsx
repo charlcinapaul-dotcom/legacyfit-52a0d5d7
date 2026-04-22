@@ -8,6 +8,7 @@ import Landing from "./pages/Landing";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { fetchChallengesWithMeta } from "./hooks/useChallengesWithMeta";
 import { useIAPSync } from "./hooks/useIAPSync";
+import { useHealthPermissionPrompt } from "./hooks/useHealthPermissionPrompt";
 
 const Auth = lazy(() => import("./pages/Auth"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -47,6 +48,7 @@ const queryClient = new QueryClient({
 const App = () => {
   // Initialize Apple IAP on iOS native builds
   useIAPSync();
+  useHealthPermissionPrompt();
 
   useEffect(() => {
     queryClient.prefetchQuery({
