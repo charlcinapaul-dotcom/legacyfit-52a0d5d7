@@ -1,14 +1,16 @@
-import { Capacitor } from "@capacitor/core";
+import { Capacitor, registerPlugin } from "@capacitor/core";
 import type {
   AuthorizationStatus,
   HealthDataType,
   HealthPlugin,
-} from "@capgo/capacitor-health";
+} from "@/types/capgo-health";
 
 export const HEALTH_READ_TYPES: HealthDataType[] = ["steps", "distance"];
 
 export const HEALTH_PERMISSION_DENIED_MESSAGE =
   "Health access helps LegacyFit sync your walking data automatically. You can still log miles manually anytime.";
+
+const Health = registerPlugin<HealthPlugin>("Health");
 
 export function isNativeHealthPlatform() {
   if (!Capacitor.isNativePlatform()) return false;
@@ -22,8 +24,7 @@ export async function loadHealthPlugin(): Promise<HealthPlugin> {
     throw new Error("Health sync is only available on iOS or Android devices.");
   }
 
-  const plugin = await import("@capgo/capacitor-health");
-  return plugin.Health;
+  return Health;
 }
 
 export function hasHealthReadAuthorization(status: AuthorizationStatus) {
