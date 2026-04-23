@@ -1,4 +1,4 @@
-export type HealthDataType = "steps" | "distance";
+export type HealthDataType = "steps" | "distanceWalkingRunning" | "workouts";
 
 export interface HealthAvailability {
   available: boolean;

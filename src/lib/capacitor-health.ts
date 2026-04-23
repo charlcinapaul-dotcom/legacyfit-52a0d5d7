@@ -5,7 +5,7 @@ import type {
   HealthPlugin,
 } from "@/types/capgo-health";
 
-export const HEALTH_READ_TYPES: HealthDataType[] = ["steps", "distance"];
+export const HEALTH_READ_TYPES: HealthDataType[] = ["steps", "distanceWalkingRunning", "workouts"];
 
 export const HEALTH_PERMISSION_DENIED_MESSAGE =
   "Health access helps LegacyFit sync your walking data automatically. You can still log miles manually anytime.";
