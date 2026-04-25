@@ -64,8 +64,9 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("Portal session error:", error);
+    const message = error instanceof Error ? error.message : "An unexpected error occurred.";
     return new Response(
-      JSON.stringify({ error: error.message || "An unexpected error occurred." }),
+      JSON.stringify({ error: message }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,
