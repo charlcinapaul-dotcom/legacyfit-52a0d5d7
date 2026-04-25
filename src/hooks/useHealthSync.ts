@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Capacitor } from "@capacitor/core";
-import { STEPS_PER_MILE } from "@/lib/health-sync";
 import { capDailyRemainingMiles } from "@/lib/health-cap";
 import {
   ensureHealthReadAuthorization,
