@@ -77,11 +77,11 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
         bucket: "day",
       });
 
-      const totalSteps = (result.samples || []).reduce(
+      const samples = result.samples || [];
+      const totalSteps = samples.reduce(
         (sum: number, s: any) => sum + (Number(s.value) || 0),
         0
       );
-      const totalMilesFromHealth = Math.round((totalSteps / STEPS_PER_MILE) * 100) / 100;
 
       // Get current user
       const { data: { session } } = await supabase.auth.getSession();
@@ -90,25 +90,65 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
       }
       const userId = session.user.id;
 
-      // Check what was already synced today to avoid double-counting
-      const today = new Date().toISOString().split("T")[0];
-      const { data: existingToday } = await supabase
+      // Check what was already synced (per day) over the query window to avoid double-counting
+      const windowStart = sevenDaysAgo.toISOString();
+      const windowEnd = now.toISOString();
+      const { data: existingSynced } = await supabase
         .from("mile_entries")
-        .select("miles")
+        .select("miles, logged_at")
         .eq("user_id", userId)
         .eq("challenge_id", challengeId)
         .like("notes", "%Health Sync%")
-        .gte("logged_at", `${today}T00:00:00`)
-        .lt("logged_at", `${today}T23:59:59.999`);
+        .gte("logged_at", windowStart)
+        .lt("logged_at", windowEnd);
 
-      const alreadySyncedToday = (existingToday || []).reduce(
-        (sum, e) => sum + Number(e.miles),
-        0
-      );
+      const alreadyByDay = new Map<string, number>();
+      for (const row of existingSynced || []) {
+        const day = new Date(row.logged_at as string).toISOString().split("T")[0];
+        alreadyByDay.set(day, (alreadyByDay.get(day) || 0) + Number(row.miles));
+      }
 
-      const delta = Math.max(0, Math.round((totalMilesFromHealth - alreadySyncedToday) * 100) / 100);
+      const MAX_SINGLE_ENTRY = 7;
+      const sourceName = healthSource === "apple_health" ? "Apple Health" : "Google Health Connect";
 
-      if (delta <= 0) {
+      const rowsToInsert: Array<{
+        user_id: string;
+        challenge_id: string;
+        miles: number;
+        source: HealthSource;
+        notes: string;
+        logged_at: string;
+      }> = [];
+
+      let totalDelta = 0;
+
+      for (const sample of samples) {
+        const steps = Number(sample.value) || 0;
+        if (steps <= 0) continue;
+
+        const milesForDay = Math.round((steps / STEPS_PER_MILE) * 100) / 100;
+        const dayKey = new Date(sample.startDate).toISOString().split("T")[0];
+        const alreadyForDay = alreadyByDay.get(dayKey) || 0;
+
+        let remaining = Math.round((milesForDay - alreadyForDay) * 100) / 100;
+        if (remaining <= 0) continue;
+
+        // Cap at the 7-mile single-entry limit
+        if (remaining > MAX_SINGLE_ENTRY) remaining = MAX_SINGLE_ENTRY;
+
+        rowsToInsert.push({
+          user_id: userId,
+          challenge_id: challengeId,
+          miles: remaining,
+          source: healthSource,
+          notes: `Health Sync — ${sourceName} (${steps.toLocaleString()} steps on ${dayKey})`,
+          logged_at: sample.startDate,
+        });
+
+        totalDelta = Math.round((totalDelta + remaining) * 100) / 100;
+      }
+
+      if (rowsToInsert.length === 0) {
         setMilesSynced(0);
         const timestamp = new Date().toISOString();
         setLastSyncAt(timestamp);
@@ -116,16 +156,8 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
         return;
       }
 
-      // Log the delta miles
-      const sourceName = healthSource === "apple_health" ? "Apple Health" : "Google Health Connect";
-      const { error: insertError } = await supabase.from("mile_entries").insert({
-        user_id: userId,
-        challenge_id: challengeId,
-        miles: delta,
-        source: healthSource,
-        notes: `Health Sync — ${sourceName} (${totalSteps.toLocaleString()} steps over 7 days)`,
-      });
-
+      // Insert one row per day to respect the 7-mile single-entry cap
+      const { error: insertError } = await supabase.from("mile_entries").insert(rowsToInsert);
       if (insertError) throw insertError;
 
       // Update user_challenges miles_logged if enrolled
@@ -137,7 +169,7 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
         .maybeSingle();
 
       if (enrollmentRow?.payment_status === "paid") {
-        const newTotal = Number(enrollmentRow.miles_logged || 0) + delta;
+        const newTotal = Number(enrollmentRow.miles_logged || 0) + totalDelta;
         await supabase
           .from("user_challenges")
           .update({ miles_logged: newTotal })
@@ -145,7 +177,7 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
           .eq("challenge_id", challengeId);
       }
 
-      setMilesSynced(delta);
+      setMilesSynced(totalDelta);
       const timestamp = new Date().toISOString();
       setLastSyncAt(timestamp);
       localStorage.setItem(getLocalStorageKey(challengeId), timestamp);
