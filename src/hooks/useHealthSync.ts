@@ -66,13 +66,15 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
         throw new Error(HEALTH_PERMISSION_DENIED_MESSAGE);
       }
 
-      // Query past 7 days of step data
+      // Query today's step data only (from midnight UTC to now)
       const now = new Date();
-      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const todayStart = new Date(
+        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+      );
 
       const result = await Health.queryAggregated({
         dataType: "steps",
-        startDate: sevenDaysAgo.toISOString(),
+        startDate: todayStart.toISOString(),
         endDate: now.toISOString(),
         bucket: "day",
       });
@@ -108,7 +110,7 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
 
       // Read prior Health Sync rows for the window so we can compute the net
       // delta to apply to user_challenges.miles_logged.
-      const windowStart = sevenDaysAgo.toISOString();
+      const windowStart = todayStart.toISOString();
       const windowEnd = now.toISOString();
       const { data: existingSynced } = await supabase
         .from("mile_entries")
