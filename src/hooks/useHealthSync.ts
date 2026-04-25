@@ -109,7 +109,6 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
         alreadyByDay.set(day, (alreadyByDay.get(day) || 0) + Number(row.miles));
       }
 
-      const MAX_SINGLE_ENTRY = 7;
       const sourceName = healthSource === "apple_health" ? "Apple Health" : "Google Health Connect";
 
       const rowsToInsert: Array<{
@@ -127,15 +126,12 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
         const steps = Number(sample.value) || 0;
         if (steps <= 0) continue;
 
-        const milesForDay = Math.round((steps / STEPS_PER_MILE) * 100) / 100;
         const dayKey = new Date(sample.startDate).toISOString().split("T")[0];
         const alreadyForDay = alreadyByDay.get(dayKey) || 0;
 
-        let remaining = Math.round((milesForDay - alreadyForDay) * 100) / 100;
+        // Cap at the 7-mile single-entry limit (covered by health-cap.test.ts)
+        const remaining = capDailyRemainingMiles(steps, alreadyForDay);
         if (remaining <= 0) continue;
-
-        // Cap at the 7-mile single-entry limit
-        if (remaining > MAX_SINGLE_ENTRY) remaining = MAX_SINGLE_ENTRY;
 
         rowsToInsert.push({
           user_id: userId,
