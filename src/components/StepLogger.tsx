@@ -19,7 +19,7 @@ interface StepLoggerProps {
   challengeId: string;
   challengeSlug?: string;
   challengeName?: string;
-  challengeEditionColor?: "gold" | "burgundy" | "pride";
+  challengeEditionColor?: "gold" | "burgundy" | "pride" | "forest";
 }
 
 const QUICK_STEPS = [1000, 2000, 5000, 10000];
