@@ -4,10 +4,6 @@ const config: CapacitorConfig = {
   appId: 'com.legacyfitvirtual.app',
   appName: 'LegacyFit',
   webDir: 'dist',
-  server: {
-    url: 'https://legacyfitvirtual.com',
-    cleartext: false,
-  },
   ios: {
     contentInset: 'automatic',
     infoPlist: {

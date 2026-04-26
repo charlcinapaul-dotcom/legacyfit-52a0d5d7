@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">LegacyFit</string>
+    <string name="title_activity_main">LegacyFit</string>
+    <string name="package_name">com.legacyfitvirtual.app</string>
+    <string name="custom_url_scheme">com.legacyfitvirtual.app</string>
+</resources>

@@ -1,15 +1,15 @@
 [
 	{
-		"pkg": "@capacitor-community/background-geolocation",
-		"classpath": "com.equimaps.capacitor_background_geolocation.BackgroundGeolocation"
-	},
-	{
 		"pkg": "@capacitor/browser",
 		"classpath": "com.capacitorjs.plugins.browser.BrowserPlugin"
 	},
 	{
 		"pkg": "@capacitor/geolocation",
 		"classpath": "com.capacitorjs.plugins.geolocation.GeolocationPlugin"
+	},
+	{
+		"pkg": "@capgo/capacitor-health",
+		"classpath": "app.capgo.plugin.health.HealthPlugin"
 	},
 	{
 		"pkg": "@revenuecat/purchases-capacitor",
