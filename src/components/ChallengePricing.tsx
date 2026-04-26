@@ -20,7 +20,7 @@ interface ChallengePricingProps {
   challengeName: string;
   challengeId?: string;
   challengeSlug?: string;
-  editionColor?: "gold" | "burgundy" | "pride";
+  editionColor?: "gold" | "burgundy" | "pride" | "forest";
   /** Called when the user taps "Maybe Later" */
   onMaybeLater?: () => void;
 }
@@ -65,6 +65,19 @@ const getAccentClasses = (color: ChallengePricingProps["editionColor"]) => {
         price: "text-purple-400",
         subscriberHint: "text-purple-400/60",
         subscriberApplied: "text-purple-400",
+      };
+    case "forest":
+      return {
+        heading: "text-[#1A4A2E]",
+        check: "text-[#2D7A4F]",
+        primaryBtn: "bg-[#1A4A2E] hover:bg-[#2D7A4F] text-white",
+        secondaryBtn:
+          "border border-[#2D7A4F]/40 text-[#2D7A4F] hover:bg-[#2D7A4F]/5 bg-transparent",
+        ring: "border-2 border-[#2D7A4F]/30",
+        fanBadge: "bg-[#1A4A2E]/10 text-[#2D7A4F] border-[#2D7A4F]/25",
+        price: "text-[#1A4A2E]",
+        subscriberHint: "text-[#2D7A4F]/60",
+        subscriberApplied: "text-[#2D7A4F]",
       };
     default: // gold
       return {
