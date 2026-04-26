@@ -3,7 +3,7 @@ import { Health } from "@capgo/capacitor-health";
 import type {
   AuthorizationStatus,
   HealthDataType,
-} from "@/types/capgo-health";
+} from "@capgo/capacitor-health";
 
 export const HEALTH_READ_TYPES: HealthDataType[] = ["steps", "distance"];
 
