@@ -186,7 +186,7 @@ export function ChallengeCard({
         onClick={handleLockedClick}
       >
         {inner}
-        <div className="absolute bottom-5 left-5 right-5">
+        <div className="px-5 pb-5 -mt-2">
           <p className="text-xs text-muted-foreground italic">
             Finish "{activeChallenge?.title}" to unlock
           </p>
