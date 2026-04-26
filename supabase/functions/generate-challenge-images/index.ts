@@ -36,6 +36,7 @@ const challengeImagePrompts: Record<string, string> = {
 
   // ── Women in Sports Edition ─────────────────────────────────────────────
   "jackie-mitchell": "A dramatic artistic illustration of a 1930s baseball stadium in Chattanooga Tennessee, a young woman pitcher on the mound mid-windup, silhouettes of Babe Ruth and Lou Gehrig at bat, vintage wooden bleachers packed with stunned spectators, deep forest green and brand gold tones, warm sepia undertones, triumph and history symbolism, 16:9 aspect ratio hero banner, ultra high resolution",
+  "toni-stone": "A powerful artistic illustration of a 1950s Negro League baseball diamond, a determined woman playing second base in vintage uniform, Indianapolis Clowns stadium crowd in the background, deep forest green and brand gold tones, warm sepia undertones, perseverance and breaking barriers symbolism, 16:9 aspect ratio hero banner, ultra high resolution",
 };
 
 interface Challenge {
