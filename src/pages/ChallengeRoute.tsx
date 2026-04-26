@@ -66,6 +66,17 @@ const getColorStyles = (color: string) => {
         button: "bg-amber-700 text-white hover:bg-amber-700/90",
         iconColor: "text-amber-600",
       };
+    case "forest":
+      return {
+        badge: "bg-[#1A4A2E]/15 border-[#2D7A4F]/30 text-[#2D7A4F]",
+        text: "text-[#2D7A4F]",
+        bgLight: "bg-[#1A4A2E]/10 border-[#2D7A4F]/30",
+        bgSolid: "bg-[#1A4A2E] border-[#1A4A2E] text-white",
+        bgHighlight: "bg-[#2D7A4F]/15 text-[#2D7A4F]",
+        routeLine: "bg-[#2D7A4F]",
+        button: "bg-[#1A4A2E] text-white hover:bg-[#2D7A4F]",
+        iconColor: "text-[#2D7A4F]",
+      };
     default: // gold
       return {
         badge: "bg-primary/10 border-primary/20 text-primary",
@@ -82,14 +93,20 @@ const getColorStyles = (color: string) => {
 
 // Map edition to color theme
 const getEditionColor = (edition: string): string => {
-  if (edition.toLowerCase().includes("pride")) return "pride";
-  if (edition.toLowerCase().includes("first steps: black pioneers")) return "pioneers";
+  const lower = edition.toLowerCase();
+  if (lower.includes("pride")) return "pride";
+  if (lower.includes("first steps: black pioneers")) return "pioneers";
+  if (lower.includes("women in sports") || lower.includes("sports")) return "forest";
   return "gold";
 };
 
 // Map edition to pricing accent
-const getPricingEditionColor = (edition: string): "gold" | "burgundy" | "pride" => {
-  if (edition.toLowerCase().includes("pride")) return "pride";
+const getPricingEditionColor = (
+  edition: string
+): "gold" | "burgundy" | "pride" | "forest" => {
+  const lower = edition.toLowerCase();
+  if (lower.includes("pride")) return "pride";
+  if (lower.includes("women in sports") || lower.includes("sports")) return "forest";
   return "gold";
 };
 
