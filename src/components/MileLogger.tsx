@@ -24,7 +24,7 @@ interface MileLoggerProps {
   challengeSlug?: string;
   challengeName?: string;
   totalMilestones?: number;
-  challengeEditionColor?: "gold" | "burgundy" | "pride";
+  challengeEditionColor?: "gold" | "burgundy" | "pride" | "forest";
   onChallengeCompleted?: (data: { name: string; miles: number; imageUrl: string | null }) => void;
   onMaybeLater?: () => void;
   onScrollToPricing?: () => void;

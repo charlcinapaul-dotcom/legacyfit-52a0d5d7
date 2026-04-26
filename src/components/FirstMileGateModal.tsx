@@ -24,7 +24,7 @@ interface FirstMileGateModalProps {
   challengeName: string;
   challengeId?: string;
   challengeSlug?: string;
-  editionColor?: "gold" | "burgundy" | "pride";
+  editionColor?: "gold" | "burgundy" | "pride" | "forest";
   stampTitle?: string;
   milesRequired?: number;
   onClose: () => void;

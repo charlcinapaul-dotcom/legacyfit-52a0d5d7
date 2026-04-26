@@ -9,7 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 interface RewardCodeRedemptionProps {
   challengeId: string;
-  editionColor?: "gold" | "burgundy" | "pride";
+  editionColor?: "gold" | "burgundy" | "pride" | "forest";
   onRedeemed?: () => void;
 }
 
@@ -28,6 +28,13 @@ const getAccentClasses = (color: RewardCodeRedemptionProps["editionColor"]) => {
         btn: "bg-gradient-to-r from-red-500 via-purple-500 to-blue-500 text-white hover:opacity-90",
         border: "border-purple-500/20 focus-visible:ring-purple-500/30",
         bg: "bg-purple-500/5",
+      };
+    case "forest":
+      return {
+        text: "text-[#2D7A4F]",
+        btn: "bg-[#1A4A2E] hover:bg-[#2D7A4F] text-white",
+        border: "border-[#2D7A4F]/20 focus-visible:ring-[#2D7A4F]/30",
+        bg: "bg-[#1A4A2E]/5",
       };
     default:
       return {
