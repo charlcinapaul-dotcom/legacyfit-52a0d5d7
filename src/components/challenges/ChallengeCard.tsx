@@ -184,7 +184,6 @@ export function ChallengeCard({
       <div
         className={`${cardBase} opacity-50 cursor-not-allowed`}
         onClick={handleLockedClick}
-        title={`Finish "${activeChallenge?.title}" to unlock`}
       >
         {inner}
         <div className="absolute bottom-5 left-5 right-5">
