@@ -569,7 +569,7 @@ export default function AdminValidate() {
               </div>
 
               {/* Group by edition */}
-              {(["Women's History", "First Steps: Black Pioneers", "Pride"] as string[]).map((edition) => {
+              {(["Women's History", "First Steps: Black Pioneers", "Women in Sports", "Pride"] as string[]).map((edition) => {
                 const rows = readiness.filter((r) => r.edition === edition);
                 if (rows.length === 0) return null;
 
@@ -578,6 +578,8 @@ export default function AdminValidate() {
                     ? "text-[#C084FC]"
                     : edition === "First Steps: Black Pioneers"
                     ? "text-amber-600"
+                    : edition === "Women in Sports"
+                    ? "text-[#2D7A4F]"
                     : "text-pink-400";
 
                 return (
