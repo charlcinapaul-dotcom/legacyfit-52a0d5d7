@@ -19,8 +19,11 @@ const isNewRelease = (releaseDate: string | null): boolean => {
   return new Date(releaseDate).getTime() > thirtyDaysAgo;
 };
 
-const getEditionKey = (edition: string): "purple" | "amber" | "pride" | "default" => {
+const getEditionKey = (
+  edition: string
+): "purple" | "amber" | "pride" | "forest" | "default" => {
   const lower = edition.toLowerCase();
+  if (lower.includes("women in sports") || lower.includes("sports")) return "forest";
   if (lower.includes("women")) return "purple";
   if (lower.includes("pioneer") || lower.includes("black")) return "amber";
   if (lower.includes("pride")) return "pride";
@@ -32,6 +35,21 @@ const getEditionKey = (edition: string): "purple" | "amber" | "pride" | "default
 function EditionHeader({ edition }: { edition: string }) {
   const lower = edition.toLowerCase();
 
+  if (lower.includes("women in sports") || lower.includes("sports")) {
+    return (
+      <h2
+        className="text-2xl font-bold mb-6"
+        style={{
+          background: "linear-gradient(90deg, #1A4A2E, #2D7A4F, #C9973A)",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundClip: "text",
+        }}
+      >
+        {edition}
+      </h2>
+    );
+  }
   if (lower.includes("women")) {
     return (
       <h2 className="text-2xl font-bold mb-6" style={{ color: "#C084FC" }}>
@@ -173,6 +191,7 @@ const Challenges = () => {
     "Women's History",
     "First Steps: Black Pioneers",
     "Pride",
+    "Women in Sports",
   ];
   const sortedEditionKeys = Object.keys(byEdition).sort((a, b) => {
     const ai = editionOrder.findIndex((e) =>
