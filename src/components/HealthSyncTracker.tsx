@@ -7,7 +7,7 @@ interface HealthSyncTrackerProps {
   challengeId: string;
   challengeSlug?: string;
   challengeName?: string;
-  challengeEditionColor?: "gold" | "burgundy" | "pride";
+  challengeEditionColor?: "gold" | "burgundy" | "pride" | "forest";
 }
 
 export function HealthSyncTracker({ challengeId }: HealthSyncTrackerProps) {
