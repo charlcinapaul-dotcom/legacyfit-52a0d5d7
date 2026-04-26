@@ -568,19 +568,37 @@ export default function AdminValidate() {
                 <span className="text-center w-14">Status</span>
               </div>
 
-              {/* Group by edition */}
-              {(["Women's History", "First Steps: Black Pioneers", "Women in Sports", "Pride"] as string[]).map((edition) => {
+              {/* Group by edition — dynamically derived from data so any new edition appears automatically */}
+              {(() => {
+                const preferredOrder = [
+                  "Women's History",
+                  "First Steps: Black Pioneers",
+                  "Women in Sports",
+                  "Pride",
+                ];
+                const uniqueEditions = Array.from(
+                  new Set(readiness.map((r) => r.edition).filter(Boolean))
+                );
+                uniqueEditions.sort((a, b) => {
+                  const ai = preferredOrder.indexOf(a);
+                  const bi = preferredOrder.indexOf(b);
+                  if (ai === -1 && bi === -1) return a.localeCompare(b);
+                  if (ai === -1) return 1;
+                  if (bi === -1) return -1;
+                  return ai - bi;
+                });
+                return uniqueEditions;
+              })().map((edition) => {
                 const rows = readiness.filter((r) => r.edition === edition);
                 if (rows.length === 0) return null;
 
-                const editionColor =
-                  edition === "Women's History"
-                    ? "text-[#C084FC]"
-                    : edition === "First Steps: Black Pioneers"
-                    ? "text-amber-600"
-                    : edition === "Women in Sports"
-                    ? "text-[#2D7A4F]"
-                    : "text-pink-400";
+                const colorMap: Record<string, string> = {
+                  "Women's History": "text-[#C084FC]",
+                  "First Steps: Black Pioneers": "text-amber-600",
+                  "Women in Sports": "text-[#2D7A4F]",
+                  "Pride": "text-pink-400",
+                };
+                const editionColor = colorMap[edition] ?? "text-foreground";
 
                 return (
                   <div key={edition}>
