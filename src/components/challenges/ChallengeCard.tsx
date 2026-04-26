@@ -10,7 +10,7 @@ interface ChallengeCardProps {
   activeChallenge?: ActiveChallenge | null;
   showNewBadge?: boolean;
   /** accent color class for hover border/text */
-  accentColor?: "purple" | "amber" | "pride" | "default";
+  accentColor?: "purple" | "amber" | "pride" | "forest" | "default";
 }
 
 const ACCENT = {
@@ -34,6 +34,13 @@ const ACCENT = {
     badge: "bg-primary/10 text-primary border-primary/20",
     chevron: "group-hover:text-primary",
     shadow: "none",
+  },
+  forest: {
+    border: "hover:border-[#2D7A4F]",
+    text: "group-hover:text-[#2D7A4F]",
+    badge: "bg-[#1A4A2E]/15 text-[#2D7A4F] border-[#2D7A4F]/30",
+    chevron: "group-hover:text-[#2D7A4F]",
+    shadow: "0 0 20px rgba(45, 122, 79, 0.3)",
   },
   default: {
     border: "hover:border-primary/50",
