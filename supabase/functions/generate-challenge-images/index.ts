@@ -33,6 +33,9 @@ const challengeImagePrompts: Record<string, string> = {
   "constance-baker-motley": "A powerful artistic illustration of the U.S. Supreme Court steps bathed in golden light, NAACP seal, civil rights marchers carrying signs in silhouette, deep burgundy and marble white tones, justice and equality symbolism, 16:9 aspect ratio hero banner, ultra high resolution",
   "garrett-morgan": "A vivid artistic illustration of the invention of the traffic signal glowing amber and red against a Cleveland cityscape at night, a vintage safety hood on a workbench, inventor's blueprints spread beneath, warm amber and industrial tones, 16:9 aspect ratio hero banner, ultra high resolution",
   "matthew-henson": "A breathtaking artistic illustration of an Arctic polar expedition at the North Pole, a dog sled team pulling across cracked blue-white ice floes, the American flag planted in the snow, cool whites and icy blues with a pale golden horizon, 16:9 aspect ratio hero banner, ultra high resolution",
+
+  // ── Women in Sports Edition ─────────────────────────────────────────────
+  "jackie-mitchell": "A dramatic artistic illustration of a 1930s baseball stadium in Chattanooga Tennessee, a young woman pitcher on the mound mid-windup, silhouettes of Babe Ruth and Lou Gehrig at bat, vintage wooden bleachers packed with stunned spectators, deep forest green and brand gold tones, warm sepia undertones, triumph and history symbolism, 16:9 aspect ratio hero banner, ultra high resolution",
 };
 
 interface Challenge {
