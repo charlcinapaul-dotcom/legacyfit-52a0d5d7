@@ -662,17 +662,27 @@ export default function AdminValidate() {
                         );
 
                       return (
+                        <div key={row.id} className={i < rows.length - 1 ? "border-b border-border" : ""}>
                         <div
-                          key={row.id}
-                          className={`grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] items-center gap-3 px-4 py-3 text-sm ${
-                            i < rows.length - 1 ? "border-b border-border" : ""
-                          }`}
+                          className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] items-center gap-3 px-4 py-3 text-sm"
                         >
-                          {/* Title + slug */}
-                          <div className="min-w-0">
-                            <p className="font-medium text-foreground truncate">{row.title}</p>
-                            <p className="text-[11px] text-muted-foreground font-mono">{row.slug}</p>
-                          </div>
+                          {/* Title + slug — click to expand asset preview */}
+                          <button
+                            type="button"
+                            onClick={() => toggleExpanded(row.id)}
+                            className="min-w-0 text-left flex items-center gap-2 group"
+                            title="Show stamps & audio"
+                          >
+                            <ChevronDown
+                              className={`w-4 h-4 flex-shrink-0 text-muted-foreground transition-transform group-hover:text-foreground ${
+                                expandedRows.has(row.id) ? "" : "-rotate-90"
+                              }`}
+                            />
+                            <div className="min-w-0">
+                              <p className="font-medium text-foreground truncate group-hover:text-primary transition-colors">{row.title}</p>
+                              <p className="text-[11px] text-muted-foreground font-mono">{row.slug}</p>
+                            </div>
+                          </button>
 
                           {/* Narration */}
                           <div className="w-16 flex flex-col items-center gap-0.5">
@@ -737,6 +747,16 @@ export default function AdminValidate() {
                               {row.is_active ? "Live" : "Draft"}
                             </span>
                           </div>
+                        </div>
+                        {expandedRows.has(row.id) && (
+                          <div className="px-4 pb-4 pt-1 bg-secondary/10">
+                            <ChallengeAssetCard
+                              challengeId={row.id}
+                              challengeSlug={row.slug}
+                              challengeTitle={row.title}
+                            />
+                          </div>
+                        )}
                         </div>
                       );
                     })}
