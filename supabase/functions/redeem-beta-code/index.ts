@@ -37,13 +37,25 @@ serve(async (req) => {
       });
     }
 
-    const { code, challengeId } = await req.json();
+    const { code, challengeId, tier } = await req.json();
 
     if (!code || !challengeId) {
       return new Response(JSON.stringify({ error: "Missing code or challengeId" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Defensive guard: reject promo codes used against subscription or physical bundle flows.
+    // The current UI does not pass `tier` to this endpoint, but if a future surface ever does,
+    // single_challenge_promo codes must never apply to subscriptions or the boarding pass bundle.
+    if (tier === "subscription" || tier === "boarding_pass" || tier === "boarding_pass_subscriber") {
+      return new Response(
+        JSON.stringify({
+          error: "This promo code is valid for a single challenge only and cannot be applied here.",
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     // Enforce one-challenge limit: check if user already has any active (paid) challenge
@@ -87,6 +99,18 @@ serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Single-challenge promo codes are explicitly scoped to one challenge unlock and must never
+    // touch subscription state or physical fulfillment. The unlock path below only writes to
+    // user_challenges, so this is enforced by construction.
+    if (betaCode.code_type === "single_challenge_promo" && (tier === "subscription" || tier === "boarding_pass")) {
+      return new Response(
+        JSON.stringify({
+          error: "This promo code is valid for a single challenge only and cannot be applied here.",
+        }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     // Enroll the user with paid status
