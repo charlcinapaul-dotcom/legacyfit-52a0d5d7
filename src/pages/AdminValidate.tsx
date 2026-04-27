@@ -20,7 +20,10 @@ import {
   Stamp,
   Radio,
   Package,
+  ChevronDown,
+  Library,
 } from "lucide-react";
+import { ChallengeAssetCard } from "@/components/admin/ChallengeAssetCard";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -153,6 +156,17 @@ export default function AdminValidate() {
   const [audioMissingCount, setAudioMissingCount] = useState<{ missing: number; total: number } | null>(null);
   const [shippingOrders, setShippingOrders] = useState<any[]>([]);
   const [shippingLoading, setShippingLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"readiness" | "library">("readiness");
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+
+  const toggleExpanded = (id: string) => {
+    setExpandedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   // ── shipping orders loader ─────────────────────────────────────────────────
   const loadShippingOrders = async () => {
