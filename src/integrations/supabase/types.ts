@@ -17,6 +17,7 @@ export type Database = {
       beta_codes: {
         Row: {
           code: string
+          code_type: string
           created_at: string
           id: string
           is_active: boolean
@@ -25,6 +26,7 @@ export type Database = {
         }
         Insert: {
           code: string
+          code_type?: string
           created_at?: string
           id?: string
           is_active?: boolean
@@ -33,6 +35,7 @@ export type Database = {
         }
         Update: {
           code?: string
+          code_type?: string
           created_at?: string
           id?: string
           is_active?: boolean

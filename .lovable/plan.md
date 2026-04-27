@@ -1,120 +1,47 @@
-Goal: make Health Sync work reliably on native iOS and Android, while keeping the web app safe and user-friendly.
+# 25 Single-Challenge Promo Beta Codes
 
-1. Confirm the root cause and stop chasing a web-only fix
+## What you'll get
+- 25 unique codes formatted `LEGACYFIT-XXXX` (4-char uppercase alphanumeric suffix)
+- Each code: single-use, no expiration, unlocks **one** challenge of the redeemer's choice
+- Codes do **not** touch subscriptions (`legacyfit.monthlypass`) or the $29 physical Boarding Pass
+- Final list of all 25 codes printed in chat for you to copy/share
 
-- The error shown in image 2 (`'@capgo/capacitor-health' does not resolve to a valid URL`) is a browser/runtime error, not a HealthKit permission error.
-- `@capgo/capacitor-health` is a native Capacitor plugin. It cannot run in a normal website, Safari, Chrome, or an installable browser shortcut.
-- `requestAuthorization()` exists only when the app is running inside the native Capacitor shell after native dependencies have been synced.
+## Schema findings (no destructive changes needed)
+- `beta_codes` already has: `code`, `is_active`, `max_uses` (default 50), `times_used`, `created_at`
+- Per-user challenge access lives in **`user_challenges`** with `payment_status = 'paid'` — this is the correct unlock target (already used by `redeem-beta-code`)
+- Subscriptions live in the separate `subscriptions` table; physical bundle goes through `create-checkout` with tier `boarding_pass`. **Neither flow accepts promo codes today**, so promo leakage is structurally impossible — no extra UI guard needed. We'll still add a server-side guard in `redeem-beta-code` that rejects use against subscription/bundle tiers if ever passed.
 
-2. Use a dual-system approach
+## Migration (schema)
+Add one column to `beta_codes`:
+- `code_type text not null default 'generic'` (existing rows backfill to `'generic'`; new promo rows use `'single_challenge_promo'`)
 
-- Native app:
-  - enable Health Sync
-  - request permission
-  - read steps + distance
-  - sync walking data into the database
-- Web app:
-  - never import or call the health plugin
-  - show a gentle message that Health Sync is available only in the mobile app
-  - keep manual logging as the web fallback
+`max_uses` already exists — we'll just insert the new rows with `max_uses = 1`.
 
-3. Harden the native-only loading path
+## Data insert
+Generate 25 rows server-side with cryptographically random 4-char `[A-Z0-9]` suffixes, ensuring uniqueness against existing `code` values:
+```
+INSERT INTO beta_codes (code, max_uses, times_used, is_active, code_type)
+VALUES ('LEGACYFIT-XXXX', 1, 0, true, 'single_challenge_promo'), ... (25 rows)
+```
 
-- Update `src/hooks/useHealthSync.ts` so the plugin is loaded only after a strict native check.
-- Use a bundler-safe native loader pattern so the browser never tries to resolve `@capgo/capacitor-health`.
-- Expand the permission request to ask for read access to:
-  - steps
-  - distance
-- Handle denied permission with a calm user-facing message instead of a raw module error.
+## Edge function changes — `redeem-beta-code/index.ts`
+1. Continue requiring `challengeId` in the request body.
+2. After loading the `betaCode` row, enforce:
+   - `is_active = true`
+   - `times_used < max_uses` (already there; for promos this means strictly 1 use)
+3. New: if `code_type = 'single_challenge_promo'` and the request payload includes `tier === 'subscription'` or `tier === 'boarding_pass'` (defensive — not sent today), return:
+   > "This promo code is valid for a single challenge only and cannot be applied here."
+4. Unlock: upsert `user_challenges` row with `payment_status = 'paid'` and `stripe_payment_id = 'beta_<CODE>'` (existing logic — confirmed correct table).
+5. Increment `times_used`. With `max_uses = 1`, the next attempt fails the existing max-uses check → effectively single-use.
+6. Do **not** touch `subscriptions`, RevenueCat, or `shipping_orders`/`coin_fulfillment`.
 
-4. Add app-load permission flow for signed-in users
+## Output
+After insertion, run a `SELECT code FROM beta_codes WHERE code_type='single_challenge_promo' ORDER BY created_at DESC LIMIT 25` and print the 25 codes as a plain numbered list in chat.
 
-- Create a new hook, following the existing `useIAPSync()` pattern in `src/hooks/useIAPSync.ts`.
-- Hook behavior:
-  - run only on native iOS/Android
-  - wait until a user is logged in
-  - load the health plugin natively
-  - check availability
-  - request read permissions for steps and distance
-  - if denied, store a dismissed/denied state locally so users are not nagged repeatedly
-  - show a gentle explanation: Health access is needed to sync walking data automatically
-- Mount this hook from `src/App.tsx`.
+## Out of scope (explicitly untouched)
+- `create-checkout`, Stripe price IDs, RevenueCat entitlements
+- `subscriptions` table and monthly pass logic
+- Physical Boarding Pass pricing or `shipping_orders`
+- Existing 50-use generic beta codes (untouched; backfilled to `code_type='generic'`)
 
-5. Keep the manual sync button, but make it resilient
-
-- In `src/components/HealthSyncTracker.tsx` and `src/hooks/useHealthSync.ts`:
-  - keep the sync button for explicit sync runs
-  - if permissions were already granted, sync immediately
-  - if permissions are missing, request them there too as a fallback
-  - show friendly messages for:
-    - unsupported device
-    - permission denied
-    - Health Connect / Apple Health unavailable
-    - successful sync
-
-6. Align the native platform configuration
-
-- iOS:
-  - verify HealthKit entitlements remain enabled
-  - verify `NSHealthShareUsageDescription` is present and clear
-- Android:
-  - verify the app is configured for Health Connect / health permissions required by the plugin version in use
-  - confirm the app can guide the user to Health Connect settings if needed
-- Keep the existing plugin dependency and native package registration intact.
-
-7. Make the web experience explicit
-
-- On web, replace any path that could surface plugin/module errors with a clear in-app explanation:
-  - “Health Sync works in the LegacyFit mobile app on iPhone and Android.”
-  - “On web, you can still log miles manually.”
-- add a CTA for users who are on mobile web:
-  - “Open in the mobile app” 
-- Do not attempt to “bypass” the web app into native capabilities from a browser tab. That is not possible unless the user opens the actual native app.
-
-8. Clarify the native-vs-web answer
-
-- Yes, you need a dual system.
-- No, a normal web app cannot directly access Apple Health or Android Health Connect through this plugin.
-- The only working path for this plugin is:
-  ```text
-  React app
-    -> running inside Capacitor native app
-    -> native plugin available
-    -> requestAuthorization works
-    -> Health data can be read
-  ```
-- A PWA/home-screen shortcut is still a web app, not a true native shell.
-
-9. Validate end-to-end
-
-- Test matrix:
-  - web browser: no plugin import, no module URL error, clear fallback message
-  - iPhone native app: permission prompt appears, denial handled gently, success reads data
-  - Android native app: permission flow works, Health Connect availability handled, sync succeeds
-  - signed-out native user: no permission request until authenticated
-  - signed-in returning native user: app-load check behaves quietly if already granted/denied
-
-10. Expected final result
-
-- Web app no longer throws the module-resolution error.
-- Logged-in native users are prompted for Health access at app load.
-- The app requests read access for both steps and distance.
-- Denials are handled gracefully.
-- Health Sync works on real iOS and Android native builds, while web remains a safe fallback.
-
-Technical notes
-
-- Files likely involved:
-  - `src/hooks/useHealthSync.ts`
-  - `src/components/HealthSyncTracker.tsx`
-  - `src/hooks/useIAPSync.ts`
-  - `src/App.tsx`
-  - `src/types/capgo-health.d.ts`
-  - `capacitor.config.ts`
-  - `ios/App/App/Info.plist`
-  - `android/app/src/main/AndroidManifest.xml`
-- Important implementation detail:
-  - the native plugin import must never be reachable from browser execution
-  - the permission request should use the plugin’s native API with both `steps` and `distance`
-  - any app-load prompt should be gated behind both `Capacitor.isNativePlatform()` and authenticated user presence 
-  - Do not modify `src/hooks/useIAPSync.ts` — use it as a read-only reference only.
+Approve and I'll run the migration, insert the 25 codes, update the edge function, and paste the code list.
