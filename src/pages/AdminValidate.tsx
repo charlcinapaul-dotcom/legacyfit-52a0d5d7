@@ -548,7 +548,34 @@ export default function AdminValidate() {
 
       <main className="container mx-auto px-4 py-10 max-w-4xl">
 
+        {/* ── Tabs: Readiness | Asset Library ─────────────────────────────── */}
+        <div className="mb-6 flex items-center gap-1 bg-card border border-border rounded-lg p-1 w-fit">
+          <button
+            onClick={() => setActiveTab("readiness")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              activeTab === "readiness"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <LayoutDashboard className="w-4 h-4" />
+            Readiness
+          </button>
+          <button
+            onClick={() => setActiveTab("library")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              activeTab === "library"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Library className="w-4 h-4" />
+            Asset Library
+          </button>
+        </div>
+
         {/* ── Readiness Dashboard ─────────────────────────────────────────── */}
+        {activeTab === "readiness" && (
         <div className="mb-12">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
