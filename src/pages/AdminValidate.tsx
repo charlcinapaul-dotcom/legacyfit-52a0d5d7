@@ -764,6 +764,85 @@ export default function AdminValidate() {
             </div>
           )}
         </div>
+        )}
+
+        {/* ── Asset Library ───────────────────────────────────────────────── */}
+        {activeTab === "library" && (
+          <div className="mb-12 space-y-8">
+            <div className="flex items-center gap-2">
+              <Library className="w-5 h-5 text-primary" />
+              <h1 className="text-2xl font-bold text-foreground">Asset Library</h1>
+            </div>
+            <p className="text-sm text-muted-foreground -mt-4">
+              Browse every digital stamp and play every milestone narration. Click a stamp to open the full‑size image, or use “Download all assets” for a per‑challenge zip of stamps + audio.
+            </p>
+
+            {readinessLoading && readiness.length === 0 ? (
+              <div className="flex items-center gap-2 text-muted-foreground text-sm py-6">
+                <Loader2 className="w-4 h-4 animate-spin" /> Loading challenges…
+              </div>
+            ) : (
+              (() => {
+                const preferredOrder = [
+                  "Women's History",
+                  "First Steps: Black Pioneers",
+                  "Women in Sports",
+                  "Pride",
+                ];
+                const uniqueEditions = Array.from(
+                  new Set(readiness.map((r) => r.edition).filter(Boolean))
+                );
+                uniqueEditions.sort((a, b) => {
+                  const ai = preferredOrder.indexOf(a);
+                  const bi = preferredOrder.indexOf(b);
+                  if (ai === -1 && bi === -1) return a.localeCompare(b);
+                  if (ai === -1) return 1;
+                  if (bi === -1) return -1;
+                  return ai - bi;
+                });
+                const colorMap: Record<string, string> = {
+                  "Women's History": "text-[#C084FC]",
+                  "First Steps: Black Pioneers": "text-amber-600",
+                  "Women in Sports": "text-[#2D7A4F]",
+                  "Pride": "text-pink-400",
+                };
+                return uniqueEditions.map((edition) => {
+                  const rows = readiness.filter((r) => r.edition === edition);
+                  if (!rows.length) return null;
+                  const editionColor = colorMap[edition] ?? "text-foreground";
+                  return (
+                    <section key={edition} className="space-y-3">
+                      <h2 className={`text-xs font-bold uppercase tracking-widest ${editionColor}`}>
+                        {edition}
+                      </h2>
+                      <div className="space-y-4">
+                        {rows.map((row) => (
+                          <div key={row.id} className="bg-card border border-border rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-foreground truncate">{row.title}</p>
+                                <p className="text-[11px] text-muted-foreground font-mono">{row.slug}</p>
+                              </div>
+                              <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                                <span className="flex items-center gap-1"><Stamp className="w-3 h-3" />{row.has_stamp_image_count}/{row.milestone_count}</span>
+                                <span className="flex items-center gap-1"><Volume2 className="w-3 h-3" />{row.has_audio_count}/{row.milestone_count}</span>
+                              </div>
+                            </div>
+                            <ChallengeAssetCard
+                              challengeId={row.id}
+                              challengeSlug={row.slug}
+                              challengeTitle={row.title}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  );
+                });
+              })()
+            )}
+          </div>
+        )}
 
         {/* ── Validator ────────────────────────────────────────────────────── */}
         <div className="mb-8">
