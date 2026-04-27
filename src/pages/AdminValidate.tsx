@@ -20,7 +20,10 @@ import {
   Stamp,
   Radio,
   Package,
+  ChevronDown,
+  Library,
 } from "lucide-react";
+import { ChallengeAssetCard } from "@/components/admin/ChallengeAssetCard";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -153,6 +156,17 @@ export default function AdminValidate() {
   const [audioMissingCount, setAudioMissingCount] = useState<{ missing: number; total: number } | null>(null);
   const [shippingOrders, setShippingOrders] = useState<any[]>([]);
   const [shippingLoading, setShippingLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"readiness" | "library">("readiness");
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+
+  const toggleExpanded = (id: string) => {
+    setExpandedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
   // ── shipping orders loader ─────────────────────────────────────────────────
   const loadShippingOrders = async () => {
@@ -534,7 +548,34 @@ export default function AdminValidate() {
 
       <main className="container mx-auto px-4 py-10 max-w-4xl">
 
+        {/* ── Tabs: Readiness | Asset Library ─────────────────────────────── */}
+        <div className="mb-6 flex items-center gap-1 bg-card border border-border rounded-lg p-1 w-fit">
+          <button
+            onClick={() => setActiveTab("readiness")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              activeTab === "readiness"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <LayoutDashboard className="w-4 h-4" />
+            Readiness
+          </button>
+          <button
+            onClick={() => setActiveTab("library")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              activeTab === "library"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Library className="w-4 h-4" />
+            Asset Library
+          </button>
+        </div>
+
         {/* ── Readiness Dashboard ─────────────────────────────────────────── */}
+        {activeTab === "readiness" && (
         <div className="mb-12">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
@@ -621,17 +662,27 @@ export default function AdminValidate() {
                         );
 
                       return (
+                        <div key={row.id} className={i < rows.length - 1 ? "border-b border-border" : ""}>
                         <div
-                          key={row.id}
-                          className={`grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] items-center gap-3 px-4 py-3 text-sm ${
-                            i < rows.length - 1 ? "border-b border-border" : ""
-                          }`}
+                          className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] items-center gap-3 px-4 py-3 text-sm"
                         >
-                          {/* Title + slug */}
-                          <div className="min-w-0">
-                            <p className="font-medium text-foreground truncate">{row.title}</p>
-                            <p className="text-[11px] text-muted-foreground font-mono">{row.slug}</p>
-                          </div>
+                          {/* Title + slug — click to expand asset preview */}
+                          <button
+                            type="button"
+                            onClick={() => toggleExpanded(row.id)}
+                            className="min-w-0 text-left flex items-center gap-2 group"
+                            title="Show stamps & audio"
+                          >
+                            <ChevronDown
+                              className={`w-4 h-4 flex-shrink-0 text-muted-foreground transition-transform group-hover:text-foreground ${
+                                expandedRows.has(row.id) ? "" : "-rotate-90"
+                              }`}
+                            />
+                            <div className="min-w-0">
+                              <p className="font-medium text-foreground truncate group-hover:text-primary transition-colors">{row.title}</p>
+                              <p className="text-[11px] text-muted-foreground font-mono">{row.slug}</p>
+                            </div>
+                          </button>
 
                           {/* Narration */}
                           <div className="w-16 flex flex-col items-center gap-0.5">
@@ -697,6 +748,16 @@ export default function AdminValidate() {
                             </span>
                           </div>
                         </div>
+                        {expandedRows.has(row.id) && (
+                          <div className="px-4 pb-4 pt-1 bg-secondary/10">
+                            <ChallengeAssetCard
+                              challengeId={row.id}
+                              challengeSlug={row.slug}
+                              challengeTitle={row.title}
+                            />
+                          </div>
+                        )}
+                        </div>
                       );
                     })}
                   </div>
@@ -723,6 +784,85 @@ export default function AdminValidate() {
             </div>
           )}
         </div>
+        )}
+
+        {/* ── Asset Library ───────────────────────────────────────────────── */}
+        {activeTab === "library" && (
+          <div className="mb-12 space-y-8">
+            <div className="flex items-center gap-2">
+              <Library className="w-5 h-5 text-primary" />
+              <h1 className="text-2xl font-bold text-foreground">Asset Library</h1>
+            </div>
+            <p className="text-sm text-muted-foreground -mt-4">
+              Browse every digital stamp and play every milestone narration. Click a stamp to open the full‑size image, or use “Download all assets” for a per‑challenge zip of stamps + audio.
+            </p>
+
+            {readinessLoading && readiness.length === 0 ? (
+              <div className="flex items-center gap-2 text-muted-foreground text-sm py-6">
+                <Loader2 className="w-4 h-4 animate-spin" /> Loading challenges…
+              </div>
+            ) : (
+              (() => {
+                const preferredOrder = [
+                  "Women's History",
+                  "First Steps: Black Pioneers",
+                  "Women in Sports",
+                  "Pride",
+                ];
+                const uniqueEditions = Array.from(
+                  new Set(readiness.map((r) => r.edition).filter(Boolean))
+                );
+                uniqueEditions.sort((a, b) => {
+                  const ai = preferredOrder.indexOf(a);
+                  const bi = preferredOrder.indexOf(b);
+                  if (ai === -1 && bi === -1) return a.localeCompare(b);
+                  if (ai === -1) return 1;
+                  if (bi === -1) return -1;
+                  return ai - bi;
+                });
+                const colorMap: Record<string, string> = {
+                  "Women's History": "text-[#C084FC]",
+                  "First Steps: Black Pioneers": "text-amber-600",
+                  "Women in Sports": "text-[#2D7A4F]",
+                  "Pride": "text-pink-400",
+                };
+                return uniqueEditions.map((edition) => {
+                  const rows = readiness.filter((r) => r.edition === edition);
+                  if (!rows.length) return null;
+                  const editionColor = colorMap[edition] ?? "text-foreground";
+                  return (
+                    <section key={edition} className="space-y-3">
+                      <h2 className={`text-xs font-bold uppercase tracking-widest ${editionColor}`}>
+                        {edition}
+                      </h2>
+                      <div className="space-y-4">
+                        {rows.map((row) => (
+                          <div key={row.id} className="bg-card border border-border rounded-lg p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-foreground truncate">{row.title}</p>
+                                <p className="text-[11px] text-muted-foreground font-mono">{row.slug}</p>
+                              </div>
+                              <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
+                                <span className="flex items-center gap-1"><Stamp className="w-3 h-3" />{row.has_stamp_image_count}/{row.milestone_count}</span>
+                                <span className="flex items-center gap-1"><Volume2 className="w-3 h-3" />{row.has_audio_count}/{row.milestone_count}</span>
+                              </div>
+                            </div>
+                            <ChallengeAssetCard
+                              challengeId={row.id}
+                              challengeSlug={row.slug}
+                              challengeTitle={row.title}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  );
+                });
+              })()
+            )}
+          </div>
+        )}
 
         {/* ── Validator ────────────────────────────────────────────────────── */}
         <div className="mb-8">
