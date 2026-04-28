@@ -246,6 +246,7 @@ export default function AdminValidate() {
         loadAudioMissingCount(),
         loadStampMissingCount(),
         loadShippingOrders(),
+        loadCoordsCount(),
       ]);
       setChallenges((ch as typeof challenges) ?? []);
     });
