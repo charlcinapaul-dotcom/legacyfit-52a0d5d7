@@ -158,6 +158,7 @@ export default function AdminValidate() {
   const [shippingLoading, setShippingLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"readiness" | "library">("readiness");
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [coordsCount, setCoordsCount] = useState<{ withCoords: number; total: number } | null>(null);
 
   const toggleExpanded = (id: string) => {
     setExpandedRows((prev) => {
@@ -367,6 +368,14 @@ export default function AdminValidate() {
     if (!all) return;
     const missing = all.filter((m) => !m.audio_url).length;
     setAudioMissingCount({ missing, total: all.length });
+  };
+
+  // ── load coordinate coverage count ────────────────────────────────────────
+  const loadCoordsCount = async () => {
+    const { data: all } = await supabase.from("milestones").select("id, latitude, longitude");
+    if (!all) return;
+    const withCoords = all.filter((m) => m.latitude != null && m.longitude != null).length;
+    setCoordsCount({ withCoords, total: all.length });
   };
 
   // ── reset audio URLs ──────────────────────────────────────────────────────
