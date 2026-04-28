@@ -1,43 +1,43 @@
-## Add an Asset Library to /admin/validate
+## Add map coordinate verification to the Asset Library
 
-Add a way for admins to actually **see every digital stamp** and **play every milestone audio narration** in one place — plus inline previews per challenge and per‑challenge bulk download.
+Make it easy for admins to confirm every milestone's `latitude` / `longitude` actually lands on a real place — directly inside `/admin/validate` (both the expandable Readiness rows and the Asset Library tab).
 
-### What you'll get
+### What you'll see on each milestone tile
 
-**1. New "Asset Library" tab at the top of `/admin/validate`**
-- Tab toggle: `Readiness | Asset Library`
-- Asset Library view groups all challenges by edition (same dynamic grouping as readiness — Women's History, First Steps: Black Pioneers, Women in Sports, Pride, etc.)
-- Each challenge card shows its 6 milestones in a grid:
-  - Stamp thumbnail (click → opens full‑size image in a new tab)
-  - Milestone title + mileage label (e.g. "1 MILE")
-  - Inline `<audio controls>` player streaming the Matilda narration
-  - Red "Missing" badge if `stamp_image_url` or `audio_url` is null
-- Top‑of‑page summary: total stamps generated / missing, total audio generated / missing
+In `src/components/admin/ChallengeAssetCard.tsx`, each milestone card already shows the stamp, title, and audio. We'll add a compact "Location" block underneath:
 
-**2. Expandable rows in the existing Readiness tab**
-- Each challenge row gets a chevron toggle
-- Expanding reveals the same 6‑milestone preview grid (stamps + audio) inline, without leaving the readiness dashboard
-- Keeps current pass/fail UI exactly as it is — preview is purely additive
+- **Location name** (e.g. "Seneca Falls, NY") — pulled from `milestones.location_name`
+- **Coordinates** rendered as monospace text: `42.9106, -76.7958` (4 decimals)
+- **"View on Google Maps" link** — opens `https://www.google.com/maps/search/?api=1&query={lat},{lng}` in a new tab so you can visually confirm the pin
+- **"Copy" button** that copies `lat,lng` to clipboard for quick pasting into other tools
+- **Red "Missing coordinates" badge** when `latitude` or `longitude` is null (matches the existing "No stamp" / "No audio" badge style)
 
-**3. Per‑challenge bulk download**
-- "Download all assets" button on each challenge card (in both views)
-- Generates a zip in the browser containing:
-  - `{slug}/stamps/01-{stamp_title}.png` … `06-…png` (6 stamp images)
-  - `{slug}/audio/01-{milestone_title}.mp3` … `06-…mp3` (6 narration files)
-  - `{slug}/manifest.json` listing milestones, miles, titles, and source URLs
-- Uses `jszip` (client‑side) — files are fetched directly from the public `challenge-images` and `milestone-audio` buckets, no edge function needed
-- Skips any missing assets and notes them in the manifest
+### Per-challenge coordinate health summary
 
-### Access & security
-- Entire page already gated behind `has_role(auth.uid(), 'admin')` — no policy changes needed
-- Both storage buckets (`challenge-images`, `milestone-audio`) are already public‑read, so audio playback and zip downloads work directly from the browser
+At the top of each challenge's milestone grid (next to the existing "6 milestones" / "Download all assets" row), add a small status pill:
+
+- Green: `Coordinates: 6/6` (all milestones have valid lat/lng)
+- Amber: `Coordinates: 4/6` (some missing — clickable scrolls to first missing one is out of scope, just the count)
+- Red: `Coordinates: 0/6`
+
+### Library-wide summary (Asset Library tab only)
+
+In `src/pages/AdminValidate.tsx`, in the Asset Library header strip that already shows totals, add one more counter:
+
+- "Milestones with coordinates: X / Y"
+
+So at a glance you know how many milestones across the whole platform are still missing a verifiable location.
+
+### Out of scope
+
+- Editing coordinates inline (still done in the database / via the challenge creation flow)
+- Embedded mini-maps per tile (would slow down the page when 60+ milestones render at once)
+- Reverse-geocoding to validate that the coords match `location_name` (would require an external API + key)
 
 ### Technical notes
-- Files touched: `src/pages/AdminValidate.tsx` (add tab state, asset library view, expandable rows), one new component `src/components/admin/ChallengeAssetCard.tsx` (milestone grid + download button)
-- New dependency: `jszip` (add via `bun add jszip`)
-- Data source: a single query `select id, slug, title, edition from challenges` joined with `select challenge_id, order_index, title, stamp_title, stamp_mileage_display, stamp_image_url, audio_url from milestones order by order_index` — no new tables, no migrations
-- No edge functions added; existing `generate-all-stamps` / `generate-all-milestone-audio` stay as‑is for filling in missing assets
 
-### Out of scope (can add later if you want)
-- Per‑edition "download everything" zip
-- Re‑generating a single stamp or audio file from the library view (today you'd use the existing batch generators)
+- Files touched:
+  - `src/components/admin/ChallengeAssetCard.tsx` — add `latitude`, `longitude`, `location_name` to the `MilestoneAsset` type and the `select(...)` query; render the new Location block + per-challenge coordinate count
+  - `src/pages/AdminValidate.tsx` — add the library-wide "Milestones with coordinates" counter (will require a small query alongside the existing readiness data, or aggregate from cards via a shared callback — implementation can fetch a single `select count(*) ... where latitude is not null and longitude is not null` to keep it cheap)
+- No new dependencies, no migrations, no edge functions, no RLS changes. `milestones` is already SELECT-able by anyone and `latitude` / `longitude` columns already exist.
+- Map links use plain `https://www.google.com/maps/search/?api=1&query=...` (works in any browser, no API key). On the admin web view we open in a new tab via `target="_blank"` — no Capacitor `Browser.open` needed since `/admin/validate` is desktop-first.

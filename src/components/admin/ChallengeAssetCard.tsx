@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import JSZip from "jszip";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, Download, ImageOff, VolumeX } from "lucide-react";
+import { Loader2, Download, ImageOff, VolumeX, MapPin, ExternalLink, Copy } from "lucide-react";
 import { toast } from "sonner";
 
 interface MilestoneAsset {
@@ -14,6 +14,9 @@ interface MilestoneAsset {
   stamp_mileage_display: string | null;
   stamp_image_url: string | null;
   audio_url: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  location_name: string | null;
 }
 
 interface Props {
@@ -38,7 +41,7 @@ export function ChallengeAssetCard({ challengeId, challengeSlug, challengeTitle 
       setLoading(true);
       const { data, error } = await supabase
         .from("milestones")
-        .select("id, order_index, title, miles_required, stamp_title, stamp_mileage_display, stamp_image_url, audio_url")
+        .select("id, order_index, title, miles_required, stamp_title, stamp_mileage_display, stamp_image_url, audio_url, latitude, longitude, location_name")
         .eq("challenge_id", challengeId)
         .order("order_index", { ascending: true });
       if (cancelled) return;
@@ -150,12 +153,27 @@ export function ChallengeAssetCard({ challengeId, challengeSlug, challengeTitle 
     return <p className="text-xs text-muted-foreground py-2">No milestones found.</p>;
   }
 
+  const coordsOk = milestones.filter((m) => m.latitude != null && m.longitude != null).length;
+  const coordsTotal = milestones.length;
+  const coordsPillClass =
+    coordsOk === coordsTotal
+      ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30"
+      : coordsOk === 0
+        ? "bg-destructive/15 text-destructive border-destructive/30"
+        : "bg-amber-500/15 text-amber-600 border-amber-500/30";
+
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
-          {milestones.length} milestone{milestones.length === 1 ? "" : "s"}
-        </p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-semibold">
+            {milestones.length} milestone{milestones.length === 1 ? "" : "s"}
+          </p>
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-sm border ${coordsPillClass}`}>
+            <MapPin className="w-2.5 h-2.5 inline -mt-0.5 mr-0.5" />
+            Coords: {coordsOk}/{coordsTotal}
+          </span>
+        </div>
         <Button
           size="sm"
           variant="outline"
@@ -209,6 +227,11 @@ export function ChallengeAssetCard({ challengeId, challengeSlug, challengeTitle 
                       No audio
                     </span>
                   )}
+                  {(m.latitude == null || m.longitude == null) && (
+                    <span className="text-[9px] uppercase bg-destructive/15 text-destructive px-1.5 py-0.5 rounded-sm font-semibold">
+                      No coords
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -218,6 +241,49 @@ export function ChallengeAssetCard({ challengeId, challengeSlug, challengeTitle 
             ) : (
               <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground py-1">
                 <VolumeX className="w-3 h-3" /> No narration
+              </div>
+            )}
+
+            {/* Location / coordinate verification */}
+            {m.latitude != null && m.longitude != null ? (
+              <div className="border-t border-border pt-2 space-y-1">
+                {m.location_name && (
+                  <p className="text-[11px] text-foreground flex items-start gap-1">
+                    <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0 text-muted-foreground" />
+                    <span className="truncate" title={m.location_name}>{m.location_name}</span>
+                  </p>
+                )}
+                <div className="flex items-center justify-between gap-1">
+                  <code className="text-[10px] font-mono text-muted-foreground truncate">
+                    {Number(m.latitude).toFixed(4)}, {Number(m.longitude).toFixed(4)}
+                  </code>
+                  <div className="flex items-center gap-0.5 flex-shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${m.latitude},${m.longitude}`);
+                        toast.success("Coordinates copied");
+                      }}
+                      className="p-1 rounded hover:bg-secondary transition-colors"
+                      title="Copy coordinates"
+                    >
+                      <Copy className="w-3 h-3 text-muted-foreground" />
+                    </button>
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${m.latitude},${m.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-1 rounded hover:bg-secondary transition-colors text-primary"
+                      title="Open in Google Maps"
+                    >
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="border-t border-border pt-2 flex items-center gap-1.5 text-[11px] text-destructive">
+                <MapPin className="w-3 h-3" /> Missing coordinates
               </div>
             )}
           </div>

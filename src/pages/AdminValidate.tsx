@@ -158,6 +158,7 @@ export default function AdminValidate() {
   const [shippingLoading, setShippingLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"readiness" | "library">("readiness");
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [coordsCount, setCoordsCount] = useState<{ withCoords: number; total: number } | null>(null);
 
   const toggleExpanded = (id: string) => {
     setExpandedRows((prev) => {
@@ -245,6 +246,7 @@ export default function AdminValidate() {
         loadAudioMissingCount(),
         loadStampMissingCount(),
         loadShippingOrders(),
+        loadCoordsCount(),
       ]);
       setChallenges((ch as typeof challenges) ?? []);
     });
@@ -367,6 +369,14 @@ export default function AdminValidate() {
     if (!all) return;
     const missing = all.filter((m) => !m.audio_url).length;
     setAudioMissingCount({ missing, total: all.length });
+  };
+
+  // ── load coordinate coverage count ────────────────────────────────────────
+  const loadCoordsCount = async () => {
+    const { data: all } = await supabase.from("milestones").select("id, latitude, longitude");
+    if (!all) return;
+    const withCoords = all.filter((m) => m.latitude != null && m.longitude != null).length;
+    setCoordsCount({ withCoords, total: all.length });
   };
 
   // ── reset audio URLs ──────────────────────────────────────────────────────
@@ -796,6 +806,27 @@ export default function AdminValidate() {
             <p className="text-sm text-muted-foreground -mt-4">
               Browse every digital stamp and play every milestone narration. Click a stamp to open the full‑size image, or use “Download all assets” for a per‑challenge zip of stamps + audio.
             </p>
+
+            {coordsCount && (
+              <div className="flex flex-wrap items-center gap-2 -mt-4">
+                <span
+                  className={`text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded-md border ${
+                    coordsCount.withCoords === coordsCount.total
+                      ? "bg-emerald-500/15 text-emerald-600 border-emerald-500/30"
+                      : coordsCount.withCoords === 0
+                        ? "bg-destructive/15 text-destructive border-destructive/30"
+                        : "bg-amber-500/15 text-amber-600 border-amber-500/30"
+                  }`}
+                >
+                  Milestones with coordinates: {coordsCount.withCoords} / {coordsCount.total}
+                </span>
+                {coordsCount.withCoords < coordsCount.total && (
+                  <span className="text-[11px] text-muted-foreground">
+                    ({coordsCount.total - coordsCount.withCoords} missing — use the "Open in Google Maps" link on each tile to verify pins.)
+                  </span>
+                )}
+              </div>
+            )}
 
             {readinessLoading && readiness.length === 0 ? (
               <div className="flex items-center gap-2 text-muted-foreground text-sm py-6">
