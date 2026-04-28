@@ -1,43 +1,62 @@
-## Add map coordinate verification to the Asset Library
+## Fix Health Sync upsert error
 
-Make it easy for admins to confirm every milestone's `latitude` / `longitude` actually lands on a real place — directly inside `/admin/validate` (both the expandable Readiness rows and the Asset Library tab).
+**Error:** `there is no unique or exclusion constraint matching the ON CONFLICT specification`
 
-### What you'll see on each milestone tile
+### Root cause
 
-In `src/components/admin/ChallengeAssetCard.tsx`, each milestone card already shows the stamp, title, and audio. We'll add a compact "Location" block underneath:
+The Health Sync logic lives in `src/hooks/useHealthSync.ts` (it's a client-side hook, not an edge function). It calls:
 
-- **Location name** (e.g. "Seneca Falls, NY") — pulled from `milestones.location_name`
-- **Coordinates** rendered as monospace text: `42.9106, -76.7958` (4 decimals)
-- **"View on Google Maps" link** — opens `https://www.google.com/maps/search/?api=1&query={lat},{lng}` in a new tab so you can visually confirm the pin
-- **"Copy" button** that copies `lat,lng` to clipboard for quick pasting into other tools
-- **Red "Missing coordinates" badge** when `latitude` or `longitude` is null (matches the existing "No stamp" / "No audio" badge style)
+```ts
+supabase.from("mile_entries").upsert(rowsToUpsert, {
+  onConflict: "user_id,challenge_id,logged_at",
+  ignoreDuplicates: false,
+});
+```
 
-### Per-challenge coordinate health summary
+But `public.mile_entries` currently has **no unique constraint** on `(user_id, challenge_id, logged_at)`. Confirmed via `pg_constraint` — only the primary key on `id` and two foreign keys exist. Postgres needs a matching unique/exclusion constraint for `ON CONFLICT` to work, hence the failure.
 
-At the top of each challenge's milestone grid (next to the existing "6 milestones" / "Download all assets" row), add a small status pill:
+The hook intentionally normalizes `logged_at` to midnight UTC of the sample's day so each user/challenge/day is a single row that gets updated in place on re-sync. That design only works with a real unique constraint backing it.
 
-- Green: `Coordinates: 6/6` (all milestones have valid lat/lng)
-- Amber: `Coordinates: 4/6` (some missing — clickable scrolls to first missing one is out of scope, just the count)
-- Red: `Coordinates: 0/6`
+### Fix
 
-### Library-wide summary (Asset Library tab only)
+Add a unique constraint to `mile_entries` matching the upsert's columns and order.
 
-In `src/pages/AdminValidate.tsx`, in the Asset Library header strip that already shows totals, add one more counter:
+```sql
+-- Backfill: collapse any pre-existing duplicate (user_id, challenge_id, logged_at) rows
+-- by keeping the row with the highest miles value (safest for Health Sync data,
+-- which represents a daily total rather than incremental entries).
+WITH ranked AS (
+  SELECT
+    id,
+    row_number() OVER (
+      PARTITION BY user_id, challenge_id, logged_at
+      ORDER BY miles DESC, created_at DESC, id
+    ) AS rn
+  FROM public.mile_entries
+)
+DELETE FROM public.mile_entries
+WHERE id IN (SELECT id FROM ranked WHERE rn > 1);
 
-- "Milestones with coordinates: X / Y"
+-- Add the unique constraint that matches onConflict: "user_id,challenge_id,logged_at"
+ALTER TABLE public.mile_entries
+  ADD CONSTRAINT mile_entries_user_challenge_logged_at_key
+  UNIQUE (user_id, challenge_id, logged_at);
+```
 
-So at a glance you know how many milestones across the whole platform are still missing a verifiable location.
+### Why this is safe
+
+- **Manual log entries:** Users typing in miles use `now()` as `logged_at` (sub-second precision), so duplicate `(user_id, challenge_id, logged_at)` collisions across manual entries are essentially impossible. The constraint won't block normal logging.
+- **Health Sync entries:** Use a deterministic midnight-UTC timestamp per day. The constraint is exactly what makes the daily upsert idempotent — the original intent of the hook.
+- **Backfill step:** The dedupe `DELETE` handles the (rare) case where a previous broken sync attempt or manual entry happens to share the exact `logged_at`. We keep the row with the highest miles to avoid losing logged distance.
+- **No client code changes needed** — `onConflict: "user_id,challenge_id,logged_at"` already matches the new constraint's column list.
+
+### Files / changes
+
+- New migration: adds the dedupe + `ALTER TABLE ... ADD CONSTRAINT mile_entries_user_challenge_logged_at_key UNIQUE (user_id, challenge_id, logged_at)`.
+- No edits to `src/hooks/useHealthSync.ts`, no edge function changes, no RLS changes.
 
 ### Out of scope
 
-- Editing coordinates inline (still done in the database / via the challenge creation flow)
-- Embedded mini-maps per tile (would slow down the page when 60+ milestones render at once)
-- Reverse-geocoding to validate that the coords match `location_name` (would require an external API + key)
-
-### Technical notes
-
-- Files touched:
-  - `src/components/admin/ChallengeAssetCard.tsx` — add `latitude`, `longitude`, `location_name` to the `MilestoneAsset` type and the `select(...)` query; render the new Location block + per-challenge coordinate count
-  - `src/pages/AdminValidate.tsx` — add the library-wide "Milestones with coordinates" counter (will require a small query alongside the existing readiness data, or aggregate from cards via a shared callback — implementation can fetch a single `select count(*) ... where latitude is not null and longitude is not null` to keep it cheap)
-- No new dependencies, no migrations, no edge functions, no RLS changes. `milestones` is already SELECT-able by anyone and `latitude` / `longitude` columns already exist.
-- Map links use plain `https://www.google.com/maps/search/?api=1&query=...` (works in any browser, no API key). On the admin web view we open in a new tab via `target="_blank"` — no Capacitor `Browser.open` needed since `/admin/validate` is desktop-first.
+- Renaming/restructuring `mile_entries` columns.
+- Changing how manual entries set `logged_at` (still `now()`).
+- Edge function refactor (Health Sync is client-side; the user's reference to "edge function" was a misattribution — the bug and fix both live at the database level).
