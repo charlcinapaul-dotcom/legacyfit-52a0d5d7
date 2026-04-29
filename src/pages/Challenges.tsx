@@ -88,6 +88,20 @@ function EditionHeader({ edition }: { edition: string }) {
       </h2>
     );
   }
+  if (lower.includes("unsung")) {
+    return (
+      <h2 className="text-2xl font-bold mb-6" style={{ color: "#B22234" }}>
+        {edition}
+      </h2>
+    );
+  }
+  if (lower.includes("patriots")) {
+    return (
+      <h2 className="text-2xl font-bold mb-6" style={{ color: "#3C3B6E" }}>
+        {edition}
+      </h2>
+    );
+  }
   return <h2 className="text-2xl font-bold text-foreground mb-6">{edition}</h2>;
 }
 
@@ -181,7 +195,7 @@ const Challenges = () => {
   // Section 4: Browse by category, then by edition fallback
   const byEdition: Record<string, ChallengeWithMeta[]> = {};
   for (const c of active) {
-    const key = c.category ?? c.edition ?? "All Challenges";
+    const key = c.edition ?? c.category ?? "All Challenges";
     if (!byEdition[key]) byEdition[key] = [];
     byEdition[key].push(c);
   }
