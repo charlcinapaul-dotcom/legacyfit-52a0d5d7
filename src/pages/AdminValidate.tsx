@@ -626,6 +626,8 @@ export default function AdminValidate() {
                   "First Steps: Black Pioneers",
                   "Women in Sports",
                   "Pride",
+                  "250 Years of Independence – Unsung Edition",
+                  "250 Years of Independence – Patriots Edition",
                 ];
                 const uniqueEditions = Array.from(
                   new Set(readiness.map((r) => r.edition).filter(Boolean))
@@ -648,6 +650,8 @@ export default function AdminValidate() {
                   "First Steps: Black Pioneers": "text-amber-600",
                   "Women in Sports": "text-[#2D7A4F]",
                   "Pride": "text-pink-400",
+                  "250 Years of Independence – Unsung Edition": "text-[#B22234]",
+                  "250 Years of Independence – Patriots Edition": "text-[#3C3B6E]",
                 };
                 const editionColor = colorMap[edition] ?? "text-foreground";
 
@@ -839,6 +843,8 @@ export default function AdminValidate() {
                   "First Steps: Black Pioneers",
                   "Women in Sports",
                   "Pride",
+                  "250 Years of Independence – Unsung Edition",
+                  "250 Years of Independence – Patriots Edition",
                 ];
                 const uniqueEditions = Array.from(
                   new Set(readiness.map((r) => r.edition).filter(Boolean))
@@ -856,6 +862,8 @@ export default function AdminValidate() {
                   "First Steps: Black Pioneers": "text-amber-600",
                   "Women in Sports": "text-[#2D7A4F]",
                   "Pride": "text-pink-400",
+                  "250 Years of Independence – Unsung Edition": "text-[#B22234]",
+                  "250 Years of Independence – Patriots Edition": "text-[#3C3B6E]",
                 };
                 return uniqueEditions.map((edition) => {
                   const rows = readiness.filter((r) => r.edition === edition);
