@@ -236,19 +236,25 @@ Square canvas on aged parchment paper (#F5EDD8 warm cream). The entire canvas mu
         failCount++;
         await new Promise((r) => setTimeout(r, 1000));
       }
-    }
+      }
+      console.log(`Batch complete. Success: ${successCount}, Failed: ${failCount}`);
+    };
 
-    console.log(`Batch complete. Success: ${successCount}, Failed: ${failCount}`);
+    // @ts-ignore - EdgeRuntime is available in Supabase edge runtime
+    if (typeof EdgeRuntime !== "undefined" && EdgeRuntime.waitUntil) {
+      // @ts-ignore
+      EdgeRuntime.waitUntil(processInBackground());
+    } else {
+      // Fallback: fire-and-forget
+      processInBackground().catch((e) => console.error("Background error:", e));
+    }
 
     return new Response(
       JSON.stringify({
-        message: `Generated ${successCount} stamp image(s), ${failCount} failed`,
-        generated: successCount,
-        failed: failCount,
-        total: milestones.length,
-        results,
+        message: `Queued ${milestones.length} stamp generation(s) in background. Check logs and re-run to process more.`,
+        queued: milestones.length,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 202 }
     );
   } catch (error: unknown) {
     console.error("Error in generate-all-stamps:", error);
