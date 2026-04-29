@@ -60,6 +60,15 @@ function validateChallenge(
   const warnings: string[] = [];
   const summary: Record<string, boolean> = {};
 
+  // Editions that use 6 evenly spaced milestones and do NOT use the first-mile gate
+  const SKIP_FIRST_MILE_GATE_EDITIONS = new Set<string>([
+    "250 Years of Independence – Unsung Edition",
+    "250 Years of Independence – Patriots Edition",
+  ]);
+  const skipFirstMileGate = SKIP_FIRST_MILE_GATE_EDITIONS.has(
+    String(challenge.edition ?? "")
+  );
+
   // ── Challenge-level checks ─────────────────────────────────────────────────
 
   // 1. slug
@@ -115,14 +124,21 @@ function validateChallenge(
 
   // ── First-mile gate ────────────────────────────────────────────────────────
 
-  const hasOneMileGate = milestones.some(
-    (m) => Number(m.miles_required) === 1
-  );
-  summary["milestones.first_mile_gate_at_1"] = hasOneMileGate;
-  if (!hasOneMileGate)
-    errors.push(
-      "No milestone at miles_required = 1. The first-mile gate is required for every challenge."
+  if (skipFirstMileGate) {
+    summary["milestones.first_mile_gate_at_1"] = true;
+    warnings.push(
+      `First-mile gate check skipped for edition "${challenge.edition}" (uses evenly spaced milestones).`
     );
+  } else {
+    const hasOneMileGate = milestones.some(
+      (m) => Number(m.miles_required) === 1
+    );
+    summary["milestones.first_mile_gate_at_1"] = hasOneMileGate;
+    if (!hasOneMileGate)
+      errors.push(
+        "No milestone at miles_required = 1. The first-mile gate is required for every challenge."
+      );
+  }
 
   // ── order_index sequential 1-6 ────────────────────────────────────────────
 
