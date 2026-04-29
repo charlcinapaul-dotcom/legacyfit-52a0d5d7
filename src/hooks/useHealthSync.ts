@@ -1,7 +1,8 @@
 import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Capacitor } from "@capacitor/core";
-import { capDailyRemainingMiles } from "@/lib/health-cap";
+import { MAX_SINGLE_ENTRY_MILES, roundMiles } from "@/lib/health-cap";
+import { stepsToMiles } from "@/lib/health-sync";
 import {
   ensureHealthReadAuthorization,
   HEALTH_PERMISSION_DENIED_MESSAGE,
@@ -66,15 +67,16 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
         throw new Error(HEALTH_PERMISSION_DENIED_MESSAGE);
       }
 
-      // Query today's step data only (from midnight UTC to now)
+      // Query a wide window to get the user's *cumulative* Apple Health /
+      // Google Health steps. We intentionally pull a long history so that the
+      // raw total reflects everything the device has recorded — we'll diff it
+      // against `profiles.last_health_total` to get the new miles to credit.
       const now = new Date();
-      const todayStart = new Date(
-        Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
-      );
+      const windowStart = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
 
       const result = await Health.queryAggregated({
         dataType: "steps",
-        startDate: todayStart.toISOString(),
+        startDate: windowStart.toISOString(),
         endDate: now.toISOString(),
         bucket: "day",
       });
@@ -82,8 +84,11 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
       const samples = result.samples || [];
       const totalSteps = samples.reduce(
         (sum: number, s: any) => sum + (Number(s.value) || 0),
-        0
+        0,
       );
+
+      // Current cumulative miles as reported by the health app.
+      const currentHealthTotal = roundMiles(stepsToMiles(totalSteps));
 
       // Get current user
       const { data: { session } } = await supabase.auth.getSession();
@@ -92,77 +97,34 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
       }
       const userId = session.user.id;
 
-      // Idempotent per-day upsert: each Health Sync row is keyed by
-      // (user_id, challenge_id, logged_at) where logged_at is normalized to the
-      // start of the sample's UTC day. Re-syncing the same window will UPDATE
-      // the existing row in place rather than creating duplicates.
-      const sourceName = healthSource === "apple_health" ? "Apple Health" : "Google Health Connect";
-
-      // Bucket samples by normalized day (handles plugins that return multiple
-      // sub-day buckets) and pick a stable per-day timestamp.
-      const stepsByDay = new Map<string, number>();
-      for (const sample of samples) {
-        const steps = Number(sample.value) || 0;
-        if (steps <= 0) continue;
-        const dayKey = new Date(sample.startDate).toISOString().split("T")[0];
-        stepsByDay.set(dayKey, (stepsByDay.get(dayKey) || 0) + steps);
-      }
-
-      // Read prior Health Sync rows for the window so we can compute the net
-      // delta to apply to user_challenges.miles_logged.
-      const windowStart = todayStart.toISOString();
-      const windowEnd = now.toISOString();
-      const { data: existingSynced } = await supabase
-        .from("mile_entries")
-        .select("miles, logged_at")
+      // Read the previously-synced cumulative total from profiles.
+      const { data: profileRow, error: profileError } = await supabase
+        .from("profiles")
+        .select("last_health_total")
         .eq("user_id", userId)
-        .eq("challenge_id", challengeId)
-        .like("notes", "Health Sync%")
-        .gte("logged_at", windowStart)
-        .lt("logged_at", windowEnd);
+        .maybeSingle();
+      if (profileError) throw profileError;
 
-      const priorByDay = new Map<string, number>();
-      for (const row of existingSynced || []) {
-        const day = new Date(row.logged_at as string).toISOString().split("T")[0];
-        priorByDay.set(day, (priorByDay.get(day) || 0) + Number(row.miles));
-      }
+      const lastHealthTotal = roundMiles(
+        Number((profileRow as any)?.last_health_total ?? 0),
+      );
 
-      const rowsToUpsert: Array<{
-        user_id: string;
-        challenge_id: string;
-        miles: number;
-        source: HealthSource;
-        notes: string;
-        logged_at: string;
-      }> = [];
+      // Compute delta = current - last, then cap at MAX_SINGLE_ENTRY_MILES (7).
+      // Negative or zero deltas (e.g. health app reset, or no new activity) are
+      // treated as 0 — we never subtract miles from the user's total.
+      const rawDelta = roundMiles(currentHealthTotal - lastHealthTotal);
+      const cappedDelta = rawDelta <= 0
+        ? 0
+        : Math.min(rawDelta, MAX_SINGLE_ENTRY_MILES);
 
-      let netDelta = 0;
-      let totalNewMiles = 0;
+      // Always update last_health_total to the current raw reading so the
+      // next sync diffs from here, even if cappedDelta is 0.
+      await supabase
+        .from("profiles")
+        .update({ last_health_total: currentHealthTotal })
+        .eq("user_id", userId);
 
-      for (const [dayKey, steps] of stepsByDay) {
-        // Full-day miles, capped at the 7-mile single-entry limit.
-        // Pass 0 for "already synced" because upsert replaces the row.
-        const milesForDay = capDailyRemainingMiles(steps, 0);
-        if (milesForDay <= 0) continue;
-
-        // Stable, deterministic timestamp = midnight UTC of that day.
-        const loggedAt = `${dayKey}T00:00:00.000Z`;
-        const prior = priorByDay.get(dayKey) || 0;
-
-        rowsToUpsert.push({
-          user_id: userId,
-          challenge_id: challengeId,
-          miles: milesForDay,
-          source: healthSource,
-          notes: `Health Sync — ${sourceName} (${steps.toLocaleString()} steps on ${dayKey})`,
-          logged_at: loggedAt,
-        });
-
-        netDelta = Math.round((netDelta + (milesForDay - prior)) * 100) / 100;
-        totalNewMiles = Math.round((totalNewMiles + milesForDay) * 100) / 100;
-      }
-
-      if (rowsToUpsert.length === 0) {
+      if (cappedDelta <= 0) {
         setMilesSynced(0);
         const timestamp = new Date().toISOString();
         setLastSyncAt(timestamp);
@@ -170,27 +132,45 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
         return;
       }
 
-      const { error: upsertError } = await supabase
-        .from("mile_entries")
-        .upsert(rowsToUpsert, {
-          onConflict: "user_id,challenge_id,logged_at",
-          ignoreDuplicates: false,
-        });
-      if (upsertError) throw upsertError;
+      // Insert a NEW mile_entries row for the capped delta. We never replace
+      // the user's running total — only add to it.
+      const sourceName =
+        healthSource === "apple_health" ? "Apple Health" : "Google Health Connect";
 
-      // Update user_challenges miles_logged if enrolled
+      const { error: insertError } = await supabase
+        .from("mile_entries")
+        .insert({
+          user_id: userId,
+          challenge_id: challengeId,
+          miles: cappedDelta,
+          source: healthSource,
+          notes: `Health Sync — ${sourceName}`,
+        });
+      if (insertError) throw insertError;
+
+      // Recompute the user's new cumulative LegacyFit total for this challenge
+      // and (if enrolled) sync user_challenges.miles_logged.
+      const { data: allEntries, error: fetchError } = await supabase
+        .from("mile_entries")
+        .select("miles")
+        .eq("user_id", userId)
+        .eq("challenge_id", challengeId);
+      if (fetchError) throw fetchError;
+
+      const newTotal = roundMiles(
+        (allEntries || []).reduce((sum, e) => sum + Number(e.miles), 0),
+      );
+
       const { data: enrollmentRow } = await supabase
         .from("user_challenges")
-        .select("payment_status, miles_logged")
+        .select("payment_status")
         .eq("user_id", userId)
         .eq("challenge_id", challengeId)
         .maybeSingle();
 
-      if (enrollmentRow?.payment_status === "paid") {
-        const newTotal = Math.max(
-          0,
-          Math.round((Number(enrollmentRow.miles_logged || 0) + netDelta) * 100) / 100,
-        );
+      const isEnrolledPaid = enrollmentRow?.payment_status === "paid";
+
+      if (isEnrolledPaid) {
         await supabase
           .from("user_challenges")
           .update({ miles_logged: newTotal })
@@ -198,7 +178,27 @@ export function useHealthSync(challengeId?: string): HealthSyncResult {
           .eq("challenge_id", challengeId);
       }
 
-      setMilesSynced(netDelta > 0 ? netDelta : 0);
+      // After miles are committed, run the same milestone unlock pipeline that
+      // manual logging uses. Service-role edge function inserts user_milestones,
+      // user_passport_stamps, and triggers stamp/notification generation.
+      if (isEnrolledPaid) {
+        const { error: unlockError } = await supabase.functions.invoke(
+          "check-milestone-unlocks",
+          {
+            body: {
+              userId,
+              challengeId,
+              totalMiles: newTotal,
+              isFirstMile: false,
+            },
+          },
+        );
+        if (unlockError) {
+          console.error("Health Sync: milestone unlock check failed", unlockError);
+        }
+      }
+
+      setMilesSynced(cappedDelta);
       const timestamp = new Date().toISOString();
       setLastSyncAt(timestamp);
       localStorage.setItem(getLocalStorageKey(challengeId), timestamp);
