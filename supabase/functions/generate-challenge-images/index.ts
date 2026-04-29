@@ -9,6 +9,7 @@ const corsHeaders = {
 const challengeImagePrompts: Record<string, string> = {
   // ── Women's History Edition ──────────────────────────────────────────────
   "malala": "A beautiful artistic illustration of books, education, Pakistani mountains in background, symbols of empowerment and hope, warm golden lighting, inspirational atmosphere, 16:9 aspect ratio hero banner, ultra high resolution",
+  "maryland-benjamin-banneker": "A dramatic artistic illustration of a Black man at a wooden desk in a modest Maryland farmhouse at night, astronomical charts and a handwritten letter spread before him, a wooden clock on the mantle, a clear night sky visible through the window packed with stars, colonial red and deep navy tones, aged parchment white accents, warm candlelight, intellect and justice symbolism, 16:9 aspect ratio hero banner, ultra high resolution",
   "maya": "An artistic illustration of poetry and literature, a caged bird taking flight, stage lights and artistic expression, warm amber tones, literary celebration, 16:9 aspect ratio hero banner, ultra high resolution",
   "katherine": "A stunning artistic illustration of NASA rockets launching into space, mathematical equations and stars, retro-futuristic space exploration, deep blues and cosmic colors, 16:9 aspect ratio hero banner, ultra high resolution",
   "wilma": "An artistic illustration of Olympic track and field, gold medals, triumphant athlete silhouette, red clay track, victory and determination, warm sunset lighting, 16:9 aspect ratio hero banner, ultra high resolution",
