@@ -21,8 +21,9 @@ const isNewRelease = (releaseDate: string | null): boolean => {
 
 const getEditionKey = (
   edition: string
-): "purple" | "amber" | "pride" | "forest" | "default" => {
+): "purple" | "amber" | "pride" | "forest" | "red" | "default" => {
   const lower = edition.toLowerCase();
+  if (lower.includes("independence")) return "red";
   if (lower.includes("women in sports") || lower.includes("sports")) return "forest";
   if (lower.includes("women")) return "purple";
   if (lower.includes("pioneer") || lower.includes("black")) return "amber";
@@ -88,16 +89,9 @@ function EditionHeader({ edition }: { edition: string }) {
       </h2>
     );
   }
-  if (lower.includes("unsung")) {
+  if (lower.includes("independence")) {
     return (
       <h2 className="text-2xl font-bold mb-6" style={{ color: "#B22234" }}>
-        {edition}
-      </h2>
-    );
-  }
-  if (lower.includes("patriots")) {
-    return (
-      <h2 className="text-2xl font-bold mb-6" style={{ color: "#3C3B6E" }}>
         {edition}
       </h2>
     );
