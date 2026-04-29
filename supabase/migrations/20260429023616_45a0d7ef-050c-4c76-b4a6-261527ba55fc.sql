@@ -1,0 +1,1 @@
+UPDATE public.challenges SET title = 'Benjamin Banneker The man who measured freedom Journey', is_active = true WHERE slug = 'maryland-benjamin-banneker';
