@@ -75,7 +75,7 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     // Parse optional limit
-    let limit = 10;
+    let limit = 2;
     try {
       const body = await req.json();
       if (body.limit) limit = body.limit;
@@ -124,7 +124,9 @@ serve(async (req: Request): Promise<Response> => {
     let successCount = 0;
     let failCount = 0;
 
-    for (const milestone of milestones as Milestone[]) {
+    // Background processor — runs after response is returned to avoid 150s edge timeout
+    const processInBackground = async () => {
+      for (const milestone of milestones as Milestone[]) {
       console.log(`Generating stamp for: ${milestone.title}`);
 
       try {
