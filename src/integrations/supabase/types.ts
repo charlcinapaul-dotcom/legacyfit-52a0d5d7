@@ -429,6 +429,7 @@ export type Database = {
           display_name: string | null
           free_preview_claimed_at: string | null
           id: string
+          last_health_total: number
           total_miles: number | null
           updated_at: string
           user_id: string
@@ -440,6 +441,7 @@ export type Database = {
           display_name?: string | null
           free_preview_claimed_at?: string | null
           id?: string
+          last_health_total?: number
           total_miles?: number | null
           updated_at?: string
           user_id: string
@@ -451,6 +453,7 @@ export type Database = {
           display_name?: string | null
           free_preview_claimed_at?: string | null
           id?: string
+          last_health_total?: number
           total_miles?: number | null
           updated_at?: string
           user_id?: string
