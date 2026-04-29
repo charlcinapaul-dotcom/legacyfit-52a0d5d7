@@ -192,6 +192,8 @@ const Challenges = () => {
     "First Steps: Black Pioneers",
     "Pride",
     "Women in Sports",
+    "250 Years of Independence – Unsung Edition",
+    "250 Years of Independence – Patriots Edition",
   ];
   const sortedEditionKeys = Object.keys(byEdition).sort((a, b) => {
     const ai = editionOrder.findIndex((e) =>
