@@ -49,6 +49,17 @@ interface ValidationResult {
   milestones?: Record<string, unknown>[];
 }
 
+// Status dot indicator — hoisted to module scope to avoid recreating per render
+// (which caused spurious "function components cannot be given refs" warnings).
+const Dot = ({ ok, partial }: { ok: boolean; partial?: boolean }) =>
+  ok ? (
+    <CheckCircle2 className="w-4 h-4 text-green-500" />
+  ) : partial ? (
+    <AlertTriangle className="w-4 h-4 text-yellow-500" />
+  ) : (
+    <XCircle className="w-4 h-4 text-destructive" />
+  );
+
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 const GROUPS: { label: string; prefix: string; description: string }[] = [
@@ -665,15 +676,6 @@ export default function AdminValidate() {
                       const allAudio = row.has_audio_count === row.milestone_count && row.milestone_count > 0;
                       const allStamps = row.has_stamp_image_count === row.milestone_count && row.milestone_count > 0;
                       const correctCount = row.milestone_count === 6;
-
-                      const Dot = ({ ok, partial }: { ok: boolean; partial?: boolean }) =>
-                        ok ? (
-                          <CheckCircle2 className="w-4 h-4 text-green-500" />
-                        ) : partial ? (
-                          <AlertTriangle className="w-4 h-4 text-yellow-500" />
-                        ) : (
-                          <XCircle className="w-4 h-4 text-destructive" />
-                        );
 
                       return (
                         <div key={row.id} className={i < rows.length - 1 ? "border-b border-border" : ""}>
