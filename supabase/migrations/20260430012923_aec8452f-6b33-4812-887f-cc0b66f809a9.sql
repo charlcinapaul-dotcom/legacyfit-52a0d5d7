@@ -1,0 +1,1 @@
+UPDATE public.challenges SET is_active = true WHERE slug IN ('crispus-attucks', 'massachusetts-crispus-attucks');
