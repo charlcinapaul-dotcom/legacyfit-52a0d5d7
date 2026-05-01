@@ -33,70 +33,15 @@ const getEditionKey = (
 
 // ── Section header ────────────────────────────────────────────────────────────
 
-function EditionHeader({ edition }: { edition: string }) {
-  const lower = edition.toLowerCase();
-
-  if (lower.includes("women in sports") || lower.includes("sports")) {
-    return (
-      <h2
-        className="text-2xl font-bold mb-6"
-        style={{
-          background: "linear-gradient(90deg, #1A4A2E, #2D7A4F, #C9973A)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-        }}
-      >
-        {edition}
-      </h2>
-    );
-  }
-  if (lower.includes("women")) {
-    return (
-      <h2 className="text-2xl font-bold mb-6" style={{ color: "#C084FC" }}>
-        {edition}
-      </h2>
-    );
-  }
-  if (lower.includes("pioneer") || lower.includes("black")) {
-    return (
-      <h2
-        className="text-2xl font-bold mb-6"
-        style={{
-          background: "linear-gradient(90deg, #b45309, #d97706, #92400e)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-        }}
-      >
-        {edition}
-      </h2>
-    );
-  }
-  if (lower.includes("pride")) {
-    return (
-      <h2
-        className="text-2xl font-bold mb-6"
-        style={{
-          background:
-            "linear-gradient(90deg, #C94F7C, #E07A5F, #D4A373, #6C9A8B, #4A90A4, #6D597A)",
-          WebkitBackgroundClip: "text",
-          WebkitTextFillColor: "transparent",
-          backgroundClip: "text",
-        }}
-      >
-        {edition}
-      </h2>
-    );
-  }
-  if (lower.includes("independence")) {
-    return (
-      <h2 className="text-2xl font-bold mb-6" style={{ color: "#B22234" }}>
-        {edition}
-      </h2>
-    );
-  }
-  return <h2 className="text-2xl font-bold text-foreground mb-6">{edition}</h2>;
+function EditionHeader({ name, color }: { name: string; color: string | null }) {
+  return (
+    <h2
+      className="text-2xl font-bold mb-6"
+      style={color ? { color } : undefined}
+    >
+      {name}
+    </h2>
+  );
 }
 
 // ── Continue Your Journey card ────────────────────────────────────────────────
@@ -186,12 +131,15 @@ const Challenges = () => {
     })
     .slice(0, 4);
 
-  // Section 4: Browse by category, then by edition fallback
-  const byEdition: Record<string, ChallengeWithMeta[]> = {};
+  // Section 4: Browse by edition — grouped by edition_name (DB-driven)
+  const byEdition: Record<string, { color: string | null; items: ChallengeWithMeta[] }> = {};
   for (const c of active) {
-    const key = c.edition ?? c.category ?? "All Challenges";
-    if (!byEdition[key]) byEdition[key] = [];
-    byEdition[key].push(c);
+    const key = c.edition_name ?? c.edition;
+    if (!key) continue;
+    if (!byEdition[key]) {
+      byEdition[key] = { color: c.edition_color ?? null, items: [] };
+    }
+    byEdition[key].items.push(c);
   }
 
   // Preferred edition display order
@@ -351,12 +299,12 @@ const Challenges = () => {
               <div className="space-y-12">
                 {sortedEditionKeys.map((key) => {
                   const group = byEdition[key];
-                  if (!group || group.length === 0) return null;
+                  if (!group || group.items.length === 0) return null;
                   return (
                     <div key={key}>
-                      <EditionHeader edition={key} />
+                      <EditionHeader name={key} color={group.color} />
                       <div className="grid md:grid-cols-2 gap-6">
-                        {group.map((c) => (
+                        {group.items.map((c) => (
                           <ChallengeCard
                             key={c.id}
                             c={c}

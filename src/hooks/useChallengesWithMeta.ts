@@ -16,6 +16,8 @@ export interface ChallengeWithMeta {
   release_date: string | null;
   featured_quote: string | null;
   featured_quote_attribution: string | null;
+  edition_name: string | null;
+  edition_color: string | null;
   // enriched after fetch
   milestone_count?: number;
   first_stamp_image?: string | null;
@@ -27,7 +29,7 @@ export async function fetchChallengesWithMeta(): Promise<ChallengeWithMeta[]> {
     supabase
       .from("challenges")
       .select(
-        "id, title, slug, description, total_miles, edition, is_active, image_url, featured, category, difficulty, release_date, featured_quote, featured_quote_attribution"
+        "id, title, slug, description, total_miles, edition, is_active, image_url, featured, category, difficulty, release_date, featured_quote, featured_quote_attribution, edition_name, edition_color"
       )
       .order("release_date", { ascending: false }),
     supabase
