@@ -86,6 +86,8 @@ export type Database = {
           description: string | null
           difficulty: string | null
           edition: string
+          edition_color: string | null
+          edition_name: string | null
           featured: boolean | null
           featured_quote: string | null
           featured_quote_attribution: string | null
@@ -107,6 +109,8 @@ export type Database = {
           description?: string | null
           difficulty?: string | null
           edition: string
+          edition_color?: string | null
+          edition_name?: string | null
           featured?: boolean | null
           featured_quote?: string | null
           featured_quote_attribution?: string | null
@@ -128,6 +132,8 @@ export type Database = {
           description?: string | null
           difficulty?: string | null
           edition?: string
+          edition_color?: string | null
+          edition_name?: string | null
           featured?: boolean | null
           featured_quote?: string | null
           featured_quote_attribution?: string | null
