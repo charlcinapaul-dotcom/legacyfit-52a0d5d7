@@ -163,6 +163,13 @@ export function ChallengeCard({
             </span>
           )}
         </div>
+
+        {/* Lock label - dedicated row below stats */}
+        {isLocked && (
+          <p className="mt-3 text-xs text-muted-foreground italic">
+            🔒 Complete your active challenge to unlock
+          </p>
+        )}
       </div>
 
       {/* Status badge / chevron */}
@@ -193,11 +200,6 @@ export function ChallengeCard({
         onClick={handleLockedClick}
       >
         {inner}
-        <div className="px-5 pb-5 -mt-2">
-          <p className="text-xs text-muted-foreground italic">
-            Finish "{activeChallenge?.title}" to unlock
-          </p>
-        </div>
       </div>
     );
   }
