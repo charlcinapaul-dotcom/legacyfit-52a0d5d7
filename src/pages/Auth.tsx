@@ -355,11 +355,11 @@ const Auth = () => {
                         <button
                           type="button"
                           onClick={() => setShowLoginPassword((v) => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-6 h-6 text-muted-foreground hover:text-foreground transition-colors"
                           aria-label={showLoginPassword ? "Hide password" : "Show password"}
                           tabIndex={-1}
                         >
-                          {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          {showLoginPassword ? <EyeOff className="w-5 h-5" size={20} /> : <Eye className="w-5 h-5" size={20} />}
                         </button>
                       </div>
                       {errors.password && (
@@ -437,11 +437,11 @@ const Auth = () => {
                         <button
                           type="button"
                           onClick={() => setShowSignupPassword((v) => !v)}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-6 h-6 text-muted-foreground hover:text-foreground transition-colors"
                           aria-label={showSignupPassword ? "Hide password" : "Show password"}
                           tabIndex={-1}
                         >
-                          {showSignupPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          {showSignupPassword ? <EyeOff className="w-5 h-5" size={20} /> : <Eye className="w-5 h-5" size={20} />}
                         </button>
                       </div>
                       {errors.password && (
