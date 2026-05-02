@@ -644,7 +644,7 @@ export default function AdminValidate() {
                   "250 Years of Independence – Patriots Edition",
                 ];
                 const uniqueEditions = Array.from(
-                  new Set(readiness.map((r) => r.edition).filter(Boolean))
+                  new Set(readiness.filter((r) => !r.archived).map((r) => r.edition).filter(Boolean))
                 );
                 uniqueEditions.sort((a, b) => {
                   const ai = preferredOrder.indexOf(a);
@@ -656,7 +656,7 @@ export default function AdminValidate() {
                 });
                 return uniqueEditions;
               })().map((edition) => {
-                const rows = readiness.filter((r) => r.edition === edition);
+                const rows = readiness.filter((r) => r.edition === edition && !r.archived);
                 if (rows.length === 0) return null;
 
                 const colorMap: Record<string, string> = {
