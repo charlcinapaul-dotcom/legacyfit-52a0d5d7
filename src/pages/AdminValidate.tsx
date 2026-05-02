@@ -136,6 +136,7 @@ interface ReadinessRow {
   slug: string | null;
   edition: string;
   is_active: boolean | null;
+  archived: boolean | null;
   stripe_price_id: string | null;
   milestone_count: number;
   has_historical_event_count: number;
