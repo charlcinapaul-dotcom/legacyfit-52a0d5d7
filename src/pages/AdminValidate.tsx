@@ -783,6 +783,38 @@ export default function AdminValidate() {
                 );
               })}
 
+              {/* Archived folder — collapsed by default */}
+              {readiness.some((r) => r.archived) && (
+                <div className="border-t border-border">
+                  <button
+                    type="button"
+                    onClick={() => setArchivedExpanded((v) => !v)}
+                    className="w-full flex items-center gap-2 px-4 py-2 bg-muted/40 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <ChevronDown className={`w-4 h-4 transition-transform ${archivedExpanded ? "" : "-rotate-90"}`} />
+                    Archived
+                    <span className="ml-1 text-[10px] font-normal normal-case tracking-normal">
+                      ({readiness.filter((r) => r.archived).length})
+                    </span>
+                  </button>
+                  {archivedExpanded && (
+                    <div>
+                      {readiness.filter((r) => r.archived).map((row) => (
+                        <div key={row.id} className="border-t border-border px-4 py-3 text-sm flex items-center justify-between gap-3 opacity-70">
+                          <div className="min-w-0">
+                            <p className="font-medium text-foreground truncate">{row.title}</p>
+                            <p className="text-[11px] text-muted-foreground font-mono truncate">{row.edition} · {row.slug}</p>
+                          </div>
+                          <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold bg-muted text-muted-foreground">
+                            Archived
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Summary footer */}
               {readiness.length > 0 && (
                 <div className="px-4 py-3 bg-secondary/20 border-t border-border flex items-center gap-6 text-xs text-muted-foreground">
