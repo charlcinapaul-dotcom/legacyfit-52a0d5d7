@@ -197,7 +197,7 @@ export default function AdminValidate() {
     setReadinessLoading(true);
     const { data: chs } = await supabase
       .from("challenges")
-      .select("id, title, slug, edition, is_active, stripe_price_id")
+      .select("id, title, slug, edition, is_active, archived, stripe_price_id")
       .order("edition")
       .order("title");
 
@@ -218,6 +218,7 @@ export default function AdminValidate() {
         slug: c.slug,
         edition: c.edition,
         is_active: c.is_active,
+        archived: (c as { archived?: boolean | null }).archived ?? false,
         stripe_price_id: c.stripe_price_id ?? null,
         milestone_count: ms.length,
         has_historical_event_count: ms.filter((m) => m.historical_event).length,
