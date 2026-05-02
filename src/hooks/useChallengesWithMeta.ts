@@ -32,6 +32,7 @@ export async function fetchChallengesWithMeta(): Promise<ChallengeWithMeta[]> {
       "id, title, slug, description, total_miles, edition, is_active, image_url, featured, category, difficulty, release_date, featured_quote, featured_quote_attribution, edition_name, edition_color"
     )
     .eq("is_active", true)
+    .eq("archived", false)
     .order("release_date", { ascending: false });
 
   if (error) throw error;
