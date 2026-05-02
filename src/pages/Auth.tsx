@@ -477,7 +477,7 @@ const Auth = () => {
                 </TabsContent>
               </Tabs>
 
-              {false && !isNative && (
+              {false && (
                 <>
                   {/* Divider */}
                   <div className="relative my-6">
