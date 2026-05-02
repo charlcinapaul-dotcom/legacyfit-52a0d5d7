@@ -171,6 +171,7 @@ export default function AdminValidate() {
   const [activeTab, setActiveTab] = useState<"readiness" | "library">("readiness");
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [coordsCount, setCoordsCount] = useState<{ withCoords: number; total: number } | null>(null);
+  const [archivedExpanded, setArchivedExpanded] = useState(false);
 
   const toggleExpanded = (id: string) => {
     setExpandedRows((prev) => {
