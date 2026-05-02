@@ -136,6 +136,7 @@ interface ReadinessRow {
   slug: string | null;
   edition: string;
   is_active: boolean | null;
+  archived: boolean | null;
   stripe_price_id: string | null;
   milestone_count: number;
   has_historical_event_count: number;
@@ -170,6 +171,7 @@ export default function AdminValidate() {
   const [activeTab, setActiveTab] = useState<"readiness" | "library">("readiness");
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [coordsCount, setCoordsCount] = useState<{ withCoords: number; total: number } | null>(null);
+  const [archivedExpanded, setArchivedExpanded] = useState(false);
 
   const toggleExpanded = (id: string) => {
     setExpandedRows((prev) => {
@@ -196,7 +198,7 @@ export default function AdminValidate() {
     setReadinessLoading(true);
     const { data: chs } = await supabase
       .from("challenges")
-      .select("id, title, slug, edition, is_active, stripe_price_id")
+      .select("id, title, slug, edition, is_active, archived, stripe_price_id")
       .order("edition")
       .order("title");
 
@@ -217,6 +219,7 @@ export default function AdminValidate() {
         slug: c.slug,
         edition: c.edition,
         is_active: c.is_active,
+        archived: (c as { archived?: boolean | null }).archived ?? false,
         stripe_price_id: c.stripe_price_id ?? null,
         milestone_count: ms.length,
         has_historical_event_count: ms.filter((m) => m.historical_event).length,
@@ -641,7 +644,7 @@ export default function AdminValidate() {
                   "250 Years of Independence – Patriots Edition",
                 ];
                 const uniqueEditions = Array.from(
-                  new Set(readiness.map((r) => r.edition).filter(Boolean))
+                  new Set(readiness.filter((r) => !r.archived).map((r) => r.edition).filter(Boolean))
                 );
                 uniqueEditions.sort((a, b) => {
                   const ai = preferredOrder.indexOf(a);
@@ -653,7 +656,7 @@ export default function AdminValidate() {
                 });
                 return uniqueEditions;
               })().map((edition) => {
-                const rows = readiness.filter((r) => r.edition === edition);
+                const rows = readiness.filter((r) => r.edition === edition && !r.archived);
                 if (rows.length === 0) return null;
 
                 const colorMap: Record<string, string> = {
@@ -780,6 +783,38 @@ export default function AdminValidate() {
                 );
               })}
 
+              {/* Archived folder — collapsed by default */}
+              {readiness.some((r) => r.archived) && (
+                <div className="border-t border-border">
+                  <button
+                    type="button"
+                    onClick={() => setArchivedExpanded((v) => !v)}
+                    className="w-full flex items-center gap-2 px-4 py-2 bg-muted/40 text-xs font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <ChevronDown className={`w-4 h-4 transition-transform ${archivedExpanded ? "" : "-rotate-90"}`} />
+                    Archived
+                    <span className="ml-1 text-[10px] font-normal normal-case tracking-normal">
+                      ({readiness.filter((r) => r.archived).length})
+                    </span>
+                  </button>
+                  {archivedExpanded && (
+                    <div>
+                      {readiness.filter((r) => r.archived).map((row) => (
+                        <div key={row.id} className="border-t border-border px-4 py-3 text-sm flex items-center justify-between gap-3 opacity-70">
+                          <div className="min-w-0">
+                            <p className="font-medium text-foreground truncate">{row.title}</p>
+                            <p className="text-[11px] text-muted-foreground font-mono truncate">{row.edition} · {row.slug}</p>
+                          </div>
+                          <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-sm font-semibold bg-muted text-muted-foreground">
+                            Archived
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Summary footer */}
               {readiness.length > 0 && (
                 <div className="px-4 py-3 bg-secondary/20 border-t border-border flex items-center gap-6 text-xs text-muted-foreground">
@@ -849,7 +884,7 @@ export default function AdminValidate() {
                   "250 Years of Independence – Patriots Edition",
                 ];
                 const uniqueEditions = Array.from(
-                  new Set(readiness.map((r) => r.edition).filter(Boolean))
+                  new Set(readiness.filter((r) => !r.archived).map((r) => r.edition).filter(Boolean))
                 );
                 uniqueEditions.sort((a, b) => {
                   const ai = preferredOrder.indexOf(a);
@@ -868,7 +903,7 @@ export default function AdminValidate() {
                   "250 Years of Independence – Patriots Edition": "text-[#3C3B6E]",
                 };
                 return uniqueEditions.map((edition) => {
-                  const rows = readiness.filter((r) => r.edition === edition);
+                  const rows = readiness.filter((r) => r.edition === edition && !r.archived);
                   if (!rows.length) return null;
                   const editionColor = colorMap[edition] ?? "text-foreground";
                   return (

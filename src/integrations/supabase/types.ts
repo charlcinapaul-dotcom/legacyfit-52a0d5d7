@@ -81,6 +81,7 @@ export type Database = {
       }
       challenges: {
         Row: {
+          archived: boolean
           category: string | null
           created_at: string
           description: string | null
@@ -104,6 +105,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          archived?: boolean
           category?: string | null
           created_at?: string
           description?: string | null
@@ -127,6 +129,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          archived?: boolean
           category?: string | null
           created_at?: string
           description?: string | null

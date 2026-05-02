@@ -85,8 +85,15 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log(`Starting stamp generation for all challenges, batch limit: ${limit}`);
 
-    // Query milestones across ALL challenges that are missing a stamp image
-    const { data: milestones, error: queryError } = await supabase
+    // Determine archived challenges to skip
+    const { data: archivedChallenges } = await supabase
+      .from("challenges")
+      .select("id")
+      .eq("archived", true);
+    const archivedIds = (archivedChallenges ?? []).map((c: { id: string }) => c.id);
+
+    // Query milestones across non-archived challenges that are missing a stamp image
+    let msQuery = supabase
       .from("milestones")
       .select(`
         id,
@@ -97,7 +104,11 @@ serve(async (req: Request): Promise<Response> => {
         stamp_copy,
         stamp_image_url
       `)
-      .is("stamp_image_url", null)
+      .is("stamp_image_url", null);
+    if (archivedIds.length > 0) {
+      msQuery = msQuery.not("challenge_id", "in", `(${archivedIds.join(",")})`);
+    }
+    const { data: milestones, error: queryError } = await msQuery
       .order("challenge_id")
       .order("order_index")
       .limit(limit);
