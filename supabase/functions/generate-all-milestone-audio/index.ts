@@ -59,11 +59,22 @@ serve(async (req: Request): Promise<Response> => {
     const body = await req.json().catch(() => ({}));
     const limit = body.limit || 5; // Process 5 at a time to avoid timeout
 
-    // Fetch milestones without audio
-    const { data: milestones, error } = await supabase
+    // Determine archived challenges to skip
+    const { data: archivedChallenges } = await supabase
+      .from("challenges")
+      .select("id")
+      .eq("archived", true);
+    const archivedIds = (archivedChallenges ?? []).map((c) => c.id);
+
+    // Fetch milestones without audio (skip archived challenges)
+    let milestonesQuery = supabase
       .from("milestones")
       .select("id, title, historical_event, challenge_id")
-      .is("audio_url", null)
+      .is("audio_url", null);
+    if (archivedIds.length > 0) {
+      milestonesQuery = milestonesQuery.not("challenge_id", "in", `(${archivedIds.join(",")})`);
+    }
+    const { data: milestones, error } = await milestonesQuery
       .order("challenge_id")
       .order("order_index")
       .limit(limit);
@@ -77,11 +88,15 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    // Count total remaining
-    const { count } = await supabase
+    // Count total remaining (skip archived)
+    let countQuery = supabase
       .from("milestones")
       .select("id", { count: "exact", head: true })
       .is("audio_url", null);
+    if (archivedIds.length > 0) {
+      countQuery = countQuery.not("challenge_id", "in", `(${archivedIds.join(",")})`);
+    }
+    const { count } = await countQuery;
 
     console.log(`Processing ${milestones.length} of ${count} remaining milestones`);
 
