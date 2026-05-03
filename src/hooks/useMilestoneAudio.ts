@@ -65,6 +65,10 @@ export function useMilestoneAudio() {
       const url = await resolveAudioUrl(milestoneDbId, existingAudioUrl);
       if (!url) return;
 
+      const storageKey = `audio_played_${milestoneDbId}`;
+      const alreadyPlayed = localStorage.getItem(storageKey) === "true";
+      if (alreadyPlayed) return;
+
       setCurrentAudioUrl(url);
       const audio = new Audio(url);
       audioRef.current = audio;
@@ -75,6 +79,7 @@ export function useMilestoneAudio() {
 
       try {
         await audio.play();
+        localStorage.setItem(storageKey, "true");
       } catch (e) {
         console.error("Audio play failed:", e);
         setIsPlaying(false);
