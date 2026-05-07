@@ -40,10 +40,9 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     if (milestone.audio_url) {
-      return new Response(
-        JSON.stringify({ message: "Audio already exists", audioUrl: milestone.audio_url }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ message: "Audio already exists", audioUrl: milestone.audio_url }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const textToSpeak = milestone.historical_event || milestone.title;
@@ -54,7 +53,7 @@ serve(async (req: Request): Promise<Response> => {
     console.log(`Generating audio for milestone: ${milestone.title}`);
 
     // Call ElevenLabs TTS - using "Matilda" voice (warm female)
-    const voiceId = "XrExE9yKIg1WjnnlVkGX"; // Matilda
+    const voiceId = "DLvjJrjQopAT03aOblQr"; // Charlie P
     const ttsResponse = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
       {
@@ -74,7 +73,7 @@ serve(async (req: Request): Promise<Response> => {
             speed: 0.95,
           },
         }),
-      }
+      },
     );
 
     if (!ttsResponse.ok) {
@@ -84,7 +83,7 @@ serve(async (req: Request): Promise<Response> => {
         console.warn(`ElevenLabs quota/auth issue [${ttsResponse.status}]: ${errorText}`);
         return new Response(
           JSON.stringify({ audioUrl: null, warning: `ElevenLabs unavailable: ${ttsResponse.status}` }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
         );
       }
       throw new Error(`ElevenLabs API error [${ttsResponse.status}]: ${errorText}`);
@@ -95,21 +94,17 @@ serve(async (req: Request): Promise<Response> => {
 
     // Upload to storage
     const fileName = `${milestone.challenge_id}/${milestoneId}.mp3`;
-    const { error: uploadError } = await supabase.storage
-      .from("milestone-audio")
-      .upload(fileName, audioBytes, {
-        contentType: "audio/mpeg",
-        upsert: true,
-      });
+    const { error: uploadError } = await supabase.storage.from("milestone-audio").upload(fileName, audioBytes, {
+      contentType: "audio/mpeg",
+      upsert: true,
+    });
 
     if (uploadError) {
       throw new Error(`Storage upload error: ${uploadError.message}`);
     }
 
     // Get public URL
-    const { data: urlData } = supabase.storage
-      .from("milestone-audio")
-      .getPublicUrl(fileName);
+    const { data: urlData } = supabase.storage.from("milestone-audio").getPublicUrl(fileName);
 
     const audioUrl = urlData.publicUrl;
 
@@ -125,10 +120,9 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log(`Audio generated successfully for: ${milestone.title}`);
 
-    return new Response(
-      JSON.stringify({ success: true, audioUrl, milestone: milestone.title }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ success: true, audioUrl, milestone: milestone.title }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (error: unknown) {
     console.error("Error generating milestone audio:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
