@@ -1,58 +1,31 @@
-## Goal
+## Problem
 
-Fix the password visibility eye/eye-off toggle on the login form so it renders correctly inside the native iOS  and Android (Capacitor) WebView. No auth logic changes.
+The LEGACYFIT-* codes (e.g. `LEGACYFIT-4AQ6`) live in the `beta_codes` table with type `single_challenge_promo`. The "Have a reward code?" input on the challenge enrollment screen calls the `redeem-reward-code` edge function, which only checks the `reward_codes` table (referral rewards). So those promo codes always come back as "Invalid reward code."
 
-## File
+There is currently no UI anywhere in the app that calls `redeem-beta-code`, so promo codes have no working entry point today.
 
-`src/pages/Auth.tsx` — both the Sign In and Sign Up password fields (two identical toggle buttons).
+## Fix
 
-## Current code (per field)
+Update the `redeem-reward-code` edge function so the single existing input field works for both kinds of codes. No UI changes required.
 
-```tsx
-<button
-  type="button"
-  onClick={() => setShowLoginPassword((v) => !v)}
-  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-  aria-label={showLoginPassword ? "Hide password" : "Show password"}
-  tabIndex={-1}
->
-  {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-</button>
-```
+### Edge function changes (`supabase/functions/redeem-reward-code/index.ts`)
 
-## Changes
+1. Keep the current reward-code lookup as the first attempt (case-insensitive against `reward_codes.code`, scoped to the calling user).
+2. If no reward code is found, fall back to a beta-code lookup:
+   - `select * from beta_codes where code = upper(trim(input)) and is_active = true`.
+   - Reject if `times_used >= max_uses`.
+   - Enforce the existing "one active paid challenge at a time" rule (already done by `redeem-beta-code`) — block if the user is already enrolled paid in another challenge, and block if already paid in this one.
+   - Enroll the user: upsert into `user_challenges` with `payment_status = 'paid'` and `stripe_payment_id = 'promo_<code>'`.
+   - Increment `beta_codes.times_used` by 1.
+3. If neither lookup matches, return the existing "Invalid reward code" error (with copy adjusted to "Invalid code" so it covers both flows).
+4. Preserve all existing reward-code behavior (mark `is_redeemed`, set `redeemed_at`, set `redeemed_for_challenge_id`) when the code is a reward code.
 
-Apply the same change to both the login and signup password toggle buttons:
+### What does NOT change
 
-1. Give the button explicit dimensions and centering so it always reserves space, even if the icon SVG doesn't lay out as expected on iOS WKWebView:
-  - Add `flex items-center justify-center w-6 h-6`.
-2. Ensure it stacks above the input:
-  - Add `z-10`.
-3. Make the Lucide icons explicitly sized via both Tailwind class and the `size` prop (some iOS WKWebView rendering paths ignore CSS width/height on inline SVGs without intrinsic attributes):
-  - `w-5 h-5` and `size={20}` on `<Eye />` / `<EyeOff />`.
-4. Keep the input's right padding as `pr-10` (already set) so the icon never overlaps typed text.
-5. No change to the surrounding `relative` wrapper — it already uses `relative` with no `overflow-hidden`, so no clipping concern, but we'll keep it as-is.
-6. Apply the same fix to ensure the toggle also renders correctly in the Android Capacitor WebView.
+- No DB migration. `beta_codes`, `reward_codes`, and `user_challenges` schemas stay as-is.
+- No frontend changes. `RewardCodeRedemption.tsx` keeps its current UX, label, and success messaging.
+- The standalone `redeem-beta-code` function is left in place untouched in case it is wired into other surfaces later.
 
-Resulting button:
+### Result
 
-```tsx
-<button
-  type="button"
-  onClick={() => setShowLoginPassword((v) => !v)}
-  className="absolute right-3 top-1/2 -translate-y-1/2 z-10 flex items-center justify-center w-6 h-6 text-muted-foreground hover:text-foreground transition-colors"
-  aria-label={showLoginPassword ? "Hide password" : "Show password"}
-  tabIndex={-1}
->
-  {showLoginPassword
-    ? <EyeOff className="w-5 h-5" size={20} />
-    : <Eye className="w-5 h-5" size={20} />}
-</button>
-```
-
-(Same edit applied to the signup field with `showSignupPassword` / `setShowSignupPassword`.)
-
-## Out of scope
-
-- No changes to `handleLogin`, `handleSignup`, validation, OAuth, or any state besides the existing `showLoginPassword` / `showSignupPassword` toggles.
-- No changes to other forms (reset password, onboarding, etc.) in this task.
+Pasting any of the LEGACYFIT-* codes into the "Have a reward code?" box on a challenge enrollment screen will enroll the user in that challenge (subject to the one-active-challenge rule), and increment `times_used` on the beta code so each one can only be used once.
