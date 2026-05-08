@@ -61,6 +61,7 @@ serve(async (req: Request): Promise<Response> => {
 
     const body = await req.json().catch(() => ({}));
     const limit = body.limit || 5; // Process 5 at a time to avoid timeout
+    const challengeId: string | undefined = body.challengeId;
 
     // Determine archived challenges to skip
     const { data: archivedChallenges } = await supabase.from("challenges").select("id").eq("archived", true);
@@ -71,7 +72,9 @@ serve(async (req: Request): Promise<Response> => {
       .from("milestones")
       .select("id, title, historical_event, challenge_id")
       .is("audio_url", null);
-    if (archivedIds.length > 0) {
+    if (challengeId) {
+      milestonesQuery = milestonesQuery.eq("challenge_id", challengeId);
+    } else if (archivedIds.length > 0) {
       milestonesQuery = milestonesQuery.not("challenge_id", "in", `(${archivedIds.join(",")})`);
     }
     const { data: milestones, error } = await milestonesQuery.order("challenge_id").order("order_index").limit(limit);
@@ -87,7 +90,9 @@ serve(async (req: Request): Promise<Response> => {
 
     // Count total remaining (skip archived)
     let countQuery = supabase.from("milestones").select("id", { count: "exact", head: true }).is("audio_url", null);
-    if (archivedIds.length > 0) {
+    if (challengeId) {
+      countQuery = countQuery.eq("challenge_id", challengeId);
+    } else if (archivedIds.length > 0) {
       countQuery = countQuery.not("challenge_id", "in", `(${archivedIds.join(",")})`);
     }
     const { count } = await countQuery;
