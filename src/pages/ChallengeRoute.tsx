@@ -230,7 +230,7 @@ const ChallengeRoute = () => {
     } finally {
       setIsGeneratingAudio(false);
     }
-  }, [toast]);
+  }, [toast, data?.challenge?.id]);
 
   // Transform database data to component format.
   // Challenge metadata renders immediately; milestones are populated once the
