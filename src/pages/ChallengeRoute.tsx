@@ -204,7 +204,7 @@ const ChallengeRoute = () => {
       while (true) {
         const { data: result, error } = await supabase.functions.invoke(
           "generate-all-milestone-audio",
-          { body: { limit: 5 } }
+          { body: { limit: 5, challengeId: data?.challenge?.id } }
         );
 
         if (error) throw error;
@@ -230,7 +230,7 @@ const ChallengeRoute = () => {
     } finally {
       setIsGeneratingAudio(false);
     }
-  }, [toast]);
+  }, [toast, data?.challenge?.id]);
 
   // Transform database data to component format.
   // Challenge metadata renders immediately; milestones are populated once the
