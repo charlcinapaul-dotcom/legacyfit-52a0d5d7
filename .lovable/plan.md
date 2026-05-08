@@ -1,55 +1,42 @@
-## Root cause
+# Generate Crispus Attucks Audio — Charlie P (Voice ID `DLvjJrjQopAT03aOblQr`)
 
-The user (e.g. `tfoster6@bellsouth.net` / "TeesFitJourney") has signed up but **has not enrolled (paid) in any challenge**. She has 1 stale `mile_entries` row for "Crispus Attucks" but no `user_challenges` row.
+## Goal
+Use the remaining ~3,000 ElevenLabs credits to generate narration for the **Crispus Attucks – The First to Fall Journey** (challenge `e684bcdb-39fa-4bf3-8e7f-3a883ecdbb94`). All 6 milestones currently have `audio_url = NULL`.
 
-Two distinct symptoms result:
+## Credit budget check
+Total `historical_event` text across the 6 milestones: **~3,108 characters**. ElevenLabs charges 1 credit per character, so this is right at the budget. Buffer plan below.
 
-### 1. "Failed to log miles" error when she taps Log Steps
+| # | Milestone | Chars |
+|---|---|---|
+| 1 | The Man From Two Worlds | 538 |
+| 2 | Life on the Water | 509 |
+| 3 | A City on Edge | 495 |
+| 4 | The Night of March 5 | 526 |
+| 5 | The First to Fall | 531 |
+| 6 | The Name They Tried to Erase | 509 |
+| **Total** |  | **~3,108** |
 
-`StepLogger` shows its quick buttons and custom-step input to **everyone**, with no enrollment gate. When she taps a button, it calls `logMiles` which tries to INSERT into `mile_entries`. The RLS policy requires either:
+If the live ElevenLabs balance shows <3,108, we'll trim each script by ~5% (one tightened sentence) before generating — no narration meaning lost.
 
-- a `user_challenges` row with `payment_status = 'paid'`, **or**
-- this is the user's first ever entry on this challenge
+## Approach
+Reuse the existing `generate-all-milestone-audio` edge function pattern (already uses Charlie P `DLvjJrjQopAT03aOblQr`), but scope it to a single `challengeId` so we don't accidentally consume credits on other editions.
 
-She has neither (already used her free entry), so Postgres rejects the insert and the toast shows "Failed to log miles. Please try again."
+### Changes
 
-### 2. "Nothing comes up" when she taps Log Miles
+1. **`supabase/functions/generate-all-milestone-audio/index.ts`** — accept optional `challengeId` in body. When present, filter milestones to only that challenge (still skipping ones that already have `audio_url`). All other behavior (admin-only, Charlie P voice, storage upload, DB update, 1-second rate-limit delay) unchanged.
 
-`MileLogger` *does* gate the UI:
+2. **`src/pages/AdminValidate.tsx`** — add a small "Generate Audio for This Challenge" button on the Crispus Attucks card (and reusable for any future challenge). On click:
+   - Confirm dialog showing milestone count + estimated character cost.
+   - Invokes `generate-all-milestone-audio` with `{ challengeId, limit: 6 }`.
+   - Shows toast with success/failure count + remaining ElevenLabs warning if any segment returns 401/429.
 
-- `isFirstMileFreeWindow` = false (because `totalMiles > 0` for that challenge)
-- `enrollment.isEnrolled` = false
-- `freePreviewClaimed` = false (her `profiles.free_preview_claimed_at` was never stamped — likely the entry pre-dates the gate)
+3. **No script rewrites** — keep the existing `historical_event` text, which fits the budget.
 
-So she falls into the `freePreviewClaimed`-not-true branch and sees the **"Start Your Free 1 Mile Legacy Passport"** button that links to `/auth?redirect=...`. Since she's already signed in, that auth route bounces her right back — visually it looks like "nothing happens."
+## Out of scope
+- No voice changes (Charlie P only, as requested).
+- No edits to other challenges.
+- No changes to the per-milestone `generate-milestone-audio` runtime fallback.
 
-## The fix
-
-### A. StepLogger: apply the same enrollment gate as MileLogger
-
-`src/components/StepLogger.tsx` should mirror `MileLogger`'s gating logic. When the user is not enrolled and not in the first-mile free window, render an "Enroll to log steps" card with a button that calls `onScrollToPricing` (add it as a prop, same as MileLogger). This stops the failing INSERT entirely and gives a clear next step.
-
-### B. MileLogger: fix the broken CTA for already-signed-in users
-
-In the `!enrollment?.isEnrolled && !isFirstMileFreeWindow` branch, the "else" arm currently sends authenticated users to `/auth`. The condition should instead be: if the user is signed in but free preview was never properly claimed AND they have entries (i.e. their free mile is already used elsewhere), show the **"Enroll in This Challenge"** button (same as the `freePreviewClaimed` arm). The `/auth` link should only fire when `!isAuthenticated`, which is already handled in the earlier guard — so the `/auth` Link in this branch is effectively dead code and can be replaced with the Enroll CTA.
-
-### C. Backfill `free_preview_claimed_at` for affected users (optional cleanup)
-
-For users like TeesFitJourney who have a `mile_entries` row but a NULL `free_preview_claimed_at`, run a one-time migration to stamp `profiles.free_preview_claimed_at` from their earliest `mile_entries.created_at`. This makes the UI reflect reality (free preview consumed → enroll-required shown consistently).
-
-fix this for all new users not just this user
-
-## Files touched
-
-- `src/components/StepLogger.tsx` — add enrollment gating + `onScrollToPricing` prop, plumb it from `ChallengeRoute.tsx`
-- `src/components/MileLogger.tsx` — replace the misleading `/auth` link in the not-enrolled branch with the "Enroll in This Challenge" CTA
-- `src/pages/ChallengeRoute.tsx` — pass `onScrollToPricing` into `<StepLogger />` (already passes it to `<MileLogger />`)
-- One-time SQL migration to backfill `free_preview_claimed_at` from earliest `mile_entries` for users where it's NULL
-
-## What this changes for the user
-
-When the new user opens the challenge page:
-
-- **Log Steps tab** → no broken buttons; instead a clear "Enroll in This Challenge" card
-- **Log Miles tab** → same clear "Enroll in This Challenge" CTA (no more dead `/auth` redirect)
-- Once she enrolls, both tabs work normally
+## Verification
+- After running, query: `SELECT title, audio_url IS NOT NULL FROM milestones WHERE challenge_id='e684bcdb-…' ORDER BY order_index;` — all 6 should be `t`.
+- Open the Attucks challenge in the app and confirm the audio plays on milestone 1.
