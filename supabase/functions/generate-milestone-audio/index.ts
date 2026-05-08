@@ -22,10 +22,24 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
-    const { milestoneId } = await req.json();
+
+    let milestoneId: string | undefined;
+    try {
+      const body = await req.json();
+      milestoneId = body?.milestoneId;
+    } catch (e) {
+      console.error("Invalid JSON body:", e);
+      return new Response(
+        JSON.stringify({ error: "Invalid JSON body", audioUrl: null }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     if (!milestoneId) {
-      throw new Error("Missing required field: milestoneId");
+      return new Response(
+        JSON.stringify({ error: "Missing required field: milestoneId", audioUrl: null }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
 
     // Fetch milestone
