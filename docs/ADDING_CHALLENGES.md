@@ -18,29 +18,29 @@
 
 Insert into the `challenges` table:
 
-| Column | Value | Notes |
-|---|---|---|
-| `title` | `"Mae Jemison Pioneer Journey"` | Full name + theme word |
-| `slug` | `"mae-jemison"` | URL-safe lowercase, globally unique |
-| `edition` | `"First Black Pioneers"` | Controls color theme on the challenge page |
-| `description` | 1–2 sentences | Shown on the Challenges discovery page |
-| `total_miles` | e.g. `26` | Must equal `miles_required` of milestone 6 |
-| `category` | e.g. `"Science"` | Groups the challenge under Browse by Category |
-| `difficulty` | `"Beginner"` / `"Intermediate"` / `"Advanced"` | Shown as a badge on the challenge card |
-| `featured` | `false` | Set to `true` to show in the Featured Challenges section |
-| `release_date` | `now()` | Cards released within 30 days show a "New" badge |
-| `image_url` | Public URL | Hero backdrop shown on the challenge route page |
-| `featured_quote` | Optional quote text | Renders as a left-bordered blockquote on the card |
-| `featured_quote_attribution` | Optional attribution | Shown in small muted text below the quote |
-| `is_active` | `false` | Keep false until all milestones and assets are ready |
+| Column                       | Value                                          | Notes                                                    |
+| ---------------------------- | ---------------------------------------------- | -------------------------------------------------------- |
+| `title`                      | `"Mae Jemison Pioneer Journey"`                | Full name + theme word                                   |
+| `slug`                       | `"mae-jemison"`                                | URL-safe lowercase, globally unique                      |
+| `edition`                    | `"First Black Pioneers"`                       | Controls color theme on the challenge page               |
+| `description`                | 1–2 sentences                                  | Shown on the Challenges discovery page                   |
+| `total_miles`                | e.g. `26`                                      | Must equal `miles_required` of milestone 6               |
+| `category`                   | e.g. `"Science"`                               | Groups the challenge under Browse by Category            |
+| `difficulty`                 | `"Beginner"` / `"Intermediate"` / `"Advanced"` | Shown as a badge on the challenge card                   |
+| `featured`                   | `false`                                        | Set to `true` to show in the Featured Challenges section |
+| `release_date`               | `now()`                                        | Cards released within 30 days show a "New" badge         |
+| `image_url`                  | Public URL                                     | Hero backdrop shown on the challenge route page          |
+| `featured_quote`             | Optional quote text                            | Renders as a left-bordered blockquote on the card        |
+| `featured_quote_attribution` | Optional attribution                           | Shown in small muted text below the quote                |
+| `is_active`                  | `false`                                        | Keep false until all milestones and assets are ready     |
 
 **Edition values and their color themes:**
 
-| Edition | Theme |
-|---|---|
-| `"Women's History"` | Purple / gold |
-| `"First Black Pioneers"` | Amber / bronze |
-| `"Pride"` | Rainbow gradient |
+| Edition                  | Theme            |
+| ------------------------ | ---------------- |
+| `"Women's History"`      | Purple / gold    |
+| `"First Black Pioneers"` | Amber / bronze   |
+| `"Pride"`                | Rainbow gradient |
 
 ---
 
@@ -48,31 +48,31 @@ Insert into the `challenges` table:
 
 Every challenge requires **exactly 6 milestones**. Insert each into the `milestones` table with `challenge_id` set to the UUID of the challenge created in Step 1.
 
-| Column | Rule |
-|---|---|
-| `order_index` | 1 through 6, sequential, no gaps |
-| `miles_required` | Milestone 1 **must be exactly `1`** — this powers the free first-mile gate |
-| `title` | Person's name or event name |
-| `stamp_title` | Short stamp display title — **must be globally unique across ALL challenges** |
-| `stamp_copy` | 1-sentence quote shown on the stamp card |
-| `location_name` | Specific real geographic location (e.g. `"Tuskegee University, Alabama"`) — not a generic descriptor |
-| `latitude` | Coordinates of the location |
-| `longitude` | Coordinates of the location |
-| `historical_event` | **Exactly 3 sentences.** Sentence 1: introduce the person/event. Sentence 2: significance. Sentence 3: legacy or impact. This is the ElevenLabs narration text. |
-| `stamp_mileage_display` | Display string matching `miles_required` — e.g. `"1 MILE"`, `"10 MILES"` |
-| `stamp_image_url` | Set to `null` on insert — populated after image generation |
-| `audio_url` | Set to `null` on insert — auto-generated by trigger on insert |
+| Column                  | Rule                                                                                                                                                            |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `order_index`           | 1 through 6, sequential, no gaps                                                                                                                                |
+| `miles_required`        | Milestone 1 **must be exactly `1`** — this powers the free first-mile gate                                                                                      |
+| `title`                 | Person's name or event name                                                                                                                                     |
+| `stamp_title`           | Short stamp display title — **must be globally unique across ALL challenges**                                                                                   |
+| `stamp_copy`            | 1-sentence quote shown on the stamp card                                                                                                                        |
+| `location_name`         | Specific real geographic location (e.g. `"Tuskegee University, Alabama"`) — not a generic descriptor                                                            |
+| `latitude`              | Coordinates of the location                                                                                                                                     |
+| `longitude`             | Coordinates of the location                                                                                                                                     |
+| `historical_event`      | **Exactly 3 sentences.** Sentence 1: introduce the person/event. Sentence 2: significance. Sentence 3: legacy or impact. This is the ElevenLabs narration text. |
+| `stamp_mileage_display` | Display string matching `miles_required` — e.g. `"1 MILE"`, `"10 MILES"`                                                                                        |
+| `stamp_image_url`       | Set to `null` on insert — populated after image generation                                                                                                      |
+| `audio_url`             | Set to `null` on insert — auto-generated by trigger on insert                                                                                                   |
 
 **Suggested milestone mileage distribution for a 26-mile challenge:**
 
 | Milestone | `miles_required` | `stamp_mileage_display` |
-|---|---|---|
-| 1 | 1 | `"1 MILE"` |
-| 2 | 5 | `"5 MILES"` |
-| 3 | 10 | `"10 MILES"` |
-| 4 | 15 | `"15 MILES"` |
-| 5 | 20 | `"20 MILES"` |
-| 6 | 26 | `"26 MILES"` |
+| --------- | ---------------- | ----------------------- |
+| 1         | 1                | `"1 MILE"`              |
+| 2         | 5                | `"5 MILES"`             |
+| 3         | 10               | `"10 MILES"`            |
+| 4         | 15               | `"15 MILES"`            |
+| 5         | 20               | `"20 MILES"`            |
+| 6         | 26               | `"26 MILES"`            |
 
 > Adjust milestones 2–6 proportionally to match `total_miles`.
 
@@ -96,7 +96,7 @@ Use the **"Generate All Stamps"** function via the admin panel at `/admin/valida
 
 Audio is **auto-generated** when each milestone row is inserted (via the `on_milestone_insert_generate_audio` database trigger).
 
-- Voice: ElevenLabs Matilda (`XrExE9yKIg1WjnnlVkGX`)
+- Voice: ElevenLabs Charlie P (`DLvjJrjQopAT03aOblQr`)
 - Source text: `historical_event` column
 - Storage path: `milestone-audio` bucket → `{challenge_id}/{milestone_id}.mp3`
 
@@ -113,14 +113,14 @@ Once all assets are confirmed:
 
 The challenge will **automatically appear** in the correct section of the Challenges discovery page:
 
-| Condition | Where it appears |
-|---|---|
-| `edition = "Women's History"` | Women's History Edition section |
+| Condition                          | Where it appears                     |
+| ---------------------------------- | ------------------------------------ |
+| `edition = "Women's History"`      | Women's History Edition section      |
 | `edition = "First Black Pioneers"` | First Black Pioneers Edition section |
-| `edition` contains `"pride"` | Pride Edition section |
-| `featured = true` | Featured Challenges section |
-| Released within 30 days | "New" badge on the card |
-| `is_active = false` | Not shown (draft/past editions) |
+| `edition` contains `"pride"`       | Pride Edition section                |
+| `featured = true`                  | Featured Challenges section          |
+| Released within 30 days            | "New" badge on the card              |
+| `is_active = false`                | Not shown (draft/past editions)      |
 
 ---
 
