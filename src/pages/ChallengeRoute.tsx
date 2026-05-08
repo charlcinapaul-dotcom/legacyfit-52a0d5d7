@@ -204,7 +204,7 @@ const ChallengeRoute = () => {
       while (true) {
         const { data: result, error } = await supabase.functions.invoke(
           "generate-all-milestone-audio",
-          { body: { limit: 5 } }
+          { body: { limit: 5, challengeId: data?.challenge?.id } }
         );
 
         if (error) throw error;
