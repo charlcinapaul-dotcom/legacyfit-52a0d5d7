@@ -529,6 +529,7 @@ const ChallengeRoute = () => {
                       challengeSlug={slug}
                       challengeName={challenge.name}
                       challengeEditionColor={getPricingEditionColor(data?.challenge?.edition || "")}
+                      onScrollToPricing={scrollToPricing}
                     />
                   </TabsContent>
                   <TabsContent value="health">
