@@ -1,15 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Footprints, Loader2, ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { stepsToMiles, STEPS_PER_MILE } from "@/lib/health-sync";
 import { useMileLogging } from "@/hooks/useMileLogging";
 import type { UnlockedStamp } from "@/hooks/useMileLogging";
 import { useEnrollmentStatus } from "@/hooks/useEnrollmentStatus";
 import { useDailyMilesLogged } from "@/hooks/useDailyMilesLogged";
 import { useRateLimitCountdown } from "@/hooks/useRateLimitCountdown";
+import { useHasClaimedFreePreview } from "@/hooks/useHasClaimedFreePreview";
+import { supabase } from "@/integrations/supabase/client";
 import { StampUnlockModal } from "./StampUnlockModal";
 import { FirstMileGateModal } from "./FirstMileGateModal";
 import { MileLogConfirmDialog } from "./MileLogConfirmDialog";
@@ -20,13 +23,15 @@ interface StepLoggerProps {
   challengeSlug?: string;
   challengeName?: string;
   challengeEditionColor?: "gold" | "burgundy" | "pride" | "forest";
+  onScrollToPricing?: () => void;
 }
 
 const QUICK_STEPS = [1000, 2000, 5000, 10000];
 
-export function StepLogger({ challengeId, challengeSlug, challengeName, challengeEditionColor = "gold" }: StepLoggerProps) {
+export function StepLogger({ challengeId, challengeSlug, challengeName, challengeEditionColor = "gold", onScrollToPricing }: StepLoggerProps) {
   const [steps, setSteps] = useState<string>("");
   const [pendingSteps, setPendingSteps] = useState<number | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   // First-mile gate modal state
   const [gateModal, setGateModal] = useState<{
@@ -36,15 +41,25 @@ export function StepLogger({ challengeId, challengeSlug, challengeName, challeng
   }>({ open: false, screen: "purchase", stamp: null });
 
   const {
+    totalMiles,
     logMiles,
     isLogging,
     newlyUnlockedStamps,
     clearUnlockedStamps,
   } = useMileLogging(challengeId);
 
-  const { data: enrollment } = useEnrollmentStatus(challengeId);
+  const { data: enrollment, isLoading: enrollmentLoading } = useEnrollmentStatus(challengeId);
+  const { hasClaimed: freePreviewClaimed, isLoading: freePreviewLoading } = useHasClaimedFreePreview();
   const { dailyRemaining, maxSingleEntry, refetch: refetchDaily } = useDailyMilesLogged(challengeId);
   const { isRateLimited, formatCountdown, triggerRateLimit } = useRateLimitCountdown(challengeId);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setIsAuthenticated(!!user));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+      setIsAuthenticated(!!s?.user);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
 
   const convertedMiles = steps ? stepsToMiles(Number(steps)) : 0;
   const pendingMiles = pendingSteps ? stepsToMiles(pendingSteps) : 0;
@@ -82,6 +97,74 @@ export function StepLogger({ challengeId, challengeSlug, challengeName, challeng
     setPendingSteps(null);
     setSteps("");
   };
+
+  // Loading
+  if (isAuthenticated === null || enrollmentLoading || freePreviewLoading) {
+    return (
+      <Card className="border-accent/20">
+        <CardContent className="py-8 flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Not authenticated
+  if (!isAuthenticated) {
+    return (
+      <Card className="border-accent/20">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Footprints className="w-5 h-5 text-accent" />
+            Log Steps
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Link to={`/auth?redirect=${encodeURIComponent(challengeSlug ? `/challenge/${challengeSlug}` : '/challenges')}`}>
+            <Button className="w-full h-auto py-3 text-sm font-bold leading-tight whitespace-normal bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+              Sign In to Log Steps
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const hasPendingPayment = enrollment?.status === "pending";
+  const isFirstMileFreeWindow = !enrollment?.isEnrolled && !hasPendingPayment && totalMiles === 0 && !freePreviewClaimed;
+
+  // Not enrolled, no free preview window — show enroll CTA
+  if (!enrollment?.isEnrolled && !isFirstMileFreeWindow) {
+    return (
+      <Card className="border-accent/20">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Footprints className="w-5 h-5 text-accent" />
+            Log Steps
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {hasPendingPayment ? (
+            <p className="text-muted-foreground text-sm">
+              Your payment is being processed. You'll be able to log steps once payment is confirmed.
+            </p>
+          ) : (
+            <>
+              <p className="text-muted-foreground text-sm">
+                Enroll in this challenge to start logging steps and earning passport stamps.
+              </p>
+              <Button
+                className="w-full h-auto py-3 text-sm font-bold leading-tight whitespace-normal bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                onClick={onScrollToPricing}
+              >
+                Enroll in This Challenge
+              </Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <>
