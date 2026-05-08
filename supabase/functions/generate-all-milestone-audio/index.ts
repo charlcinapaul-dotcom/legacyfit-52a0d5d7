@@ -16,7 +16,8 @@ serve(async (req: Request): Promise<Response> => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -31,7 +32,8 @@ serve(async (req: Request): Promise<Response> => {
     const { data: userData, error: userError } = await userClient.auth.getUser();
     if (userError || !userData?.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
     const userId = userData.user.id;
@@ -46,7 +48,8 @@ serve(async (req: Request): Promise<Response> => {
 
     if (!roleData) {
       return new Response(JSON.stringify({ error: "Admin access required" }), {
-        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
@@ -60,10 +63,7 @@ serve(async (req: Request): Promise<Response> => {
     const limit = body.limit || 5; // Process 5 at a time to avoid timeout
 
     // Determine archived challenges to skip
-    const { data: archivedChallenges } = await supabase
-      .from("challenges")
-      .select("id")
-      .eq("archived", true);
+    const { data: archivedChallenges } = await supabase.from("challenges").select("id").eq("archived", true);
     const archivedIds = (archivedChallenges ?? []).map((c) => c.id);
 
     // Fetch milestones without audio (skip archived challenges)
@@ -74,25 +74,19 @@ serve(async (req: Request): Promise<Response> => {
     if (archivedIds.length > 0) {
       milestonesQuery = milestonesQuery.not("challenge_id", "in", `(${archivedIds.join(",")})`);
     }
-    const { data: milestones, error } = await milestonesQuery
-      .order("challenge_id")
-      .order("order_index")
-      .limit(limit);
+    const { data: milestones, error } = await milestonesQuery.order("challenge_id").order("order_index").limit(limit);
 
     if (error) throw error;
 
     if (!milestones || milestones.length === 0) {
       return new Response(
         JSON.stringify({ message: "All milestones already have audio", generated: 0, remaining: 0 }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
     // Count total remaining (skip archived)
-    let countQuery = supabase
-      .from("milestones")
-      .select("id", { count: "exact", head: true })
-      .is("audio_url", null);
+    let countQuery = supabase.from("milestones").select("id", { count: "exact", head: true }).is("audio_url", null);
     if (archivedIds.length > 0) {
       countQuery = countQuery.not("challenge_id", "in", `(${archivedIds.join(",")})`);
     }
@@ -100,7 +94,7 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log(`Processing ${milestones.length} of ${count} remaining milestones`);
 
-    const voiceId = "XrExE9yKIg1WjnnlVkGX"; // Matilda
+    const voiceId = "DLvjJrjQopAT03aOblQr"; // Charlie P
     const results: { id: string; title: string; success: boolean; error?: string }[] = [];
 
     for (const milestone of milestones) {
@@ -132,7 +126,7 @@ serve(async (req: Request): Promise<Response> => {
                 speed: 0.95,
               },
             }),
-          }
+          },
         );
 
         if (!ttsResponse.ok) {
@@ -175,7 +169,7 @@ serve(async (req: Request): Promise<Response> => {
         remaining,
         results,
       }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (error: unknown) {
     console.error("Error in batch audio generation:", error);
