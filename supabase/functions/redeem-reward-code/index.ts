@@ -55,8 +55,82 @@ serve(async (req) => {
       .maybeSingle();
 
     if (findError || !rewardCode) {
-      return new Response(JSON.stringify({ error: "Invalid reward code. Make sure you're using your own earned code." }), {
-        status: 400,
+      // Fall back to beta_codes (LEGACYFIT-* promo codes)
+      const normalized = String(code).toUpperCase().trim();
+      const { data: betaCode } = await supabase
+        .from("beta_codes")
+        .select("*")
+        .eq("code", normalized)
+        .eq("is_active", true)
+        .maybeSingle();
+
+      if (!betaCode) {
+        return new Response(JSON.stringify({ error: "Invalid code. Please check and try again." }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (betaCode.times_used >= betaCode.max_uses) {
+        return new Response(JSON.stringify({ error: "This code has reached its maximum number of uses." }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Enforce one active paid challenge at a time
+      const { data: existingPaid } = await supabase
+        .from("user_challenges")
+        .select("id, challenge_id, payment_status")
+        .eq("user_id", user.id)
+        .eq("payment_status", "paid");
+
+      if (existingPaid && existingPaid.length > 0) {
+        const alreadyInThis = existingPaid.some((c: any) => c.challenge_id === challengeId);
+        if (alreadyInThis) {
+          return new Response(JSON.stringify({ error: "You're already enrolled in this challenge." }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        return new Response(JSON.stringify({ error: "You can only have one active challenge at a time. Complete your current challenge first." }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Enroll the user
+      const { data: existingForChallenge } = await supabase
+        .from("user_challenges")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("challenge_id", challengeId)
+        .maybeSingle();
+
+      if (existingForChallenge) {
+        await supabase
+          .from("user_challenges")
+          .update({ payment_status: "paid", stripe_payment_id: `promo_${betaCode.code}` })
+          .eq("id", existingForChallenge.id);
+      } else {
+        await supabase
+          .from("user_challenges")
+          .insert({
+            user_id: user.id,
+            challenge_id: challengeId,
+            payment_status: "paid",
+            stripe_payment_id: `promo_${betaCode.code}`,
+            miles_logged: 0,
+          });
+      }
+
+      await supabase
+        .from("beta_codes")
+        .update({ times_used: (betaCode.times_used ?? 0) + 1 })
+        .eq("id", betaCode.id);
+
+      return new Response(JSON.stringify({ success: true, message: "You're enrolled! Enjoy your free challenge." }), {
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
