@@ -45,7 +45,7 @@ Every challenge MUST have **exactly 6 milestones**. No more, no fewer.
 
 - **Trigger**: `on_milestone_insert_generate_audio` fires automatically on every milestone INSERT where `audio_url IS NULL`.
 - **Source text**: `historical_event` column. Falls back to `title` if `historical_event` is null.
-- **Voice**: ElevenLabs Matilda — voice ID `XrExE9yKIg1WjnnlVkGX`, model `eleven_multilingual_v2`.
+- **Voice**: ElevenLabs Charlie P — voice ID `DLvjJrjQopAT03aOblQr`, model `eleven_multilingual_v2`.
 - **Storage**: `milestone-audio` storage bucket at path `{challenge_id}/{milestone_id}.mp3`.
 - **Action required**: No manual steps — audio is generated automatically on milestone insert. Verify `audio_url` is populated before setting `is_active = true`.
 
