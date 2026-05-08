@@ -183,14 +183,41 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
         </CardHeader>
         <CardContent className="space-y-4">
           {hasPendingPayment ? (
-            <p className="text-muted-foreground text-sm">
-              Your payment is being processed. You'll be able to log miles once payment is confirmed.
-            </p>
+            <Alert className="border-amber-500/40 bg-amber-500/10">
+              <Clock className="h-4 w-4 text-amber-600" />
+              <AlertTitle>Payment pending</AlertTitle>
+              <AlertDescription className="text-sm">
+                Mile logging is paused until your payment clears. This usually takes a minute or two.
+                If it's been longer than 10 minutes, refresh this page or check your email for a Stripe receipt.
+                Once confirmed, your enrollment unlocks automatically.
+              </AlertDescription>
+            </Alert>
           ) : (
             <div className="space-y-3">
-              <p className="text-muted-foreground text-sm">
-                Enroll in this challenge to start logging miles and earning passport stamps.
-              </p>
+              <Alert className="border-primary/30 bg-primary/5">
+                <Lock className="h-4 w-4 text-primary" />
+                <AlertTitle className="flex items-center gap-2">
+                  Enrollment required
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button type="button" aria-label="Why is logging blocked?">
+                          <HelpCircle className="h-3.5 w-3.5 text-muted-foreground" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        Miles are tied to a specific paid challenge so your progress, stamps, and
+                        certificate stay accurate. You've used your free 1-mile preview, so the next
+                        step is to enroll.
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </AlertTitle>
+                <AlertDescription className="text-sm">
+                  You're not enrolled in this challenge yet, so miles can't be saved to your passport.
+                  Enroll below to start logging miles, unlock milestones, and earn stamps.
+                </AlertDescription>
+              </Alert>
               <Button
                 className="w-full h-auto py-3 text-sm font-bold leading-tight whitespace-normal bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                 onClick={onScrollToPricing}
