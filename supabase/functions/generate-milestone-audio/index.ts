@@ -52,7 +52,7 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log(`Generating audio for milestone: ${milestone.title}`);
 
-    // Call ElevenLabs TTS - using "Matilda" voice (warm female)
+    // Call ElevenLabs TTS - using "Charlie P" voice (warm female)
     const voiceId = "DLvjJrjQopAT03aOblQr"; // Charlie P
     const ttsResponse = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
