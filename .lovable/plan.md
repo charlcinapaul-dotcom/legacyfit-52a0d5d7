@@ -1,31 +1,55 @@
-## Problem
+## Root cause
 
-The LEGACYFIT-* codes (e.g. `LEGACYFIT-4AQ6`) live in the `beta_codes` table with type `single_challenge_promo`. The "Have a reward code?" input on the challenge enrollment screen calls the `redeem-reward-code` edge function, which only checks the `reward_codes` table (referral rewards). So those promo codes always come back as "Invalid reward code."
+The user (e.g. `tfoster6@bellsouth.net` / "TeesFitJourney") has signed up but **has not enrolled (paid) in any challenge**. She has 1 stale `mile_entries` row for "Crispus Attucks" but no `user_challenges` row.
 
-There is currently no UI anywhere in the app that calls `redeem-beta-code`, so promo codes have no working entry point today.
+Two distinct symptoms result:
 
-## Fix
+### 1. "Failed to log miles" error when she taps Log Steps
 
-Update the `redeem-reward-code` edge function so the single existing input field works for both kinds of codes. No UI changes required.
+`StepLogger` shows its quick buttons and custom-step input to **everyone**, with no enrollment gate. When she taps a button, it calls `logMiles` which tries to INSERT into `mile_entries`. The RLS policy requires either:
 
-### Edge function changes (`supabase/functions/redeem-reward-code/index.ts`)
+- a `user_challenges` row with `payment_status = 'paid'`, **or**
+- this is the user's first ever entry on this challenge
 
-1. Keep the current reward-code lookup as the first attempt (case-insensitive against `reward_codes.code`, scoped to the calling user).
-2. If no reward code is found, fall back to a beta-code lookup:
-   - `select * from beta_codes where code = upper(trim(input)) and is_active = true`.
-   - Reject if `times_used >= max_uses`.
-   - Enforce the existing "one active paid challenge at a time" rule (already done by `redeem-beta-code`) — block if the user is already enrolled paid in another challenge, and block if already paid in this one.
-   - Enroll the user: upsert into `user_challenges` with `payment_status = 'paid'` and `stripe_payment_id = 'promo_<code>'`.
-   - Increment `beta_codes.times_used` by 1.
-3. If neither lookup matches, return the existing "Invalid reward code" error (with copy adjusted to "Invalid code" so it covers both flows).
-4. Preserve all existing reward-code behavior (mark `is_redeemed`, set `redeemed_at`, set `redeemed_for_challenge_id`) when the code is a reward code.
+She has neither (already used her free entry), so Postgres rejects the insert and the toast shows "Failed to log miles. Please try again."
 
-### What does NOT change
+### 2. "Nothing comes up" when she taps Log Miles
 
-- No DB migration. `beta_codes`, `reward_codes`, and `user_challenges` schemas stay as-is.
-- No frontend changes. `RewardCodeRedemption.tsx` keeps its current UX, label, and success messaging.
-- The standalone `redeem-beta-code` function is left in place untouched in case it is wired into other surfaces later.
+`MileLogger` *does* gate the UI:
 
-### Result
+- `isFirstMileFreeWindow` = false (because `totalMiles > 0` for that challenge)
+- `enrollment.isEnrolled` = false
+- `freePreviewClaimed` = false (her `profiles.free_preview_claimed_at` was never stamped — likely the entry pre-dates the gate)
 
-Pasting any of the LEGACYFIT-* codes into the "Have a reward code?" box on a challenge enrollment screen will enroll the user in that challenge (subject to the one-active-challenge rule), and increment `times_used` on the beta code so each one can only be used once.
+So she falls into the `freePreviewClaimed`-not-true branch and sees the **"Start Your Free 1 Mile Legacy Passport"** button that links to `/auth?redirect=...`. Since she's already signed in, that auth route bounces her right back — visually it looks like "nothing happens."
+
+## The fix
+
+### A. StepLogger: apply the same enrollment gate as MileLogger
+
+`src/components/StepLogger.tsx` should mirror `MileLogger`'s gating logic. When the user is not enrolled and not in the first-mile free window, render an "Enroll to log steps" card with a button that calls `onScrollToPricing` (add it as a prop, same as MileLogger). This stops the failing INSERT entirely and gives a clear next step.
+
+### B. MileLogger: fix the broken CTA for already-signed-in users
+
+In the `!enrollment?.isEnrolled && !isFirstMileFreeWindow` branch, the "else" arm currently sends authenticated users to `/auth`. The condition should instead be: if the user is signed in but free preview was never properly claimed AND they have entries (i.e. their free mile is already used elsewhere), show the **"Enroll in This Challenge"** button (same as the `freePreviewClaimed` arm). The `/auth` link should only fire when `!isAuthenticated`, which is already handled in the earlier guard — so the `/auth` Link in this branch is effectively dead code and can be replaced with the Enroll CTA.
+
+### C. Backfill `free_preview_claimed_at` for affected users (optional cleanup)
+
+For users like TeesFitJourney who have a `mile_entries` row but a NULL `free_preview_claimed_at`, run a one-time migration to stamp `profiles.free_preview_claimed_at` from their earliest `mile_entries.created_at`. This makes the UI reflect reality (free preview consumed → enroll-required shown consistently).
+
+fix this for all new users not just this user
+
+## Files touched
+
+- `src/components/StepLogger.tsx` — add enrollment gating + `onScrollToPricing` prop, plumb it from `ChallengeRoute.tsx`
+- `src/components/MileLogger.tsx` — replace the misleading `/auth` link in the not-enrolled branch with the "Enroll in This Challenge" CTA
+- `src/pages/ChallengeRoute.tsx` — pass `onScrollToPricing` into `<StepLogger />` (already passes it to `<MileLogger />`)
+- One-time SQL migration to backfill `free_preview_claimed_at` from earliest `mile_entries` for users where it's NULL
+
+## What this changes for the user
+
+When the new user opens the challenge page:
+
+- **Log Steps tab** → no broken buttons; instead a clear "Enroll in This Challenge" card
+- **Log Miles tab** → same clear "Enroll in This Challenge" CTA (no more dead `/auth` redirect)
+- Once she enrolls, both tabs work normally
