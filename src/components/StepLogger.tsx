@@ -29,6 +29,7 @@ interface StepLoggerProps {
 }
 
 const QUICK_STEPS = [1000, 2000, 5000, 10000];
+const FREE_QUICK_STEPS = [2000];
 
 export function StepLogger({
   challengeId,
@@ -216,7 +217,7 @@ export function StepLogger({
           {isRateLimited && <RateLimitBanner countdown={formatCountdown()} />}
           {/* Quick step buttons */}
           <div className="grid grid-cols-4 gap-2">
-            {QUICK_STEPS.map((qs) => (
+            {(isFirstMileFreeWindow ? FREE_QUICK_STEPS : QUICK_STEPS).map((qs) => (
               <Button
                 key={qs}
                 variant="outline"
