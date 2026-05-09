@@ -34,7 +34,16 @@ interface MileLoggerProps {
 
 const QUICK_MILES = [1, 3, 5, 7];
 
-export function MileLogger({ challengeId, challengeSlug, challengeName, totalMilestones = 6, challengeEditionColor = "gold", onChallengeCompleted, onMaybeLater, onScrollToPricing }: MileLoggerProps) {
+export function MileLogger({
+  challengeId,
+  challengeSlug,
+  challengeName,
+  totalMilestones = 6,
+  challengeEditionColor = "gold",
+  onChallengeCompleted,
+  onMaybeLater,
+  onScrollToPricing,
+}: MileLoggerProps) {
   const [miles, setMiles] = useState<number>(1);
   const [notes, setNotes] = useState("");
   const [showCustom, setShowCustom] = useState(false);
@@ -43,7 +52,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
   const [pendingNotes, setPendingNotes] = useState<string>("");
 
   // Latch: once the user was in the free-mile window, stay showing the logger
-  // until the stamp modal is dismissed (prevents flipping to "Enrollment Required")
+  // until the stamp modal is dismissed (prevents flipping to "Payment required")
   const wasInFreeWindowRef = useRef(false);
   const [stampModalDismissed, setStampModalDismissed] = useState(false);
 
@@ -64,7 +73,13 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
     clearCompletionData,
   } = useMileLogging(challengeId);
 
-  const { dailyLogged, dailyRemaining, maxSingleEntry, maxDailyAggregate, refetch: refetchDaily } = useDailyMilesLogged(challengeId);
+  const {
+    dailyLogged,
+    dailyRemaining,
+    maxSingleEntry,
+    maxDailyAggregate,
+    refetch: refetchDaily,
+  } = useDailyMilesLogged(challengeId);
   const { isRateLimited, formatCountdown, triggerRateLimit } = useRateLimitCountdown(challengeId);
 
   useEffect(() => {
@@ -83,12 +98,16 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setIsAuthenticated(!!user);
     };
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setIsAuthenticated(!!session?.user);
     });
 
@@ -107,28 +126,31 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
 
   const handleConfirmLog = () => {
     if (pendingMiles === null) return;
-    logMiles({
-      miles: pendingMiles,
-      challengeId,
-      notes: pendingNotes || undefined,
-    }, {
-      onSettled: () => {
-        // Clear only after the full operation completes — keeps dialog+spinner
-        // visible the entire time, preventing double-taps
-        refetchDaily();
-        setPendingMiles(null);
-        setPendingNotes("");
-        setMiles(1);
-        setNotes("");
-        setShowCustom(false);
+    logMiles(
+      {
+        miles: pendingMiles,
+        challengeId,
+        notes: pendingNotes || undefined,
       },
-      onError: (error: any) => {
-        const msg = error?.message || "";
-        if (msg.toLowerCase().includes("rate limit")) {
-          triggerRateLimit();
-        }
+      {
+        onSettled: () => {
+          // Clear only after the full operation completes — keeps dialog+spinner
+          // visible the entire time, preventing double-taps
+          refetchDaily();
+          setPendingMiles(null);
+          setPendingNotes("");
+          setMiles(1);
+          setNotes("");
+          setShowCustom(false);
+        },
+        onError: (error: any) => {
+          const msg = error?.message || "";
+          if (msg.toLowerCase().includes("rate limit")) {
+            triggerRateLimit();
+          }
+        },
       },
-    });
+    );
   };
 
   // Loading
@@ -153,7 +175,9 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Link to={`/auth?redirect=${encodeURIComponent(challengeSlug ? `/challenge/${challengeSlug}` : '/challenges')}`}>
+          <Link
+            to={`/auth?redirect=${encodeURIComponent(challengeSlug ? `/challenge/${challengeSlug}` : "/challenges")}`}
+          >
             <Button className="w-full h-auto py-3 text-sm font-bold leading-tight whitespace-normal bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
               Start Your Free 1 Mile Legacy Passport
             </Button>
@@ -165,7 +189,8 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
 
   // Not enrolled (paid) — but allow free first-mile preview (totalMiles === 0 AND not yet claimed on any challenge)
   const hasPendingPayment = enrollment?.status === "pending";
-  const isFirstMileFreeWindowNow = !enrollment?.isEnrolled && !hasPendingPayment && totalMiles === 0 && !freePreviewClaimed;
+  const isFirstMileFreeWindowNow =
+    !enrollment?.isEnrolled && !hasPendingPayment && totalMiles === 0 && !freePreviewClaimed;
 
   // Latch: if we were in free-window when the user clicked log, stay in logger
   // view until the stamp modal is fully dismissed (prevents premature flip to "Enrollment Required")
@@ -189,9 +214,9 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
               <Clock className="h-4 w-4 text-amber-600" />
               <AlertTitle>Payment pending</AlertTitle>
               <AlertDescription className="text-sm">
-                Mile logging is paused until your payment clears. This usually takes a minute or two.
-                If it's been longer than 10 minutes, refresh this page or check your email for a Stripe receipt.
-                Once confirmed, your enrollment unlocks automatically.
+                Mile logging is paused until your payment clears. This usually takes a minute or two. If it's been
+                longer than 10 minutes, refresh this page or check your email for a Stripe receipt. Once confirmed, your
+                enrollment unlocks automatically.
               </AlertDescription>
             </Alert>
           ) : (
@@ -199,7 +224,7 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
               <Alert className="border-primary/30 bg-primary/5">
                 <Lock className="h-4 w-4 text-primary" />
                 <AlertTitle className="flex items-center gap-2">
-                  Enrollment required
+                  Payment required
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -208,16 +233,15 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
                         </button>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
-                        Miles are tied to a specific paid challenge so your progress, stamps, and
-                        certificate stay accurate. You've used your free 1-mile preview, so the next
-                        step is to enroll.
+                        Miles are tied to a specific paid challenge so your progress, stamps, and certificate stay
+                        accurate. You've used your free 1-mile preview, so the next step is to enroll.
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </AlertTitle>
                 <AlertDescription className="text-sm">
-                  You're not enrolled in this challenge yet, so miles can't be saved to your passport.
-                  Enroll below to start logging miles, unlock milestones, and earn stamps.
+                  You're not enrolled in this challenge yet, so miles can't be saved to your passport. Enroll below to
+                  start logging miles, unlock milestones, and earn stamps.
                 </AlertDescription>
               </Alert>
               <Button
@@ -247,7 +271,8 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
                 Total logged: <span className="font-semibold text-primary">{totalMiles} miles</span>
               </p>
               <p className="text-xs text-muted-foreground">
-                Today: {dailyLogged} / {maxDailyAggregate} mi · <span className="font-medium">{dailyRemaining} mi remaining</span>
+                Today: {dailyLogged} / {maxDailyAggregate} mi ·{" "}
+                <span className="font-medium">{dailyRemaining} mi remaining</span>
               </p>
             </>
           )}
@@ -263,12 +288,18 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
                 size="sm"
                 onClick={() => handleQuickLog(quickMiles)}
                 disabled={isLogging || isRateLimited || quickMiles > dailyRemaining}
-                className={isFirstMileFreeWindow ? "h-auto py-3 text-sm font-bold leading-tight whitespace-normal bg-primary text-primary-foreground hover:bg-primary/90 transition-colors" : "h-12 text-lg font-bold hover:bg-primary hover:text-primary-foreground transition-colors"}
+                className={
+                  isFirstMileFreeWindow
+                    ? "h-auto py-3 text-sm font-bold leading-tight whitespace-normal bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                    : "h-12 text-lg font-bold hover:bg-primary hover:text-primary-foreground transition-colors"
+                }
               >
                 {isLogging ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
+                ) : isFirstMileFreeWindow ? (
+                  "Start Your Free 1 Mile Legacy Passport"
                 ) : (
-                  isFirstMileFreeWindow ? "Start Your Free 1 Mile Legacy Passport" : `+${quickMiles}`
+                  `+${quickMiles}`
                 )}
               </Button>
             ))}
@@ -332,7 +363,9 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
                   )}
                   <Button
                     onClick={handleCustomLog}
-                    disabled={isLogging || isRateLimited || miles <= 0 || miles > maxSingleEntry || miles > dailyRemaining}
+                    disabled={
+                      isLogging || isRateLimited || miles <= 0 || miles > maxSingleEntry || miles > dailyRemaining
+                    }
                     className="w-full"
                   >
                     {isLogging ? (
@@ -354,7 +387,9 @@ export function MileLogger({ challengeId, challengeSlug, challengeName, totalMil
       {/* Confirmation dialog */}
       <MileLogConfirmDialog
         open={pendingMiles !== null}
-        onOpenChange={(open) => { if (!open) setPendingMiles(null); }}
+        onOpenChange={(open) => {
+          if (!open) setPendingMiles(null);
+        }}
         onConfirm={handleConfirmLog}
         miles={pendingMiles || 0}
         challengeName={challengeName}
