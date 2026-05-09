@@ -30,7 +30,13 @@ interface StepLoggerProps {
 
 const QUICK_STEPS = [1000, 2000, 5000, 10000];
 
-export function StepLogger({ challengeId, challengeSlug, challengeName, challengeEditionColor = "gold", onScrollToPricing }: StepLoggerProps) {
+export function StepLogger({
+  challengeId,
+  challengeSlug,
+  challengeName,
+  challengeEditionColor = "gold",
+  onScrollToPricing,
+}: StepLoggerProps) {
   const [steps, setSteps] = useState<string>("");
   const [pendingSteps, setPendingSteps] = useState<number | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -42,13 +48,7 @@ export function StepLogger({ challengeId, challengeSlug, challengeName, challeng
     stamp: UnlockedStamp | null;
   }>({ open: false, screen: "purchase", stamp: null });
 
-  const {
-    totalMiles,
-    logMiles,
-    isLogging,
-    newlyUnlockedStamps,
-    clearUnlockedStamps,
-  } = useMileLogging(challengeId);
+  const { totalMiles, logMiles, isLogging, newlyUnlockedStamps, clearUnlockedStamps } = useMileLogging(challengeId);
 
   const { data: enrollment, isLoading: enrollmentLoading } = useEnrollmentStatus(challengeId);
   const { hasClaimed: freePreviewClaimed, isLoading: freePreviewLoading } = useHasClaimedFreePreview();
@@ -57,7 +57,9 @@ export function StepLogger({ challengeId, challengeSlug, challengeName, challeng
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => setIsAuthenticated(!!user));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_e, s) => {
       setIsAuthenticated(!!s?.user);
     });
     return () => subscription.unsubscribe();
@@ -80,22 +82,25 @@ export function StepLogger({ challengeId, challengeSlug, challengeName, challeng
   const handleConfirmLog = () => {
     if (pendingSteps === null) return;
     const miles = stepsToMiles(pendingSteps);
-    logMiles({
-      miles,
-      challengeId,
-      notes: `${pendingSteps.toLocaleString()} steps synced manually`,
-      source: "manual",
-    }, {
-      onSettled: () => {
-        refetchDaily();
+    logMiles(
+      {
+        miles,
+        challengeId,
+        notes: `${pendingSteps.toLocaleString()} steps synced manually`,
+        source: "manual",
       },
-      onError: (error: any) => {
-        const msg = error?.message || "";
-        if (msg.toLowerCase().includes("rate limit")) {
-          triggerRateLimit();
-        }
+      {
+        onSettled: () => {
+          refetchDaily();
+        },
+        onError: (error: any) => {
+          const msg = error?.message || "";
+          if (msg.toLowerCase().includes("rate limit")) {
+            triggerRateLimit();
+          }
+        },
       },
-    });
+    );
     setPendingSteps(null);
     setSteps("");
   };
@@ -122,7 +127,9 @@ export function StepLogger({ challengeId, challengeSlug, challengeName, challeng
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Link to={`/auth?redirect=${encodeURIComponent(challengeSlug ? `/challenge/${challengeSlug}` : '/challenges')}`}>
+          <Link
+            to={`/auth?redirect=${encodeURIComponent(challengeSlug ? `/challenge/${challengeSlug}` : "/challenges")}`}
+          >
             <Button className="w-full h-auto py-3 text-sm font-bold leading-tight whitespace-normal bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
               Sign In to Log Steps
             </Button>
@@ -133,7 +140,8 @@ export function StepLogger({ challengeId, challengeSlug, challengeName, challeng
   }
 
   const hasPendingPayment = enrollment?.status === "pending";
-  const isFirstMileFreeWindow = !enrollment?.isEnrolled && !hasPendingPayment && totalMiles === 0 && !freePreviewClaimed;
+  const isFirstMileFreeWindow =
+    !enrollment?.isEnrolled && !hasPendingPayment && totalMiles === 0 && !freePreviewClaimed;
 
   // Not enrolled, no free preview window — show enroll CTA
   if (!enrollment?.isEnrolled && !isFirstMileFreeWindow) {
@@ -151,9 +159,9 @@ export function StepLogger({ challengeId, challengeSlug, challengeName, challeng
               <Clock className="h-4 w-4 text-amber-600" />
               <AlertTitle>Payment pending</AlertTitle>
               <AlertDescription className="text-sm">
-                Step logging is paused until your payment clears. This usually takes a minute or two.
-                If it's been longer than 10 minutes, refresh this page or check your email for a Stripe receipt.
-                Once confirmed, your enrollment unlocks automatically and you can log steps right away.
+                Step logging is paused until your payment clears. This usually takes a minute or two. If it's been
+                longer than 10 minutes, refresh this page or check your email for a Stripe receipt. Once confirmed, your
+                enrollment unlocks automatically and you can log steps right away.
               </AlertDescription>
             </Alert>
           ) : (
@@ -161,7 +169,7 @@ export function StepLogger({ challengeId, challengeSlug, challengeName, challeng
               <Alert className="border-primary/30 bg-primary/5">
                 <Lock className="h-4 w-4 text-primary" />
                 <AlertTitle className="flex items-center gap-2">
-                  Enrollment required
+                  Payment required
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -170,16 +178,15 @@ export function StepLogger({ challengeId, challengeSlug, challengeName, challeng
                         </button>
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
-                        Steps and miles are tied to a specific paid challenge so your progress, stamps,
-                        and certificate stay accurate. You used your free 1-mile preview, so the next
-                        step is to enroll.
+                        Steps and miles are tied to a specific paid challenge so your progress, stamps, and certificate
+                        stay accurate. You used your free 1-mile preview, so the next step is to enroll.
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
                 </AlertTitle>
                 <AlertDescription className="text-sm">
-                  You're not enrolled in this challenge yet, so steps can't be saved to your passport.
-                  Enroll below to start logging steps, unlock milestones, and earn stamps.
+                  You're not enrolled in this challenge yet, so steps can't be saved to your passport. Enroll below to
+                  start logging steps, unlock milestones, and earn stamps.
                 </AlertDescription>
               </Alert>
               <Button
@@ -203,9 +210,7 @@ export function StepLogger({ challengeId, challengeSlug, challengeName, challeng
             <Footprints className="w-5 h-5 text-accent" />
             Log Steps
           </CardTitle>
-          <p className="text-xs text-muted-foreground">
-            {STEPS_PER_MILE.toLocaleString()} steps = 1 mile
-          </p>
+          <p className="text-xs text-muted-foreground">{STEPS_PER_MILE.toLocaleString()} steps = 1 mile</p>
         </CardHeader>
         <CardContent className="space-y-4">
           {isRateLimited && <RateLimitBanner countdown={formatCountdown()} />}
@@ -234,7 +239,9 @@ export function StepLogger({ challengeId, challengeSlug, challengeName, challeng
 
           {/* Custom step input */}
           <div className="space-y-2">
-            <Label htmlFor="steps-input" className="text-sm">Custom steps</Label>
+            <Label htmlFor="steps-input" className="text-sm">
+              Custom steps
+            </Label>
             <div className="flex gap-2">
               <Input
                 id="steps-input"
@@ -247,14 +254,17 @@ export function StepLogger({ challengeId, challengeSlug, challengeName, challeng
               />
               <Button
                 onClick={handleCustomLog}
-                disabled={isLogging || isRateLimited || !steps || Number(steps) <= 0 || convertedMiles > maxSingleEntry || convertedMiles > dailyRemaining}
+                disabled={
+                  isLogging ||
+                  isRateLimited ||
+                  !steps ||
+                  Number(steps) <= 0 ||
+                  convertedMiles > maxSingleEntry ||
+                  convertedMiles > dailyRemaining
+                }
                 size="default"
               >
-                {isLogging ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  <ArrowRight className="w-4 h-4" />
-                )}
+                {isLogging ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
               </Button>
             </div>
             {convertedMiles > 0 && (
@@ -275,7 +285,9 @@ export function StepLogger({ challengeId, challengeSlug, challengeName, challeng
       {/* Confirmation dialog */}
       <MileLogConfirmDialog
         open={pendingSteps !== null}
-        onOpenChange={(open) => { if (!open) setPendingSteps(null); }}
+        onOpenChange={(open) => {
+          if (!open) setPendingSteps(null);
+        }}
         onConfirm={handleConfirmLog}
         miles={pendingMiles}
         challengeName={challengeName}
