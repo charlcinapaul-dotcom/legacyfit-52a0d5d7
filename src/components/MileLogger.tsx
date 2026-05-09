@@ -248,7 +248,7 @@ export function MileLogger({
                 className="w-full h-auto py-3 text-sm font-bold leading-tight whitespace-normal bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                 onClick={onScrollToPricing}
               >
-                Enroll in This Challenge
+                View Payment Options
               </Button>
             </div>
           )}
