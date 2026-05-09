@@ -183,7 +183,7 @@ const Auth = () => {
 
     setLoading(true);
     try {
-      const redirectUrl = `${window.location.origin}/dashboard`;
+      const redirectUrl = `https://legacyfitvirtual.com/dashboard`;
 
       const { error } = await supabase.auth.signUp({
         email,
@@ -263,7 +263,7 @@ const Auth = () => {
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: `https://legacyfitvirtual.com/reset-password`,
       });
 
       if (error) {
