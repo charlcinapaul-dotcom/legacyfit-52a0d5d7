@@ -1,0 +1,19 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "W6G65873PU.com.legacyfitvirtual.app",
+        "paths": [
+          "/reset-password",
+          "/reset-password/*"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "W6G65873PU.com.legacyfitvirtual.app"
+    ]
+  }
+}
