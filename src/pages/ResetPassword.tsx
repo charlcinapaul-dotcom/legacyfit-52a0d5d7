@@ -23,19 +23,29 @@ const ResetPassword = () => {
     // a real login. Supabase will then re-emit PASSWORD_RECOVERY from the
     // token in the hash, which we listen for below.
     if (typeof window !== "undefined" && window.location.hash.includes("type=recovery")) {
-      supabase.auth.signOut().catch(() => { /* noop */ });
+      supabase.auth.signOut().catch(() => {
+        /* noop */
+      });
     }
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event) => {
-        if (event === "PASSWORD_RECOVERY") {
-          setSessionValid(true);
-          setChecking(false);
-        }
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setSessionValid(true);
+        setChecking(false);
       }
-    );
+    });
 
     // Timeout fallback — if PASSWORD_RECOVERY never fires, show invalid link
+    // Fallback: check if recovery session already exists
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setSessionValid(true);
+        setChecking(false);
+      }
+    });
+
     const timer = setTimeout(() => setChecking(false), 10000);
 
     return () => {
@@ -118,7 +128,10 @@ const ResetPassword = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="p-4">
-        <Link to="/auth" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
+        <Link
+          to="/auth"
+          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        >
           <ArrowLeft className="w-4 h-4" />
           <span>Back to sign in</span>
         </Link>
@@ -175,11 +188,7 @@ const ResetPassword = () => {
                   </div>
                 </div>
 
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={loading}
-                >
+                <Button type="submit" className="w-full" disabled={loading}>
                   {loading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
