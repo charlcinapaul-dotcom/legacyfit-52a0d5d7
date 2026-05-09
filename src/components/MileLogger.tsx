@@ -234,7 +234,7 @@ export function MileLogger({
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
                         Miles are tied to a specific paid challenge so your progress, stamps, and certificate stay
-                        accurate. You've used your free 1-mile preview, so the next step is to enroll.
+                        accurate. You've used your free 1-mile preview, so next step complete payment.
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
