@@ -260,6 +260,7 @@ export function StepLogger({
                   isRateLimited ||
                   !steps ||
                   Number(steps) <= 0 ||
+                  (isFirstMileFreeWindow && Number(steps) > 2000) ||
                   convertedMiles > maxSingleEntry ||
                   convertedMiles > dailyRemaining
                 }
