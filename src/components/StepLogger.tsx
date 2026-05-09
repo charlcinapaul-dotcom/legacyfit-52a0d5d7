@@ -179,7 +179,7 @@ export function StepLogger({
                       </TooltipTrigger>
                       <TooltipContent className="max-w-xs">
                         Steps and miles are tied to a specific paid challenge so your progress, stamps, and certificate
-                        stay accurate. You used your free 1-mile preview, so the next step is to enroll.
+                        stay accurate. You used your free 1-mile preview, so next step complete payment.
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
