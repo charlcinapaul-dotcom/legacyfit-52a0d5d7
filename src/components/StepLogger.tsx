@@ -271,10 +271,13 @@ export function StepLogger({
             {convertedMiles > 0 && (
               <p className="text-xs text-muted-foreground">
                 = <span className="font-semibold text-primary">{convertedMiles} miles</span>
-                {convertedMiles > maxSingleEntry && (
+                {isFirstMileFreeWindow && Number(steps) > 2000 && (
+                  <span className="text-destructive ml-1">(free preview is limited to 2,000 steps / 1 mile)</span>
+                )}
+                {!isFirstMileFreeWindow && convertedMiles > maxSingleEntry && (
                   <span className="text-destructive ml-1">(exceeds {maxSingleEntry}mi limit)</span>
                 )}
-                {convertedMiles <= maxSingleEntry && convertedMiles > dailyRemaining && (
+                {!isFirstMileFreeWindow && convertedMiles <= maxSingleEntry && convertedMiles > dailyRemaining && (
                   <span className="text-destructive ml-1">(only {dailyRemaining}mi remaining today)</span>
                 )}
               </p>
