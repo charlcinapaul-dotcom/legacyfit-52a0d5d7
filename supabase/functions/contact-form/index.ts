@@ -42,6 +42,18 @@ Deno.serve(async (req) => {
     const sanitizedEmail = email.trim().slice(0, 255);
     const sanitizedMessage = message.trim().slice(0, 5000);
 
+    const escHtml = (s: string) =>
+      s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+
+    const safeName = escHtml(sanitizedName);
+    const safeEmail = escHtml(sanitizedEmail);
+    const safeMessage = escHtml(sanitizedMessage).replace(/\n/g, "<br />");
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -55,10 +67,10 @@ Deno.serve(async (req) => {
         subject: `Contact Form: ${sanitizedName}`,
         html: `
           <h2>New Contact Form Submission</h2>
-          <p><strong>Name:</strong> ${sanitizedName}</p>
-          <p><strong>Email:</strong> ${sanitizedEmail}</p>
+          <p><strong>Name:</strong> ${safeName}</p>
+          <p><strong>Email:</strong> ${safeEmail}</p>
           <hr />
-          <p>${sanitizedMessage.replace(/\n/g, "<br />")}</p>
+          <p>${safeMessage}</p>
         `,
       }),
     });

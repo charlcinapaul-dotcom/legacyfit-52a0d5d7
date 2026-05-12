@@ -7,6 +7,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const REVENUECAT_API = "https://api.revenuecat.com/v1/subscribers";
+const ENTITLEMENT_ID = "premium";
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -41,7 +44,36 @@ serve(async (req) => {
       });
     }
 
-    const { isActive, expiresDate, productIdentifier } = await req.json();
+    // Server-side RevenueCat verification — never trust client-supplied status
+    const rcApiKey = Deno.env.get("REVENUECAT_APPLE_API_KEY");
+    if (!rcApiKey) {
+      console.error("REVENUECAT_APPLE_API_KEY not configured");
+      return new Response(JSON.stringify({ error: "Server misconfigured" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 500,
+      });
+    }
+
+    const rcRes = await fetch(`${REVENUECAT_API}/${user.id}`, {
+      headers: {
+        Authorization: `Bearer ${rcApiKey}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!rcRes.ok) {
+      const text = await rcRes.text();
+      console.error("RevenueCat lookup failed:", rcRes.status, text);
+      return new Response(JSON.stringify({ error: "Could not verify subscription" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 502,
+      });
+    }
+
+    const rcData = await rcRes.json();
+    const entitlement = rcData?.subscriber?.entitlements?.[ENTITLEMENT_ID];
+    const isActive = !!entitlement && (!entitlement.expires_date || new Date(entitlement.expires_date) > new Date());
+    const expiresDate: string | null = entitlement?.expires_date ?? null;
 
     if (isActive) {
       // Upsert an active subscription record
