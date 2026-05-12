@@ -52,6 +52,23 @@ serve(async (req: Request): Promise<Response> => {
       throw new Error("Missing required fields");
     }
 
+    // Verify the user actually completed and paid for this challenge
+    const { data: enrollment } = await supabase
+      .from("user_challenges")
+      .select("is_completed, payment_status")
+      .eq("user_id", userId)
+      .eq("challenge_id", challengeId)
+      .eq("is_completed", true)
+      .eq("payment_status", "paid")
+      .maybeSingle();
+
+    if (!enrollment) {
+      return new Response(
+        JSON.stringify({ error: "Challenge not completed or not paid" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     console.log(`Generating certificate for ${displayName} - ${challengeName}`);
 
     // Check if certificate already exists
