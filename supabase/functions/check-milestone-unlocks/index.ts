@@ -133,6 +133,31 @@ serve(async (req: Request): Promise<Response> => {
         // Non-fatal — stamp was already inserted; continue
       }
 
+      // Ensure user_challenges row exists for free preview
+      const { data: existingEnrollment } = await supabase
+        .from("user_challenges")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("challenge_id", challengeId)
+        .maybeSingle();
+
+      if (!existingEnrollment) {
+        const { error: enrollError } = await supabase
+          .from("user_challenges")
+          .insert({
+            user_id: userId,
+            challenge_id: challengeId,
+            payment_status: "free",
+            miles_logged: totalMiles,
+            is_completed: false,
+          });
+
+        if (enrollError) {
+          console.error("Error inserting free user_challenges row:", enrollError);
+          // Non-fatal — stamp was already awarded; continue
+        }
+      }
+
       const unlockedStamp: UnlockedStamp = {
         milestoneId: firstMilestone.id,
         title: firstMilestone.title,
