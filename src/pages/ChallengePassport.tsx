@@ -23,7 +23,7 @@ export default function ChallengePassport() {
 
   const { data: challengeData, isLoading: challengeLoading } = useChallengeBySlug(slug);
   const challengeId = challengeData?.challenge?.id;
-  
+
   const { data: enrollment } = useEnrollmentStatus(challengeId);
   const { stamps, unlockedCount, totalCount, isLoading: stampsLoading } = usePassportStamps(challengeId);
 
@@ -103,8 +103,8 @@ export default function ChallengePassport() {
               {unlockedCount === 0
                 ? "Start logging miles to earn your first stamp!"
                 : unlockedCount === totalCount
-                ? "🎉 Congratulations! You've collected all stamps for this journey!"
-                : `${totalCount - unlockedCount} more stamps to collect`}
+                  ? "🎉 Congratulations! You've collected all stamps for this journey!"
+                  : `${totalCount - unlockedCount} more stamps to collect`}
             </p>
           </CardContent>
         </Card>
@@ -132,15 +132,15 @@ export default function ChallengePassport() {
           <TabsContent value="stamps">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {stamps.length === 0 ? (
-                <div className="col-span-full text-center py-12 text-muted-foreground">
-                  No stamps available yet.
-                </div>
+                <div className="col-span-full text-center py-12 text-muted-foreground">No stamps available yet.</div>
               ) : (
                 stamps.map((stamp) => (
                   <PassportStamp
                     key={stamp.id}
                     stamp={stamp}
-                    onClick={() => setSelectedStamp(stamp)}
+                    onClick={() => {
+                      if (stamp.isUnlocked) setSelectedStamp(stamp);
+                    }}
                   />
                 ))
               )}
@@ -164,9 +164,7 @@ export default function ChallengePassport() {
                     <Card
                       key={stamp.id}
                       className={`border transition-colors ${
-                        stamp.isUnlocked
-                          ? "border-amber-500/40 bg-amber-900/10"
-                          : "border-border bg-card opacity-70"
+                        stamp.isUnlocked ? "border-amber-500/40 bg-amber-900/10" : "border-border bg-card opacity-70"
                       }`}
                     >
                       <CardContent className="p-4 flex items-center justify-between gap-4">
@@ -174,13 +172,9 @@ export default function ChallengePassport() {
                           <p className="text-xs font-semibold text-amber-500/80 uppercase tracking-wide mb-0.5">
                             Milestone {index + 1}
                           </p>
-                          <h4 className="font-bold text-foreground truncate">
-                            {stamp.stamp_title || stamp.title}
-                          </h4>
+                          <h4 className="font-bold text-foreground truncate">{stamp.stamp_title || stamp.title}</h4>
                           {stamp.location_name && (
-                            <p className="text-sm text-muted-foreground mt-0.5 truncate">
-                              📍 {stamp.location_name}
-                            </p>
+                            <p className="text-sm text-muted-foreground mt-0.5 truncate">📍 {stamp.location_name}</p>
                           )}
                           <p className="text-xs text-muted-foreground mt-1">
                             {stamp.stamp_mileage_display || `${stamp.miles_required} miles`}
@@ -192,7 +186,13 @@ export default function ChallengePassport() {
                               size="sm"
                               variant="outline"
                               className="border-amber-500/50 text-amber-400 hover:bg-amber-500/10 gap-1.5"
-                              onClick={() => openMap(stamp.latitude!, stamp.longitude!, stamp.location_name || stamp.stamp_title || stamp.title)}
+                              onClick={() =>
+                                openMap(
+                                  stamp.latitude!,
+                                  stamp.longitude!,
+                                  stamp.location_name || stamp.stamp_title || stamp.title,
+                                )
+                              }
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
                               View on Map
@@ -254,28 +254,22 @@ export default function ChallengePassport() {
               )}
 
               <div className="text-center space-y-2">
-                <h3 className="text-xl font-bold">
-                  {selectedStamp.stamp_title || selectedStamp.title}
-                </h3>
+                <h3 className="text-xl font-bold">{selectedStamp.stamp_title || selectedStamp.title}</h3>
                 {selectedStamp.location_name && (
                   <p className="text-muted-foreground">📍 {selectedStamp.location_name}</p>
                 )}
-                <div className={`inline-block px-4 py-1 rounded-full text-sm font-bold ${
-                  selectedStamp.isUnlocked
-                    ? "bg-amber-500 text-amber-950"
-                    : "bg-muted text-muted-foreground"
-                }`}>
+                <div
+                  className={`inline-block px-4 py-1 rounded-full text-sm font-bold ${
+                    selectedStamp.isUnlocked ? "bg-amber-500 text-amber-950" : "bg-muted text-muted-foreground"
+                  }`}
+                >
                   {selectedStamp.stamp_mileage_display || `${selectedStamp.miles_required} miles`}
                 </div>
                 {selectedStamp.stamp_copy && (
-                  <p className="text-muted-foreground italic text-sm">
-                    "{selectedStamp.stamp_copy}"
-                  </p>
+                  <p className="text-muted-foreground italic text-sm">"{selectedStamp.stamp_copy}"</p>
                 )}
                 {selectedStamp.historical_event && selectedStamp.historical_event !== selectedStamp.stamp_copy && (
-                  <p className="text-sm text-muted-foreground mt-4">
-                    {selectedStamp.historical_event}
-                  </p>
+                  <p className="text-sm text-muted-foreground mt-4">{selectedStamp.historical_event}</p>
                 )}
                 {selectedStamp.isUnlocked && selectedStamp.unlockedAt && (
                   <p className="text-xs text-muted-foreground mt-4">
