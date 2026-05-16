@@ -14,19 +14,20 @@ export function PassportStamp({ stamp, onClick }: PassportStampProps) {
   return (
     <button
       onClick={onClick}
+      disabled={!stamp.isUnlocked}
       className={cn(
         "relative group w-full aspect-square rounded-xl border-2 transition-all duration-300",
         "flex flex-col items-center justify-center p-4 text-center",
         stamp.isUnlocked
           ? "bg-gradient-to-br from-amber-900/30 to-amber-800/20 border-amber-500/50 hover:border-amber-400 hover:shadow-lg hover:shadow-amber-500/20"
-          : "bg-muted/30 border-border/50 hover:border-border"
+          : "bg-muted/30 border-border/50 hover:border-border",
       )}
     >
       {stamp.isUnlocked ? (
         <>
           {/* Unlocked stamp */}
           {stamp.stamp_image_url ? (
-              <div className="relative w-full h-full flex items-center justify-center bg-[#F5EDD8] rounded-lg">
+            <div className="relative w-full h-full flex items-center justify-center bg-[#F5EDD8] rounded-lg">
               <img
                 src={stamp.stamp_image_url}
                 alt={displayTitle}
@@ -39,9 +40,7 @@ export function PassportStamp({ stamp, onClick }: PassportStampProps) {
               <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center">
                 <MapPin className="w-8 h-8 text-amber-950" />
               </div>
-              <span className="text-amber-400 font-semibold text-sm line-clamp-2">
-                {displayTitle}
-              </span>
+              <span className="text-amber-400 font-semibold text-sm line-clamp-2">{displayTitle}</span>
               <span className="text-amber-500/70 text-xs">{displayMiles}</span>
             </div>
           )}
@@ -74,12 +73,8 @@ export function PassportStamp({ stamp, onClick }: PassportStampProps) {
                 <Lock className="w-6 h-6 text-muted-foreground" />
               </div>
               <div className="space-y-1">
-                <span className="text-muted-foreground font-medium text-sm block">
-                  {displayMiles}
-                </span>
-                <span className="text-muted-foreground/60 text-xs block">
-                  to unlock
-                </span>
+                <span className="text-muted-foreground font-medium text-sm block">{displayMiles}</span>
+                <span className="text-muted-foreground/60 text-xs block">to unlock</span>
               </div>
             </div>
           )}
