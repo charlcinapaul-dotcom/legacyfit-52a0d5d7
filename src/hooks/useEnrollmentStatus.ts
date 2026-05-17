@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type EnrollmentStatus = "paid" | "pending" | "not_enrolled";
+export type EnrollmentStatus = "paid" | "pending" | "not_enrolled" | "free";
 
 export interface EnrollmentInfo {
   status: EnrollmentStatus;
@@ -34,11 +34,14 @@ export function useEnrollmentStatus(challengeId: string | undefined) {
         return { status: "not_enrolled", milesLogged: 0, isEnrolled: false };
       }
 
-      const status: EnrollmentStatus = data.payment_status === "paid" ? "paid" : "pending";
+      const status: EnrollmentStatus =
+        data.payment_status === "paid" ? "paid" :
+        data.payment_status === "free" ? "free" : "pending";
+
       return {
         status,
         milesLogged: data.miles_logged || 0,
-        isEnrolled: status === "paid",
+        isEnrolled: data.payment_status === "paid" || data.payment_status === "free",
       };
     },
     enabled: !!challengeId,
