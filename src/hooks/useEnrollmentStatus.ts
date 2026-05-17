@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type EnrollmentStatus = "paid" | "pending" | "not_enrolled";
+export type EnrollmentStatus = "paid" | "pending" | "not_enrolled" | "free";
 
 export interface EnrollmentInfo {
   status: EnrollmentStatus;
