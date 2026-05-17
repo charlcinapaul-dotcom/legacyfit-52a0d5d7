@@ -241,15 +241,16 @@ export default function ChallengePassport() {
                   alt={selectedStamp.stamp_title || selectedStamp.title}
                   className="w-48 h-48 object-contain rounded-xl"
                 />
-              ) : selectedStamp.stamp_image_url ? (
-                <img
-                  src={selectedStamp.stamp_image_url}
-                  alt={selectedStamp.stamp_title || selectedStamp.title}
-                  className="w-48 h-48 object-contain rounded-xl grayscale opacity-50"
-                />
-              ) : (
+              ) : selectedStamp.isUnlocked ? (
                 <div className="w-48 h-48 rounded-xl bg-muted flex items-center justify-center">
                   <Book className="w-16 h-16 text-muted-foreground" />
+                </div>
+              ) : (
+                <div className="w-48 h-48 rounded-xl bg-muted flex flex-col items-center justify-center gap-2 border border-border">
+                  <Lock className="w-12 h-12 text-muted-foreground" />
+                  <span className="text-xs text-muted-foreground">
+                    Reach {selectedStamp.miles_required} mi to unlock
+                  </span>
                 </div>
               )}
 
@@ -265,10 +266,10 @@ export default function ChallengePassport() {
                 >
                   {selectedStamp.stamp_mileage_display || `${selectedStamp.miles_required} miles`}
                 </div>
-                {selectedStamp.stamp_copy && (
+                {selectedStamp.isUnlocked && selectedStamp.stamp_copy && (
                   <p className="text-muted-foreground italic text-sm">"{selectedStamp.stamp_copy}"</p>
                 )}
-                {selectedStamp.historical_event && selectedStamp.historical_event !== selectedStamp.stamp_copy && (
+                {selectedStamp.isUnlocked && selectedStamp.historical_event && selectedStamp.historical_event !== selectedStamp.stamp_copy && (
                   <p className="text-sm text-muted-foreground mt-4">{selectedStamp.historical_event}</p>
                 )}
                 {selectedStamp.isUnlocked && selectedStamp.unlockedAt && (

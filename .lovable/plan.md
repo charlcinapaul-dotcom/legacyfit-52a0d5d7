@@ -1,64 +1,31 @@
-## Does the overall plan work?
+## Goal
 
-**Yes, the lock behavior already works** — with one caveat about the specific `useEnrollmentStatus` edit you proposed.
+Ensure locked digital stamps reveal nothing beyond "locked + miles required". No grayed image, no `stamp_copy`, no `historical_event`, no share button.
 
-### Why locking already works after a free mile
+The first-mile → active-challenge → others-locked flow already works (see findings above) and needs no changes.
 
-The edge function `check-milestone-unlocks` (FREE FIRST-MILE PATH) now inserts a `user_challenges` row with `payment_status: 'free'` when the first mile is logged. The lock logic in `ChallengeCard` is driven by `useActiveChallenge`, which queries the most recent `user_challenges` row **regardless of `payment_status**`:
+## Change — single file: `src/pages/ChallengePassport.tsx`
 
-```ts
-// useActiveChallenge.ts — no payment_status filter
-.from("user_challenges")
-.select(...).eq("user_id", user.id)
-.order("created_at", { ascending: false }).limit(1).maybeSingle();
-```
+In the `<Dialog>` block (lines ~228–292), gate every content branch on `selectedStamp.isUnlocked`:
 
-`ChallengeCard` then locks every other challenge:
+1. **Image area (lines 238–254):** keep the unlocked image branch. For the locked branch, replace the grayed `<img>` and the `Book` fallback with a single neutral locked panel — a muted box containing a `Lock` icon and the line "Reach {miles_required} mi to unlock".
+2. **Title + meta (lines 256–267):** keep `stamp_title`, `location_name`, and the mileage pill for both states (these are already visible on the grid card, so no new info is leaked).
+3. **`stamp_copy` (lines 268–270):** render only when `selectedStamp.isUnlocked`.
+4. **`historical_event` (lines 271–273):** render only when `selectedStamp.isUnlocked`.
+5. **`unlockedAt` line (lines 274–278):** already gated — leave as is.
+6. **`ShareMenu` (lines 281–288):** already gated — leave as is.
 
-```ts
-const isLocked = !!activeChallenge && !activeChallenge.isCompleted && !isCurrentChallenge;
-```
+Additionally, as a belt-and-suspenders measure: in the `onClick` at line 141–143, the existing `if (stamp.isUnlocked) setSelectedStamp(stamp)` guard already prevents opening for locked stamps. No change needed there, but the modal-side gating above guarantees safety even if a future refactor opens the dialog for a locked stamp.
 
-So as soon as the free-mile row lands in `user_challenges`, all other challenges lock automatically. No additional code change is required for the lock behavior itself.
+## What is NOT changing
 
-### Caveat on the requested `useEnrollmentStatus` edit
+- `src/components/PassportStamp.tsx` (the grid tile) — already correct.
+- `supabase/functions/check-milestone-unlocks/index.ts` — already inserts the free `user_challenges` row.
+- `src/hooks/useActiveChallenge.ts`, `useEnrollmentStatus.ts`, `useMileLogging.ts` — untouched.
+- `src/components/challenges/ChallengeCard.tsx` — lock-other-challenges behavior already works.
 
-Your proposed change is mechanically safe (types compile, no other file consumes a `"free"` literal), **but it has one behavioral side effect** you should be aware of before approving.
+## Verification
 
-Flipping `isEnrolled` to `true` for `payment_status === "free"` changes what a free-preview user sees on `ChallengeRoute.tsx`, because three branches gate on `enrollment?.isEnrolled`:
-
-
-| Line | Branch                                                                     | Effect on a `free` user after the change                                                                               |
-| ---- | -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| 591  | `showReEngagementBanner && !enrollment?.isEnrolled`                        | Re-engagement "Your first mile is saved / unlock the full journey" banner **will no longer show**                      |
-| 727  | `!enrollment?.isEnrolled` → renders `<ChallengePricing>`                   | Pricing/upsell section **will be hidden** from free users                                                              |
-| 913  | `enrollment?.isEnrolled && progress complete` → `<SubscriptionUpsellCard>` | Subscription upsell **could appear** to a free user if they somehow hit 100% (not reachable on free, but worth noting) |
-
-
-In short: with `isEnrolled: true` for free, the page treats a free-preview user as fully enrolled and **removes their path to purchase**. That breaks the preview-to-enrollment funnel.
-
-`useMileLogging.ts` is unaffected — it computes `isEnrolledPaid` independently against `payment_status === "paid"` and does not read this hook.
-
-`Dashboard.tsx` passes a hard-coded `isEnrolled={true}` and does not read this hook either.
-
-## Recommended plan
-
-### apply the type change only, keep `isEnrolled` strict
-
-Make the status reportable so future UI can distinguish "free" from "pending", but do **not** treat free as enrolled for gating paid UI.
-
-```ts
-export type EnrollmentStatus = "paid" | "pending" | "not_enrolled" | "free";
-
-const status: EnrollmentStatus =
-  data.payment_status === "paid" ? "paid" :
-  data.payment_status === "free" ? "free" : "pending";
-
-return {
-  status,
-  milesLogged: data.miles_logged || 0,
-  isEnrolled: status === "paid",   // unchanged — free is NOT enrolled
-};
-```
-
-Result: lock behavior still works (driven by `useActiveChallenge`, not this hook), and the pricing/re-engagement banners on `ChallengeRoute` continue to show for free users.
+1. Log in as a user with zero stamps unlocked, open `/passport/<slug>`, tap a locked stamp tile → nothing happens (disabled button).
+2. Manually force-open the dialog (e.g., via React devtools) on a locked stamp → only locked panel + title + mileage pill render. No `stamp_copy`, no `historical_event`, no image preview, no share button.
+3. Unlocked stamps continue to show full image, copy, historical event, unlock date, and share menu.
