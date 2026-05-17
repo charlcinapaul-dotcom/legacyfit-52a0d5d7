@@ -106,8 +106,6 @@ export function useMileLogging(challengeId?: string) {
         source,
       });
 
-      console.log("Mile insert result:", insertError);
-
       if (insertError) throw insertError;
 
       // Calculate new total
@@ -120,7 +118,6 @@ export function useMileLogging(challengeId?: string) {
       if (fetchError) throw fetchError;
 
       const newTotal = allEntries.reduce((sum, entry) => sum + Number(entry.miles), 0);
-      console.log("New total miles:", newTotal);
 
       // Only update user_challenges miles_logged for enrolled users (row exists)
       if (isEnrolledPaid) {
