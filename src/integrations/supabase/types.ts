@@ -1034,7 +1034,7 @@ export type Database = {
       app_role: "admin" | "moderator" | "user"
       fulfillment_status: "pending" | "processing" | "shipped" | "delivered"
       mile_source: "manual" | "apple_health" | "google_fit" | "gps"
-      payment_status: "pending" | "paid" | "failed" | "refunded"
+      payment_status: "pending" | "paid" | "failed" | "refunded" | "free"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1165,7 +1165,7 @@ export const Constants = {
       app_role: ["admin", "moderator", "user"],
       fulfillment_status: ["pending", "processing", "shipped", "delivered"],
       mile_source: ["manual", "apple_health", "google_fit", "gps"],
-      payment_status: ["pending", "paid", "failed", "refunded"],
+      payment_status: ["pending", "paid", "failed", "refunded", "free"],
     },
   },
 } as const
