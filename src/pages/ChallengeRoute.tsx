@@ -843,8 +843,8 @@ const ChallengeRoute = () => {
                               <MapPin className="w-3 h-3 inline mr-1" />
                               {milestone.location}
                             </p>
-                            {isUnlocked && milestone.description && (
-                              <p className="text-sm text-muted-foreground">{milestone.description}</p>
+                            {isUnlocked && milestone.narrativeText && (
+                              <p className="text-sm text-muted-foreground">{milestone.narrativeText}</p>
                             )}
                             {/* Audio controls — only shown on the most recently unlocked milestone */}
                             {isLastUnlocked && (milestone.audioUrl || milestone.description) && (
