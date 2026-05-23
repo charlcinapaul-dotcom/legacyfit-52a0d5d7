@@ -55,11 +55,10 @@ export function useGroupChallenge(challengeId: string | undefined) {
 
       const memberIds = members.map((m) => m.user_id);
 
-      // Get profiles
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, display_name, avatar_url, bib_number")
-        .in("user_id", memberIds);
+      // Get public profile fields via SECURITY DEFINER RPC
+      const { data: profiles } = await supabase.rpc("get_public_profiles", {
+        p_user_ids: memberIds,
+      });
 
       // Get miles for each member in this challenge
       const { data: userChallenges } = await supabase

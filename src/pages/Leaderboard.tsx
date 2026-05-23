@@ -92,11 +92,10 @@ const Leaderboard = () => {
       const userIds = Object.keys(userMiles);
       if (userIds.length === 0) return [];
 
-      // Get profiles
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, display_name, avatar_url, bib_number")
-        .in("user_id", userIds);
+      // Get public profile fields via SECURITY DEFINER RPC
+      const { data: profiles } = await supabase.rpc("get_public_profiles", {
+        p_user_ids: userIds,
+      });
 
       // Check consistency star via secure RPC
       const { data: consistency } = await supabase.rpc("get_weekly_consistency", {
