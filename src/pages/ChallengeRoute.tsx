@@ -272,6 +272,7 @@ const ChallengeRoute = () => {
         miles: Number(m.miles_required),
         location: m.location_name || "",
         description: m.stamp_copy || m.description || "",
+        narrativeText: m.historical_event || "",
         stampImageUrl: m.stamp_image_url,
         latitude: m.latitude,
         longitude: m.longitude,
