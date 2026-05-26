@@ -45,11 +45,10 @@ export function useGroupChallenge(challengeId: string | undefined) {
 
       if (!team) return null;
 
-      // Get all members
-      const { data: members } = await supabase
-        .from("team_members")
-        .select("user_id")
-        .eq("team_id", team.id);
+      // Get all members via secure RPC (RLS restricts direct SELECT to own row)
+      const { data: members } = await supabase.rpc("get_team_members", {
+        _team_id: team.id,
+      });
 
       if (!members) return null;
 
