@@ -178,7 +178,7 @@ serve(async (req: Request): Promise<Response> => {
     // ── PAID ENROLLMENT PATH ─────────────────────────────────────────────────
     const { data: enrollment, error: enrollmentError } = await supabase
       .from("user_challenges")
-      .select("id, payment_status")
+      .select("id, payment_status, is_completed")
       .eq("user_id", userId)
       .eq("challenge_id", challengeId)
       .eq("payment_status", "paid")
@@ -199,6 +199,30 @@ serve(async (req: Request): Promise<Response> => {
 
     console.log(`Checking milestone unlocks for user ${userId}, challenge ${challengeId}, total miles: ${totalMiles}`);
 
+    // Update miles_logged + completion flag server-side (RLS blocks client writes)
+    const { data: challengeRow } = await supabase
+      .from("challenges")
+      .select("total_miles")
+      .eq("id", challengeId)
+      .maybeSingle();
+
+    const challengeTotal = challengeRow ? Number(challengeRow.total_miles) : null;
+    const justCompleted =
+      challengeTotal !== null && !enrollment.is_completed && totalMiles >= challengeTotal;
+
+    const ucUpdate: Record<string, unknown> = { miles_logged: totalMiles };
+    if (justCompleted) {
+      ucUpdate.is_completed = true;
+      ucUpdate.completed_at = new Date().toISOString();
+    }
+    const { error: ucUpdateError } = await supabase
+      .from("user_challenges")
+      .update(ucUpdate)
+      .eq("id", enrollment.id);
+    if (ucUpdateError) {
+      console.error("Error updating user_challenges progress:", ucUpdateError);
+    }
+
     // Get all milestones where miles_required <= totalMiles
     const { data: eligibleMilestones, error: milestonesError } = await supabase
       .from("milestones")
@@ -213,7 +237,7 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     if (!eligibleMilestones || eligibleMilestones.length === 0) {
-      return new Response(JSON.stringify({ unlockedStamps: [], message: "No new stamps unlocked" }), {
+      return new Response(JSON.stringify({ unlockedStamps: [], challengeJustCompleted: justCompleted, message: "No new stamps unlocked" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
@@ -236,7 +260,7 @@ serve(async (req: Request): Promise<Response> => {
     const newMilestones = eligibleMilestones.filter((m) => !existingMilestoneIds.has(m.id));
 
     if (newMilestones.length === 0) {
-      return new Response(JSON.stringify({ unlockedStamps: [], message: "All stamps already unlocked" }), {
+      return new Response(JSON.stringify({ unlockedStamps: [], challengeJustCompleted: justCompleted, message: "All stamps already unlocked" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       });
@@ -291,7 +315,7 @@ serve(async (req: Request): Promise<Response> => {
     }
 
     return new Response(
-      JSON.stringify({ unlockedStamps, message: `Unlocked ${unlockedStamps.length} new stamp(s)!` }),
+      JSON.stringify({ unlockedStamps, challengeJustCompleted: justCompleted, message: `Unlocked ${unlockedStamps.length} new stamp(s)!` }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 }
     );
   } catch (error: unknown) {
