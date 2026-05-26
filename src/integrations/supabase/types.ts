@@ -1016,9 +1016,24 @@ export type Database = {
           name: string
         }[]
       }
+      get_team_members: {
+        Args: { _team_id: string }
+        Returns: {
+          user_id: string
+        }[]
+      }
       get_user_challenge_payment_status: {
         Args: { row_id: string }
         Returns: Database["public"]["Enums"]["payment_status"]
+      }
+      get_user_challenge_protected: {
+        Args: { row_id: string }
+        Returns: {
+          completed_at: string
+          is_completed: boolean
+          miles_logged: number
+          payment_status: Database["public"]["Enums"]["payment_status"]
+        }[]
       }
       get_weekly_consistency: {
         Args: { p_user_ids: string[]; p_week_start: string }
