@@ -119,21 +119,13 @@ export function useMileLogging(challengeId?: string) {
 
       const newTotal = allEntries.reduce((sum, entry) => sum + Number(entry.miles), 0);
 
-      // Only update user_challenges miles_logged for enrolled users (row exists)
-      if (isEnrolledPaid) {
-        await supabase
-          .from("user_challenges")
-          .update({ miles_logged: newTotal })
-          .eq("user_id", user.id)
-          .eq("challenge_id", challengeId);
-      }
-
       let unlockedStampsResult: UnlockedStamp[] = [];
+      let challengeJustCompleted = false;
 
       if (isFirstMile || isEnrolledPaid) {
         // Both paths go through the edge function (service role key).
         // isFirstMile=true  → free preview: awards only the 1-mile stamp, skips user_milestones.
-        // isFirstMile=false → paid path:    full milestone unlock logic.
+        // isFirstMile=false → paid path:    full milestone unlock + miles_logged/completion writes.
         const { data: unlockResult, error: unlockError } = await supabase.functions.invoke(
           "check-milestone-unlocks",
           {
@@ -150,6 +142,7 @@ export function useMileLogging(challengeId?: string) {
           console.error("Error checking unlocks:", unlockError);
         }
         unlockedStampsResult = unlockResult?.unlockedStamps || [];
+        challengeJustCompleted = !!unlockResult?.challengeJustCompleted;
       }
 
       // Check for challenge completion (enrolled users only)
@@ -160,27 +153,7 @@ export function useMileLogging(challengeId?: string) {
         .eq("id", challengeId)
         .single();
 
-      const { data: userChallengeData } = await supabase
-        .from("user_challenges")
-        .select("is_completed")
-        .eq("user_id", user.id)
-        .eq("challenge_id", challengeId)
-        .single();
-
-      if (
-        isEnrolledPaid &&
-        challengeData &&
-        userChallengeData &&
-        !userChallengeData.is_completed &&
-        newTotal >= Number(challengeData.total_miles)
-      ) {
-        // Mark challenge as completed
-        await supabase
-          .from("user_challenges")
-          .update({ is_completed: true, completed_at: new Date().toISOString() })
-          .eq("user_id", user.id)
-          .eq("challenge_id", challengeId);
-
+      if (isEnrolledPaid && challengeData && challengeJustCompleted) {
         // Get profile for display name
         const { data: profileData } = await supabase
           .from("profiles")
@@ -220,9 +193,7 @@ export function useMileLogging(challengeId?: string) {
         newTotal,
         isFirstMile,
         unlockedStamps: unlockedStampsResult,
-        challengeCompleted: certificateImageUrl !== null || (
-          isEnrolledPaid && challengeData && !userChallengeData?.is_completed && newTotal >= Number(challengeData.total_miles)
-        ),
+        challengeCompleted: challengeJustCompleted,
         certificateImageUrl,
         challengeName: challengeData?.title,
         challengeTotalMiles: challengeData ? Number(challengeData.total_miles) : 0,
