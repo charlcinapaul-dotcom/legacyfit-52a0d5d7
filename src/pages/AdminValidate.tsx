@@ -686,7 +686,7 @@ export default function AdminValidate() {
                       const allNarration = row.has_historical_event_count === row.milestone_count && row.milestone_count > 0;
                       const allAudio = row.has_audio_count === row.milestone_count && row.milestone_count > 0;
                       const allStamps = row.has_stamp_image_count === row.milestone_count && row.milestone_count > 0;
-                      const correctCount = row.milestone_count === 6;
+                      const correctCount = row.milestone_count > 0;
 
                       return (
                         <div key={row.id} className={i < rows.length - 1 ? "border-b border-border" : ""}>
@@ -744,7 +744,7 @@ export default function AdminValidate() {
                           {/* Milestone count */}
                           <div className="w-16 flex flex-col items-center gap-0.5">
                             <Dot ok={correctCount} />
-                            <span className="text-[10px] text-muted-foreground">{row.milestone_count}/6</span>
+                            <span className="text-[10px] text-muted-foreground">{row.milestone_count}/{row.milestone_count || 0}</span>
                           </div>
 
                           {/* Stripe price ID — informational; checkout uses shared price IDs */}
