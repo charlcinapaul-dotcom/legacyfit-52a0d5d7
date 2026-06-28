@@ -383,11 +383,10 @@ export default function AdminValidate() {
 
   // ── load audio missing count ──────────────────────────────────────────────
   const loadAudioMissingCount = async () => {
-    const { data: archived } = await supabase.from("challenges").select("id").eq("archived", true);
-    const archivedIds = (archived ?? []).map((c) => c.id);
-    let q = supabase.from("milestones").select("id, audio_url");
-    if (archivedIds.length) q = q.not("challenge_id", "in", `(${archivedIds.join(",")})`);
-    const { data: all } = await q;
+    const { data: all } = await supabase
+      .from("milestones")
+      .select("id, audio_url, challenges!inner(is_active)")
+      .eq("challenges.is_active", true);
     if (!all) return;
     const missing = all.filter((m) => !m.audio_url).length;
     setAudioMissingCount({ missing, total: all.length });
@@ -437,15 +436,12 @@ export default function AdminValidate() {
       const token = sessionData.session?.access_token;
       const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 
-      // Fetch milestones missing audio (skip archived challenges)
-      const { data: archived } = await supabase.from("challenges").select("id").eq("archived", true);
-      const archivedIds = (archived ?? []).map((c) => c.id);
-      let mq = supabase
+      // Fetch milestones missing audio (active challenges only)
+      const { data: missing } = await supabase
         .from("milestones")
-        .select("id, title, audio_url")
-        .is("audio_url", null);
-      if (archivedIds.length) mq = mq.not("challenge_id", "in", `(${archivedIds.join(",")})`);
-      const { data: missing } = await mq
+        .select("id, title, audio_url, challenges!inner(is_active)")
+        .eq("challenges.is_active", true)
+        .is("audio_url", null)
         .order("challenge_id")
         .order("order_index")
         .limit(10);
