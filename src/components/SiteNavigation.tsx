@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
-import legacyFitLogo from "@/assets/legacyfit-logo.png";
+import legacyFitLogo from "@/assets/legacyfit-logo.webp";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 

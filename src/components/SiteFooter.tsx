@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import legacyFitLogo from "@/assets/legacyfit-logo.png";
+import legacyFitLogo from "@/assets/legacyfit-logo.webp";
 
 export const SiteFooter = () => (
   <footer className="py-12 px-4 border-t border-border">
