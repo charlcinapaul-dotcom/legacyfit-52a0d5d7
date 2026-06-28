@@ -402,7 +402,7 @@ const Dashboard = () => {
           <div
             className="relative overflow-hidden rounded-2xl"
             style={{
-              backgroundImage: activeChallenge?.imageUrl ? `url('${activeChallenge.imageUrl}')` : "url('/map-bg.png')",
+              backgroundImage: activeChallenge?.imageUrl ? `url('${activeChallenge.imageUrl}')` : "url('/map-bg.webp')",
               backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
