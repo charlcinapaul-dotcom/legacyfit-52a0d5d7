@@ -47,6 +47,32 @@ const queryClient = new QueryClient({
   },
 });
 
+const DeepLinkHandler = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    const listenerPromise = CapacitorApp.addListener("appUrlOpen", (event) => {
+      const url = event.url;
+      if (
+        url.includes("legacyfit://reset-password") ||
+        url.includes("type=recovery")
+      ) {
+        const hashIndex = url.indexOf("#");
+        const hash = hashIndex >= 0 ? url.slice(hashIndex) : "";
+        navigate(`/reset-password${hash}`);
+      }
+    });
+
+    return () => {
+      listenerPromise.then((handle) => handle.remove());
+    };
+  }, [navigate]);
+
+  return null;
+};
+
 const App = () => {
   // Initialize Apple IAP on iOS native builds
   useIAPSync();
@@ -66,6 +92,7 @@ const App = () => {
       <Sonner />
       <BrowserRouter>
         <ScrollToTop />
+        <DeepLinkHandler />
         <Suspense fallback={
           <div className="min-h-screen bg-background flex items-center justify-center">
             <div className="text-center">
