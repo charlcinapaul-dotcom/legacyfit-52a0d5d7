@@ -57,6 +57,17 @@ const FAQ = () => (
       <meta name="twitter:card" content="summary" />
       <meta name="twitter:title" content="FAQ — LegacyFit Virtual Walking Challenges" />
       <link rel="canonical" href={typeof window !== "undefined" ? window.location.href : "https://legacyfitvirtual.com/faq"} />
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: faqs.map((f) => ({
+            "@type": "Question",
+            name: f.q,
+            acceptedAnswer: { "@type": "Answer", text: f.a },
+          })),
+        })}
+      </script>
     </Helmet>
     <section className="py-20 px-4">
       <div className="container mx-auto max-w-3xl">

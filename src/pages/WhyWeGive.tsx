@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import { PageLayout } from "@/components/PageLayout";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -5,6 +6,20 @@ import { Heart, Ribbon, Users, Footprints } from "lucide-react";
 
 const WhyWeGive = () => (
   <PageLayout>
+    <Helmet>
+      <title>Why We Give — LegacyFit's Mission & Impact</title>
+      <meta name="description" content="LegacyFit was built from personal loss and purpose. A portion of every registration supports breast cancer initiatives — movement with meaning." />
+      <link rel="canonical" href="https://legacyfitvirtual.com/why-we-give" />
+      <meta property="og:title" content="Why We Give — LegacyFit's Mission & Impact" />
+      <meta property="og:description" content="LegacyFit was built from personal loss and purpose. A portion of every registration supports breast cancer initiatives — movement with meaning." />
+      <meta property="og:url" content="https://legacyfitvirtual.com/why-we-give" />
+      <meta property="og:type" content="website" />
+      <meta property="og:image" content="https://utfexhdncajccdpvquky.supabase.co/storage/v1/object/public/assets/social-preview.webp" />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content="Why We Give — LegacyFit's Mission & Impact" />
+      <meta name="twitter:description" content="LegacyFit was built from personal loss and purpose. A portion of every registration supports breast cancer initiatives." />
+      <meta name="twitter:image" content="https://utfexhdncajccdpvquky.supabase.co/storage/v1/object/public/assets/social-preview.webp" />
+    </Helmet>
     {/* Hero */}
     <section className="py-24 px-4 text-center">
       <div className="container mx-auto max-w-3xl">

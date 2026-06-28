@@ -5,7 +5,7 @@ import { Heart, Ribbon, Footprints, Users } from "lucide-react";
 const About = () => (
   <PageLayout>
     <Helmet>
-      <title>About LegacyFit — Why We Built a Walking App Around History</title>
+      <title>About LegacyFit — Our Story, Mission & Founder</title>
       <meta name="description" content="LegacyFit was built for women 45+ who are ready to move with purpose. Learn how founder Charlcina Paul turned personal loss into a platform that honors trailblazers through virtual walking challenges." />
       <meta property="og:title" content="About LegacyFit — Our Story & Mission" />
       <meta property="og:description" content="Built for women 45+ who are seasoned, strong, and still moving. Discover the story behind LegacyFit's history-driven walking challenges." />
