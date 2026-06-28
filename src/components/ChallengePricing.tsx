@@ -648,7 +648,7 @@ export const ChallengePricing = ({
               <X className="w-5 h-5" />
             </button>
             <img
-              src="/boarding_pass_preview.png"
+              src="/boarding_pass_preview.webp"
               alt="Collector's Edition boarding passes preview"
               className="w-full object-contain rounded-lg"
             />
