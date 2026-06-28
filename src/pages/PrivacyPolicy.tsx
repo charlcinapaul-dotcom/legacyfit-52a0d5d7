@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { ArrowLeft, Shield, BookOpen } from "lucide-react";
-import legacyFitLogo from "@/assets/legacyfit-logo.png";
+import legacyFitLogo from "@/assets/legacyfit-logo.webp";
 
 const PrivacyPolicy = () => (
   <>

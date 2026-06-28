@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import legacyFitLogo from "@/assets/legacyfit-logo.png";
+import legacyFitLogo from "@/assets/legacyfit-logo.webp";
 
 interface DigitalBibProps {
   displayName: string;
