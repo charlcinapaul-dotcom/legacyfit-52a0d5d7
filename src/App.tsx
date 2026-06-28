@@ -3,12 +3,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import Landing from "./pages/Landing";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { fetchChallengesWithMeta } from "./hooks/useChallengesWithMeta";
 import { useIAPSync } from "./hooks/useIAPSync";
 import { useHealthPermissionPrompt } from "./hooks/useHealthPermissionPrompt";
+import { App as CapacitorApp } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
 
 const Auth = lazy(() => import("./pages/Auth"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
