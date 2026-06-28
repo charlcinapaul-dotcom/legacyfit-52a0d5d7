@@ -263,7 +263,9 @@ const Auth = () => {
     setLoading(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `https://legacyfitvirtual.com/reset-password`,
+        redirectTo: Capacitor.isNativePlatform()
+          ? "legacyfit://reset-password"
+          : "https://legacyfitvirtual.com/reset-password",
       });
 
       if (error) {

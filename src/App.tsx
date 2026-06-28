@@ -3,12 +3,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
 import Landing from "./pages/Landing";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { fetchChallengesWithMeta } from "./hooks/useChallengesWithMeta";
 import { useIAPSync } from "./hooks/useIAPSync";
 import { useHealthPermissionPrompt } from "./hooks/useHealthPermissionPrompt";
+import { App as CapacitorApp } from "@capacitor/app";
+import { Capacitor } from "@capacitor/core";
 
 const Auth = lazy(() => import("./pages/Auth"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -45,6 +47,32 @@ const queryClient = new QueryClient({
   },
 });
 
+const DeepLinkHandler = () => {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    const listenerPromise = CapacitorApp.addListener("appUrlOpen", (event) => {
+      const url = event.url;
+      if (
+        url.includes("legacyfit://reset-password") ||
+        url.includes("type=recovery")
+      ) {
+        const hashIndex = url.indexOf("#");
+        const hash = hashIndex >= 0 ? url.slice(hashIndex) : "";
+        navigate(`/reset-password${hash}`);
+      }
+    });
+
+    return () => {
+      listenerPromise.then((handle) => handle.remove());
+    };
+  }, [navigate]);
+
+  return null;
+};
+
 const App = () => {
   // Initialize Apple IAP on iOS native builds
   useIAPSync();
@@ -64,6 +92,7 @@ const App = () => {
       <Sonner />
       <BrowserRouter>
         <ScrollToTop />
+        <DeepLinkHandler />
         <Suspense fallback={
           <div className="min-h-screen bg-background flex items-center justify-center">
             <div className="text-center">
