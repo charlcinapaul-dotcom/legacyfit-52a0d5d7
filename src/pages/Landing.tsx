@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronRight, MapPin, Award, Users, Footprints, TrendingUp, BookOpen, Heart } from "lucide-react";
 import { PageLayout } from "@/components/PageLayout";
 import { supabase } from "@/integrations/supabase/client";
-import portraitMap from "@/assets/map-portrait.png";
-import landscapeMap from "@/assets/map-landscape.png";
+import portraitMap from "@/assets/map-portrait.webp";
+import landscapeMap from "@/assets/map-landscape.webp";
 
 const Landing = () => {
   const navigate = useNavigate();
