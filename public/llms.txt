@@ -1,0 +1,22 @@
+# LegacyFit
+
+> Virtual walking challenges for women 45+ that honor trailblazing figures in history — turn miles into meaning.
+
+LegacyFit pairs consistent walking with the stories of historical pioneers. Members enroll in themed challenges (Women's History, First Steps: Black Pioneers, Pride), log miles or steps, and unlock digital passport stamps tied to real historical milestones.
+
+## Pages
+
+- [Home](/): Overview of LegacyFit's mission and current challenges.
+- [Challenges](/challenges): Browse all virtual walking challenges and editions.
+- [How It Works](/how-it-works): Enrollment, mile logging, milestones, and stamps explained.
+- [About](/about): Founder Charlcina Paul's story and the origin of LegacyFit.
+- [Why We Give](/why-we-give): Mission, breast cancer support commitment, and impact.
+- [Leaderboard](/leaderboard): Lifetime Legacy Miles tiers and community recognition.
+- [FAQ](/faq): Answers about miles, stamps, refunds, and getting started.
+- [Contact](/contact): Reach the LegacyFit team.
+
+## Optional
+
+- [Privacy Policy](/privacy-policy)
+- [Legal](/legal)
+- [Refund Policy](/refund-policy)
